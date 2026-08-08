@@ -551,7 +551,7 @@ export const TABLES: TableDef[] = [
     grain: 'One row per order × product',
     description:
       'Order line items. Joining orders to this table and summing `orders.gross_revenue` ' +
-      'inflates revenue by roughly 1.8× — the fan-out trap taught on day 7.',
+      'inflates revenue by 2.19× — the fan-out trap taught on day 7.',
     columns: [
       I('order_id', 'Order.', { fk: 'orders.order_id' }),
       I('product_id', 'Product.', { fk: 'products.product_id' }),

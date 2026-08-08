@@ -1,0 +1,238 @@
+import { ex } from './helpers';
+
+/**
+ * Module 2 — Reading data: SELECT, aliases, LIMIT, DISTINCT, ORDER BY.
+ *
+ * 20 exercises. Every one returns something a marketer would actually paste into
+ * Slack, so the syntax arrives already attached to a use.
+ */
+export const M02 = [
+  ex('2.1', 2, 'easy',
+    'Campaign inventory',
+    'Return `campaign_name` and `channel_type` for every Google Ads campaign.',
+    ['google_ads_campaigns'], ['select'],
+    'SELECT campaign_name, channel_type FROM google_ads_campaigns',
+    ['Two columns, separated by a comma, after SELECT.',
+      'The table is `google_ads_campaigns`.']),
+
+  ex('2.2', 2, 'easy',
+    'Rename for the CMO',
+    '`campaign_name` and `daily_budget` are fine for you but not for a slide. Return them renamed to `Campaign` and `Daily Budget (USD)`.',
+    ['google_ads_campaigns'], ['select', 'alias'],
+    'SELECT campaign_name AS "Campaign", daily_budget AS "Daily Budget (USD)" FROM google_ads_campaigns',
+    ['`AS` renames a column in the output.',
+      'An alias containing spaces or brackets must be wrapped in double quotes.'],
+    { explanation: 'Aliases change only the output. The underlying column keeps its name, which is why you cannot then filter on `WHERE "Campaign" = ...` in the same query — WHERE runs before SELECT.' }),
+
+  ex('2.3', 2, 'easy',
+    'Ten most expensive campaign-days',
+    'Return `date`, `campaign_id` and `cost` from `google_ads_daily` for the ten single most expensive rows. Highest cost first.',
+    ['google_ads_daily'], ['order-by', 'limit'],
+    'SELECT date, campaign_id, cost FROM google_ads_daily ORDER BY cost DESC, date, ad_group_id LIMIT 10',
+    ['`ORDER BY cost DESC` sorts highest first.',
+      '`LIMIT 10` keeps only the first ten rows after sorting.',
+      'Add a tie-break column to ORDER BY so the result is stable when two rows share a cost.'],
+    { orderMatters: true,
+      explanation: 'LIMIT applies *after* ORDER BY — the database sorts everything, then slices. Without the tie-break, two rows with identical cost could come back in either order on different runs, which makes "the top 10" quietly non-reproducible.' }),
+
+  ex('2.4', 2, 'easy',
+    'Which creative formats do we run?',
+    'Return every distinct `creative_format` used on Meta, alphabetically.',
+    ['meta_ads_daily'], ['distinct', 'order-by'],
+    'SELECT DISTINCT creative_format FROM meta_ads_daily ORDER BY creative_format',
+    ['DISTINCT collapses repeated values.', 'Then sort alphabetically.'],
+    { orderMatters: true }),
+
+  ex('2.5', 2, 'easy',
+    'Cheapest keywords to bid on',
+    'Return `keyword_text` and `match_type` from `google_ads_keywords`, sorted by keyword text, limited to the first 15.',
+    ['google_ads_keywords'], ['order-by', 'limit'],
+    'SELECT keyword_text, match_type FROM google_ads_keywords ORDER BY keyword_text, match_type, keyword_id LIMIT 15',
+    ['Sort ascending is the default — no DESC needed.',
+      'Add tie-break columns so ties resolve the same way every run.'],
+    { orderMatters: true }),
+
+  ex('2.6', 2, 'easy',
+    'Two-key sort',
+    'Return `campaign_name`, `country` and `daily_budget`. Sort by `country` A→Z, then within each country by `daily_budget` highest first.',
+    ['google_ads_campaigns'], ['order-by'],
+    'SELECT campaign_name, country, daily_budget FROM google_ads_campaigns ORDER BY country, daily_budget DESC, campaign_name',
+    ['ORDER BY takes a comma-separated list.',
+      'DESC attaches to a single column, not to the whole ORDER BY.'],
+    { orderMatters: true,
+      explanation: '`ORDER BY country, daily_budget DESC` sorts country ascending and budget descending. Each column carries its own direction — a detail that bites everyone once.' }),
+
+  ex('2.7', 2, 'easy',
+    'Compute CTR inline',
+    'Return `date`, `impressions`, `clicks` and a computed column `ctr` (clicks divided by impressions) for the first 20 rows of `google_ads_daily`, ordered by date then ad_group_id.',
+    ['google_ads_daily'], ['select', 'alias', 'safe-divide'],
+    'SELECT date, impressions, clicks, SAFE_DIVIDE(clicks, impressions) AS ctr FROM google_ads_daily ORDER BY date, ad_group_id LIMIT 20',
+    ['Arithmetic goes straight in the SELECT list.',
+      'Some rows have zero impressions. Plain division by zero would poison the result.',
+      'BigQuery\'s `SAFE_DIVIDE(a, b)` returns NULL instead of erroring when b is 0.'],
+    { orderMatters: true,
+      trap: 'clicks / impressions blows up on the 154 zero-impression rows in this table.',
+      explanation: 'SAFE_DIVIDE is the single most useful BigQuery function for marketers, because every rate metric we compute has a denominator that is sometimes zero.' }),
+
+  ex('2.8', 2, 'easy',
+    'Distinct pairs, not distinct columns',
+    'Return every distinct combination of `channel_type` and `country` in `google_ads_campaigns`, sorted by channel then country.',
+    ['google_ads_campaigns'], ['distinct', 'order-by'],
+    'SELECT DISTINCT channel_type, country FROM google_ads_campaigns ORDER BY channel_type, country',
+    ['DISTINCT applies to the whole SELECT list, not to one column.',
+      'So listing two columns after DISTINCT gives distinct *pairs*.'],
+    { orderMatters: true,
+      trap: 'Reading `SELECT DISTINCT a, b` as "distinct a, and also b". It means distinct (a, b).' }),
+
+  ex('2.9', 2, 'easy',
+    'Newest landing pages',
+    'Return `page_path`, `template` and `published_date` for the 5 most recently published landing pages.',
+    ['landing_pages'], ['order-by', 'limit'],
+    'SELECT page_path, template, published_date FROM landing_pages ORDER BY published_date DESC, page_path LIMIT 5',
+    ['Dates sort like text in this warehouse because they are stored as YYYY-MM-DD.',
+      'Most recent first means DESC.'],
+    { orderMatters: true,
+      explanation: 'ISO-8601 (`YYYY-MM-DD`) is the reason this works: alphabetical order and chronological order are the same. Store a date as `14/06/2024` and sorting silently breaks.' }),
+
+  ex('2.10', 2, 'medium',
+    'Margin percentage',
+    'Return `product_name`, `list_price` and `margin_pct` — the unit margin as a percentage of list price, rounded to 1 decimal place. Sort by margin_pct descending.',
+    ['products'], ['select', 'alias', 'math-functions', 'order-by'],
+    `SELECT product_name,
+       list_price,
+       ROUND(SAFE_DIVIDE(list_price - unit_cost, list_price) * 100, 1) AS margin_pct
+FROM products
+ORDER BY margin_pct DESC, product_name`,
+    ['Margin percentage is (price − cost) / price, times 100.',
+      '`ROUND(x, 1)` keeps one decimal place.',
+      'Wrap the division in SAFE_DIVIDE out of habit — it costs nothing.'],
+    { orderMatters: true }),
+
+  ex('2.11', 2, 'medium',
+    'Concatenate a label',
+    'Build a single display label for each campaign: `campaign_name`, then a space-hyphen-space, then `country`. Call it `label`. Return it alongside `campaign_id`, sorted by campaign_id.',
+    ['google_ads_campaigns'], ['string-functions', 'alias'],
+    "SELECT campaign_id, CONCAT(campaign_name, ' - ', country) AS label FROM google_ads_campaigns ORDER BY campaign_id",
+    ['`CONCAT(a, b, c)` joins strings together.',
+      'The separator is just another argument: a literal string in single quotes.'],
+    { orderMatters: true }),
+
+  ex('2.12', 2, 'medium',
+    'The 10 biggest single orders',
+    'Return `order_id`, `order_date` and `gross_revenue` for the ten largest orders by revenue. Largest first.',
+    ['orders'], ['order-by', 'limit'],
+    'SELECT order_id, order_date, gross_revenue FROM orders ORDER BY gross_revenue DESC, order_id LIMIT 10',
+    ['Sort descending on revenue, then cut to 10.',
+      'Tie-break on order_id for a stable result.'],
+    { orderMatters: true }),
+
+  ex('2.13', 2, 'medium',
+    'Refunds sort to the bottom',
+    'Return `order_id` and `gross_revenue` for the ten *smallest* values in `orders`. Notice what comes back.',
+    ['orders'], ['order-by', 'limit'],
+    'SELECT order_id, gross_revenue FROM orders ORDER BY gross_revenue ASC, order_id LIMIT 10',
+    ['Smallest first is the default direction, but write ASC to be explicit.',
+      'Refunds are stored as negative revenue, so they sort below every sale.'],
+    { orderMatters: true,
+      explanation: 'Every one of them is negative. Refunds in this warehouse are stored as negative `gross_revenue` rather than as a separate table — so `SUM(gross_revenue)` already nets refunds out, and `SUM(gross_revenue) WHERE status = \'completed\'` deliberately does not. Knowing which one your stakeholder means is the job.',
+      trap: 'Reporting "total revenue" without deciding whether refunds are in or out.' }),
+
+  ex('2.14', 2, 'hard',
+    'The campaign that changed its name',
+    'Return every distinct `campaign_id` and `campaign_name` pair that appears in `ga4_sessions` where the campaign is recorded, ordered by campaign_id then campaign name. Any campaign_id appearing with two different names has been renamed mid-flight.',
+    ['ga4_sessions'], ['distinct', 'order-by', 'grain'],
+    `SELECT DISTINCT campaign_id, campaign
+FROM ga4_sessions
+WHERE campaign_id IS NOT NULL
+ORDER BY campaign_id, campaign`,
+    ['DISTINCT on two columns gives distinct pairs.',
+      'You only care about sessions that actually have a campaign, so exclude NULL campaign_ids.',
+      '`IS NOT NULL` is the filter — `!= NULL` never matches anything.'],
+    { orderMatters: true,
+      explanation: 'A campaign\'s *name* is an attribute that can change; its *id* is the identity that cannot. Group your reporting by name and a mid-quarter rename splits one campaign into two rows that each look like they halved in performance.',
+      trap: 'Treating `SELECT DISTINCT campaign_id, campaign_name` as a count of campaigns.' }),
+
+  ex('2.15', 2, 'medium',
+    'Highest CPM creatives',
+    'Return `creative_id`, `creative_format`, `spend`, `impressions` and a computed `cpm` (cost per thousand impressions) for the 15 rows in `meta_ads_daily` with the highest CPM. Only consider rows with at least 1000 impressions.',
+    ['meta_ads_daily'], ['safe-divide', 'order-by', 'limit', 'where'],
+    `SELECT creative_id, creative_format, spend, impressions,
+       SAFE_DIVIDE(spend, impressions) * 1000 AS cpm
+FROM meta_ads_daily
+WHERE impressions >= 1000
+ORDER BY cpm DESC, creative_id, date
+LIMIT 15`,
+    ['CPM is spend per 1,000 impressions: spend / impressions × 1000.',
+      'Filter first with WHERE, then sort, then limit.',
+      'You can ORDER BY an alias you defined in SELECT.'],
+    { orderMatters: true,
+      explanation: 'ORDER BY is the one clause that *can* see SELECT aliases, because it runs after SELECT. WHERE cannot — which is why the impressions filter has to repeat the raw column.' }),
+
+  ex('2.16', 2, 'hard',
+    'Deduplicate the orders table',
+    'The `orders` table contains 26 exact duplicate rows. Return `order_id` and `gross_revenue` for every *distinct* order, sorted by order_id, limited to 20 rows — so that a downstream SUM would not double-count.',
+    ['orders'], ['distinct', 'dedup', 'order-by'],
+    'SELECT DISTINCT order_id, gross_revenue FROM orders ORDER BY order_id LIMIT 20',
+    ['The duplicates are exact copies, so DISTINCT over the selected columns removes them.',
+      'Be careful: DISTINCT deduplicates the columns you selected, not the underlying rows.',
+      'Sort and limit after the DISTINCT.'],
+    { orderMatters: true,
+      explanation: 'DISTINCT works here only because the duplicates are *exact*. If the replayed rows differed in even one column — a timestamp, say — DISTINCT would keep both, and you would need ROW_NUMBER() (day 10) to pick one per order_id. Knowing which situation you are in is the difference between a fix and a false sense of security.',
+      trap: 'Believing DISTINCT is a general-purpose deduplicator. It is not — it is exact-row-match only.' }),
+
+  ex('2.17', 2, 'medium',
+    'Format money for a report',
+    'Return `campaign_name` and `budget_display` — the daily budget rendered as a string like `$250.00`. Sort by daily_budget descending.',
+    ['google_ads_campaigns'], ['string-functions', 'alias'],
+    `SELECT campaign_name,
+       CONCAT('$', FORMAT('%.2f', daily_budget)) AS budget_display
+FROM google_ads_campaigns
+ORDER BY daily_budget DESC, campaign_name`,
+    ['`FORMAT(\'%.2f\', x)` renders a number with exactly two decimals.',
+      'CONCAT the dollar sign onto the front.',
+      'You can still ORDER BY the raw numeric column even though you selected the string.'],
+    { orderMatters: true,
+      trap: 'Sorting by the formatted string puts $9.00 above $250.00, because "9" > "2" alphabetically.' }),
+
+  ex('2.18', 2, 'medium',
+    'Uppercase channel labels',
+    'Return each distinct `channel_group` from `ga4_sessions` in two forms: as stored, and uppercased as `channel_upper`. Sort by the original value.',
+    ['ga4_sessions'], ['distinct', 'string-functions'],
+    'SELECT DISTINCT channel_group, UPPER(channel_group) AS channel_upper FROM ga4_sessions ORDER BY channel_group',
+    ['UPPER() converts a string to uppercase.',
+      'DISTINCT still applies to the whole select list — but both columns derive from the same source, so the pairs stay 1:1.'],
+    { orderMatters: true }),
+
+  ex('2.19', 2, 'hard',
+    'Rank by profit, not revenue',
+    'Return `product_name`, `list_price`, `unit_cost` and `unit_margin`, for the 8 products with the best unit margin — but exclude anything not currently sold (`is_active = 0`).',
+    ['products'], ['select', 'where', 'order-by', 'limit'],
+    `SELECT product_name, list_price, unit_cost, list_price - unit_cost AS unit_margin
+FROM products
+WHERE is_active = 1
+ORDER BY unit_margin DESC, product_name
+LIMIT 8`,
+    ['Filter with WHERE before sorting.',
+      '`is_active = 1` keeps the active ones.',
+      'You may sort by the alias `unit_margin`.'],
+    { orderMatters: true,
+      explanation: 'Revenue rankings and margin rankings disagree constantly. The GPS Watch Pro tops revenue and the Merino Socks top margin percentage — which one you promote depends on whether you are buying growth or buying profit.' }),
+
+  ex('2.20', 2, 'hard',
+    'A clean campaign catalogue for Monday standup',
+    'Build the one-query catalogue you would actually send: `campaign_name`, `channel_type`, `country`, `status`, `daily_budget`, and a `brand_flag` column that shows the text `Brand` or `Non-brand`. Sort by status, then budget descending.',
+    ['google_ads_campaigns'], ['select', 'alias', 'case-when', 'order-by'],
+    `SELECT campaign_name,
+       channel_type,
+       country,
+       status,
+       daily_budget,
+       CASE WHEN is_brand = 1 THEN 'Brand' ELSE 'Non-brand' END AS brand_flag
+FROM google_ads_campaigns
+ORDER BY status, daily_budget DESC, campaign_name`,
+    ['`CASE WHEN condition THEN x ELSE y END` turns a code into a label.',
+      'It goes in the SELECT list like any other expression, and takes an alias.',
+      'Sort by two keys with different directions.'],
+    { orderMatters: true,
+      explanation: 'Translating `is_brand = 1` into the word "Brand" is not cosmetic. Reports get forwarded, and a 1/0 column is an invitation for someone downstream to guess wrong about which way round it goes.' }),
+];

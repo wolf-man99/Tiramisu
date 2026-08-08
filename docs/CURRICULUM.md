@@ -74,7 +74,7 @@ parenthesisation · `LIKE` and wildcards · `IN` · `BETWEEN` (and its inclusive
 
 **The lesson that matters most.** `NULL != NULL`. A filter of
 `WHERE campaign_id != 42` silently drops every row where `campaign_id IS NULL`.
-Exercise 3.22 has the learner lose 1 180 orders to this and then find them.
+Exercise 3.22 has the learner lose 3 380 orders to this and then find them.
 
 **Visual.** Truth-table animator: toggle `A`, `B` and `NULL` and watch `AND`/`OR`/`NOT`
 resolve, with a live row count from `orders`.
@@ -89,8 +89,9 @@ why it ignores NULLs · `MIN`/`MAX` · aggregates over filtered sets · `COUNTIF
 rate metrics as `SUM(a)/SUM(b)` not `AVG(rate)`.
 
 **The single most valuable idea in the course.** *Never average a rate.* Averaging
-per-campaign CTR gives every campaign equal weight regardless of size. Exercise 4.9
-shows the two answers side by side: 3.1% vs 1.4%, from the same data.
+per-row CTR gives a campaign-day with 12 impressions the same weight as one with
+40 000. Exercise 4.9 shows the two answers side by side: **0.96%** weighted versus
+**6.6%** averaged, from the same data — a factor of seven.
 
 **Daily project.** *Channel scorecard*: spend, clicks, CTR, CPC, conversions, CPA,
 ROAS — one row per channel, every rate correctly weighted.
@@ -125,7 +126,7 @@ much revenue has no attributable campaign.
 **Concepts.** `RIGHT JOIN` · `FULL OUTER JOIN` (and SQLite/BigQuery differences) ·
 `SELF JOIN` (previous-order lookup, manager chains) · `CROSS JOIN` and the date-spine
 pattern · **fan-out**: why joining `orders` to `order_items` and summing
-`orders.gross_revenue` inflates revenue by 1.8× · join-then-aggregate vs
+`orders.gross_revenue` inflates revenue by 2.19× · join-then-aggregate vs
 aggregate-then-join.
 
 **Daily project.** *Complete daily report with no missing days*, built on a

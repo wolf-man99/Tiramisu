@@ -131,7 +131,7 @@ type GlobalWithCache = typeof globalThis & { [GLOBAL_KEY]?: Cached };
  * Bump when the DDL or the generator changes, so a stale on-disk warehouse is
  * discarded rather than silently serving data the exercises no longer match.
  */
-export const WAREHOUSE_VERSION = '1.0.0';
+export const WAREHOUSE_VERSION = '1.3.0';
 
 export const WAREHOUSE_PATH = path.join(process.cwd(), '.data', 'warehouse.db');
 

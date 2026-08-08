@@ -310,7 +310,10 @@ export function generateWarehouse(): Dataset[] {
       status: paused ? 'PAUSED' : 'ENABLED',
       is_brand: brand,
       country,
-      daily_budget: round2(rng.float(60, 900) * (brand ? 0.45 : 1) * geoCost),
+      // Budgets are sized so the account's economics stay defensible against the
+      // ~5.8k orders and ~1k subscriptions the rest of the warehouse produces:
+      // roughly $450k/yr on Google at a blended CAC in the $60–90 range.
+      daily_budget: round2(rng.float(15, 180) * (brand ? 0.45 : 1) * geoCost),
       start_date: dayIso(startDay),
       startDay,
       endDay: paused ? rng.int(200, 340) : DAYS - 1,
@@ -355,20 +358,42 @@ export function generateWarehouse(): Dataset[] {
   {
     const rows: unknown[][] = [];
     const byCampaign = new Map(gCampaigns.map((c) => [c.campaign_id, c]));
+    // Ad-group shares are normalised within a campaign, so a campaign's total daily
+    // spend tracks its daily_budget instead of multiplying by its ad-group count.
+    const groupsByCampaign = new Map<number, GAdGroup[]>();
+    for (const ag of gAdGroups) {
+      const list = groupsByCampaign.get(ag.campaign_id) ?? [];
+      list.push(ag);
+      groupsByCampaign.set(ag.campaign_id, list);
+    }
+    const shares = new Map<number, number>();
+    for (const [cid, list] of groupsByCampaign) {
+      const draws = list.map(() => rng.float(0.5, 1.5));
+      const total = draws.reduce((a, b) => a + b, 0);
+      list.forEach((ag, i) => shares.set(ag.ad_group_id, draws[i] / total));
+    }
+
     for (const ag of gAdGroups) {
       const c = byCampaign.get(ag.campaign_id)!;
-      const share = rng.float(0.5, 1.5);
+      const share = shares.get(ag.ad_group_id)!;
       for (let i = c.startDay; i <= c.endDay; i++) {
         const isSaaS = c.campaign_name.includes('SaaS');
         const season = isSaaS ? seasonB2B(i) : seasonB2C(i);
         if (rng.chance(0.035)) continue; // reporting gaps happen
         const budget = c.daily_budget * share * season;
         const targetImpr = Math.max(0, (budget / Math.max(c.cpc, 0.05)) / Math.max(c.ctr, 0.0005));
-        const impressions = Math.max(0, Math.round(rng.normal(targetImpr, targetImpr * 0.28)));
-        // 1.5% of campaign-days serve impressions but get zero clicks → CTR division by zero
-        const clicks = impressions === 0 ? 0 : Math.max(0, rng.poisson(impressions * c.ctr));
+        let impressions = Math.max(0, Math.round(rng.normal(targetImpr, targetImpr * 0.28)));
+        // Deliberate defects for the SAFE_DIVIDE lesson: 1.2% of campaign-days serve
+        // impressions and get no clicks at all, and 0.8% serve nothing while the
+        // campaign is technically live. Both make a naive CTR divide by zero.
+        const noClicks = rng.chance(0.012);
+        if (rng.chance(0.008)) impressions = 0;
+        const clicks = impressions === 0 || noClicks ? 0 : Math.max(0, rng.poisson(impressions * c.ctr));
         const cost = round2(clicks * c.cpc * rng.float(0.85, 1.18));
-        const conversions = round2(clicks * c.cvr * rng.float(0.6, 1.5));
+        // Conversions are whole events drawn from a Poisson, then fractionally
+        // attributed — which is how Google reports them, and why a campaign-day with
+        // real spend and exactly zero conversions is completely normal.
+        const conversions = round2(rng.poisson(clicks * c.cvr) * rng.float(0.72, 1.0));
         const convValue = round2(conversions * c.aov * rng.float(0.75, 1.35));
         const vtc = c.channel_type === 'DISPLAY' || c.channel_type === 'VIDEO'
           ? round2(conversions * rng.float(1.5, 4.5)) : 0;
@@ -443,7 +468,7 @@ export function generateWarehouse(): Dataset[] {
         if (impressions === 0) continue;
         const clicks = rng.poisson(impressions * k.ctr);
         const cost = round2(clicks * k.cpc * rng.float(0.85, 1.2));
-        const conversions = round2(clicks * k.cvr * rng.float(0.5, 1.6));
+        const conversions = round2(rng.poisson(clicks * k.cvr) * rng.float(0.72, 1.0));
         rows.push([
           dayIso(i), k.keyword_id, impressions, clicks, cost, conversions,
           round2(conversions * k.aov * rng.float(0.8, 1.3)),
@@ -513,8 +538,11 @@ export function generateWarehouse(): Dataset[] {
         for (let cr = 0; cr < creatives; cr++) {
           const creativeId = adsetId * 10 + cr;
           const format = rng.pick(FORMATS);
-          const fatigue = rng.float(0.0008, 0.0035); // CTR decay per day live
-          const budget = rng.float(40, 420);
+          // Creative fatigue as a proportional decay with a floor: a creative loses
+          // performance as frequency builds, but refreshes and audience churn stop it
+          // falling off a cliff. (An absolute per-day decay would drive CTR to zero.)
+          const fatigue = rng.float(0.0012, 0.004); // fraction of CTR lost per live day
+          const budget = rng.float(5, 45);
           const crStart = c.startDay + rng.int(0, 30);
           const crEnd = Math.min(c.endDay, crStart + rng.int(45, 260));
           for (let i = crStart; i <= crEnd; i++) {
@@ -524,10 +552,10 @@ export function generateWarehouse(): Dataset[] {
             const impressions = Math.round((spend / c.cpm) * 1000 * rng.float(0.85, 1.15));
             if (impressions <= 0) continue;
             const liveDays = i - crStart;
-            const effCtr = Math.max(0.002, c.ctr - fatigue * liveDays * 0.5);
+            const effCtr = c.ctr * Math.max(0.55, 1 - fatigue * liveDays);
             const clicks = rng.poisson(impressions * effCtr);
             const reach = Math.round(impressions / rng.float(1.1, 3.4));
-            const purchases = round2(clicks * c.cvr * rng.float(0.6, 1.5));
+            const purchases = round2(rng.poisson(clicks * c.cvr) * rng.float(0.72, 1.0));
             rows.push([
               dayIso(i), c.campaign_id, adsetId, adsetName, creativeId, format,
               impressions, reach, round2(impressions / Math.max(reach, 1)), clicks, spend,
@@ -561,7 +589,7 @@ export function generateWarehouse(): Dataset[] {
     company_size: s[4], status: rng.chance(0.85) ? 'ACTIVE' : 'PAUSED',
     cpc: rng.float(6.2, 14.5), ctr: rng.float(0.0035, 0.0085),
     leadRate: s[1] === 'LEAD_GEN' ? rng.float(0.08, 0.16) : rng.float(0.01, 0.03),
-    budget: rng.float(120, 560),
+    budget: rng.float(45, 200),
     startDay: rng.chance(0.7) ? 0 : rng.int(30, 200),
   }));
   ds('linkedin_ads_campaigns',
@@ -614,6 +642,46 @@ export function generateWarehouse(): Dataset[] {
   const paidMetaIds = mCampaigns.map((c) => c.campaign_id);
   const liIds = liCampaigns.map((c) => c.campaign_id);
 
+  /**
+   * Last-click order attribution is concentrated, not uniform.
+   *
+   * Search and shopping close orders; upper-funnel prospecting on video, display and
+   * Meta's awareness objective does not close anything on a last-click model — those
+   * campaigns are bought and judged on view-through, and `view_through_conversions`
+   * is where their credit lives. So they are excluded from last-click attribution
+   * entirely, which leaves several campaigns with real spend and zero attributed
+   * orders. That is both true to life and what makes INNER JOIN vs LEFT JOIN a
+   * visible difference on day 6 rather than a lecture.
+   */
+  const CLOSE_RATE: Record<string, number> = {
+    SEARCH: 1, SHOPPING: 0.85, PMAX: 0.7, DISPLAY: 0.35, VIDEO: 0,
+  };
+  const closesLastClick = (name: string, channel: string) =>
+    (CLOSE_RATE[channel] ?? 0.3) > 0 && !name.includes('Prospecting');
+
+  const googleClose = gCampaigns
+    .filter((c) => closesLastClick(c.campaign_name, c.channel_type))
+    .map((c) => ({ id: c.campaign_id, w: c.daily_budget * CLOSE_RATE[c.channel_type] }));
+  const googleCloseIds = googleClose.map((c) => c.id);
+  const googleCloseWeights = googleClose.map((c) => c.w);
+
+  const attributionPool = [
+    ...googleClose.filter((c) => {
+      const camp = gCampaigns.find((g) => g.campaign_id === c.id)!;
+      return !camp.campaign_name.includes('SaaS'); // B2B search does not sell shoes
+    }),
+    ...mCampaigns
+      .filter((c) => c.objective !== 'AWARENESS' && !c.name.includes('SaaS'))
+      .map((c) => ({ id: c.campaign_id, w: 1 })),
+  ];
+  const attributionIds = attributionPool.map((a) => a.id);
+  const attributionWeights = attributionPool.map((a) => a.w);
+
+  // Only remarketing display is last-click attributable; prospecting display is not.
+  const displayRemarketingIds = gCampaigns
+    .filter((c) => c.channel_type === 'DISPLAY' && c.campaign_name.includes('Remarketing'))
+    .map((c) => c.campaign_id);
+
   const customers: Customer[] = [];
   const N_CUSTOMERS = 5200;
   for (let i = 0; i < N_CUSTOMERS; i++) {
@@ -632,9 +700,9 @@ export function generateWarehouse(): Dataset[] {
       CHANNEL_GROUPS as unknown as string[], [24, 15, 14, 20, 13, 6, 5, 3],
     );
     let firstCampaign: number | null = null;
-    if (first === 'Paid Search') firstCampaign = rng.pick(paidGoogleIds);
+    if (first === 'Paid Search') firstCampaign = rng.weighted(googleCloseIds, googleCloseWeights);
     else if (first === 'Paid Social') firstCampaign = isB2B && rng.chance(0.55) ? rng.pick(liIds) : rng.pick(paidMetaIds);
-    else if (first === 'Display') firstCampaign = rng.pick(paidGoogleIds.filter((_, idx) => G_SPECS[idx][1] === 'DISPLAY'));
+    else if (first === 'Display') firstCampaign = rng.pick(displayRemarketingIds);
     const country = rng.weighted(COUNTRIES, isB2B ? [42, 15, 11, 9, 6, 8, 5, 4] : [38, 17, 9, 11, 7, 8, 5, 5]);
     let city = rng.pick(CITIES[country]);
     // Deliberate dirt: 6% of city values carry stray whitespace or odd casing.
@@ -710,7 +778,7 @@ export function generateWarehouse(): Dataset[] {
       let campaignId: number | null = c.first_campaign_id;
       if (rng.chance(0.34)) campaignId = null;
       else if (rng.chance(0.04)) campaignId = 9500 + rng.int(0, 40); // orphan FK, on purpose
-      else if (rng.chance(0.3)) campaignId = rng.pick([...paidGoogleIds, ...paidMetaIds]);
+      else if (rng.chance(0.3)) campaignId = rng.weighted(attributionIds, attributionWeights);
       const signedGross = status === 'refunded' ? -Math.abs(gross) : gross;
       orderRows.push([
         orderId, c.customer_id, isoTs(ts), dayIso(day), status, round2(signedGross),
@@ -776,7 +844,7 @@ export function generateWarehouse(): Dataset[] {
   ds('subscriptions',
     ['subscription_id', 'customer_id', 'plan_id', 'mrr', 'status', 'started_at', 'trial_end_at', 'canceled_at', 'cancel_reason', 'seats'],
     subs.map((s) => [s.subscription_id, s.customer_id, s.plan_id, s.mrr, s.status, dayIso(s.startDay),
-      s.trialEnd !== null && s.trialEnd < DAYS ? dayIso(s.trialEnd) : null,
+      s.trialEnd !== null ? dayIso(s.trialEnd) : null,
       s.cancelDay !== null ? dayIso(s.cancelDay) : null, s.reason, s.seats]));
 
   // ══════════════════════════════════════════════════════ stripe charges ══
@@ -841,8 +909,13 @@ export function generateWarehouse(): Dataset[] {
     const sqlD = becameSql ? mql! + rng.int(2, 30) : null;
     const becameCust = becameSql && rng.chance(0.31);
     const cust = becameCust ? sqlD! + rng.int(5, 60) : null;
-    const stage = becameCust ? 'customer' : becameSql ? (rng.chance(0.5) ? 'opportunity' : 'sql')
-      : becameMql ? 'mql' : quality > 0.28 ? 'lead' : 'subscriber';
+    // A stage date beyond the data window has not happened yet, so the contact must
+    // not be *labelled* with that stage either — otherwise lifecycle_stage and the
+    // stage dates contradict each other and every funnel query disagrees with itself.
+    const inWindow = (d: number | null) => d !== null && d < DAYS;
+    const stage = inWindow(cust) ? 'customer'
+      : inWindow(sqlD) ? (rng.chance(0.5) ? 'opportunity' : 'sql')
+        : inWindow(mql) ? 'mql' : quality > 0.28 ? 'lead' : 'subscriber';
     contacts.push({
       contact_id: 50000 + i, created, stage, source: sm[0], medium: sm[1],
       campaign: sm[1] === 'cpc' ? rng.pick(gCampaigns).campaign_name
