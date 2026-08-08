@@ -147,6 +147,8 @@ export interface ProjectTask {
   orderMatters?: boolean;
   /** Renders the learner's own result as a chart in the dashboard preview. */
   chart?: ChartSpec;
+  /** Shown after the task is passed: what the result means and why it is shaped that way. */
+  note?: string;
 }
 
 export interface ChartSpec {

@@ -99,17 +99,6 @@ const CHANNEL_GROUPS = [
   'Email', 'Referral', 'Display', 'Affiliate',
 ] as const;
 
-const FIRST_NAMES = [
-  'Priya', 'Marcus', 'Ana', 'Wei', 'Sofia', 'Tomas', 'Aisha', 'Liam', 'Yuki', 'Noah',
-  'Elena', 'Omar', 'Grace', 'Diego', 'Fatima', 'Lucas', 'Mei', 'Ravi', 'Clara', 'Jonas',
-  'Zara', 'Andre', 'Nina', 'Kwame', 'Hana', 'Felix', 'Ines', 'Arjun', 'Maya', 'Oscar',
-];
-const LAST_NAMES = [
-  'Sharma', 'Okafor', 'Silva', 'Chen', 'Rossi', 'Novak', 'Ahmed', 'Murphy', 'Tanaka',
-  'Weber', 'Costa', 'Haddad', 'Bennett', 'Alvarez', 'Nasser', 'Moreau', 'Zhang',
-  'Patel', 'Lindqvist', 'Berg', 'Adeyemi', 'Ferreira', 'Kowalski', 'Mensah',
-];
-
 const COMPANY_WORDS_A = [
   'North', 'Bright', 'Cobalt', 'Vertex', 'Lumen', 'Atlas', 'Quanta', 'Ember', 'Nimbus',
   'Orbit', 'Slate', 'Harbor', 'Pivot', 'Kite', 'Forge', 'Delta', 'Prism', 'Junction',
@@ -367,7 +356,7 @@ export function generateWarehouse(): Dataset[] {
       groupsByCampaign.set(ag.campaign_id, list);
     }
     const shares = new Map<number, number>();
-    for (const [cid, list] of groupsByCampaign) {
+    for (const [, list] of groupsByCampaign) {
       const draws = list.map(() => rng.float(0.5, 1.5));
       const total = draws.reduce((a, b) => a + b, 0);
       list.forEach((ag, i) => shares.set(ag.ad_group_id, draws[i] / total));

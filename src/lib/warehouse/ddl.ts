@@ -82,11 +82,6 @@ const T = (
   description: string,
   extra: Partial<ColumnDef> = {},
 ): ColumnDef => ({ name, type: 'TIMESTAMP', description, bytes: 19, ...extra });
-const B = (
-  name: string,
-  description: string,
-  extra: Partial<ColumnDef> = {},
-): ColumnDef => ({ name, type: 'BOOL', description, bytes: 1, ...extra });
 
 export const TABLES: TableDef[] = [
   // ─────────────────────────────────────────────────────────── Paid media ──
