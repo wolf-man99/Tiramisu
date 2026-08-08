@@ -1,26 +1,193 @@
 @import "tailwindcss";
 
+/*
+  GrowthSQL Academy design system.
+  Dark-first, inspired by Linear / Vercel / Supabase / Raycast. A single accent
+  (violet) carries the brand; a restrained set of surface layers builds depth.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surface layers, darkest to lightest */
+  --bg: #08080b;
+  --bg-subtle: #0c0c11;
+  --surface: #121218;
+  --surface-2: #17171f;
+  --surface-3: #1e1e28;
+  --elevated: #1a1a22;
+
+  /* Borders */
+  --border: #23232d;
+  --border-strong: #33333f;
+  --border-accent: #4f3fd633;
+
+  /* Text */
+  --text: #ededf2;
+  --text-muted: #a1a1b0;
+  --text-subtle: #6b6b７a;
+  --text-faint: #52525f;
+
+  /* Brand accent — violet */
+  --accent: #7c6cf6;
+  --accent-hover: #8f80ff;
+  --accent-soft: #7c6cf61a;
+  --accent-border: #7c6cf644;
+  --accent-text: #b3a9ff;
+
+  /* Semantic */
+  --success: #34d399;
+  --success-soft: #34d3991a;
+  --warn: #fbbf24;
+  --warn-soft: #fbbf241a;
+  --danger: #f87171;
+  --danger-soft: #f871711a;
+  --info: #60a5fa;
+  --info-soft: #60a5fa1a;
+
+  /* Difficulty scale */
+  --easy: #34d399;
+  --medium: #60a5fa;
+  --hard: #fbbf24;
+  --expert: #f472b6;
+
+  /* Chart categorical palette */
+  --c1: #7c6cf6;
+  --c2: #34d399;
+  --c3: #60a5fa;
+  --c4: #fbbf24;
+  --c5: #f472b6;
+  --c6: #22d3ee;
+  --c7: #fb923c;
+  --c8: #a78bfa;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo, Monaco, "Cascadia Code", Consolas, monospace;
+}
+
+/* Fix the accidental full-width chars in text-subtle above via a clean override. */
+:root {
+  --text-subtle: #6b6b7a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-elevated: var(--elevated);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-easy: var(--easy);
+  --color-medium: var(--medium);
+  --color-hard: var(--hard);
+  --color-expert: var(--expert);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius: var(--radius);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";
 }
+
+/* Ambient gradient wash behind the app shell */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(900px 500px at 12% -8%, #7c6cf618, transparent 60%),
+    radial-gradient(800px 500px at 95% 0%, #22d3ee0d, transparent 55%);
+  pointer-events: none;
+}
+
+::selection { background: var(--accent-soft); color: var(--accent-text); }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #45454f; }
+
+/* ─── Reusable component classes ─────────────────────────────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.card-hover { transition: border-color .18s ease, transform .18s ease, background .18s ease; }
+.card-hover:hover { border-color: var(--border-strong); background: var(--surface-2); }
+
+.glass {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.gradient-text {
+  background: linear-gradient(120deg, #b3a9ff, #7c6cf6 40%, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glow-accent { box-shadow: 0 0 0 1px var(--accent-border), 0 8px 40px -12px #7c6cf655; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .18rem .55rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 600; letter-spacing: .01em;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-muted);
+}
+
+.hairline { border-top: 1px solid var(--border); }
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.animate-fade-up { animation: fade-up .4s cubic-bezier(.2,.7,.3,1) both; }
+
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, #ffffff0a, transparent);
+  transform: translateX(-100%); animation: shimmer 1.6s infinite;
+}
+
+.mono { font-family: var(--font-mono); }
