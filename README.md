@@ -1,1 +1,1 @@
-# SQL-for-marketers
+# GrowthSQL
