@@ -5,7 +5,7 @@
 | Layer | Choice | Why |
 |---|---|---|
 | Framework | Next.js 16 (App Router, RSC) | Server components render curriculum without shipping it to the client |
-| Language | TypeScript (strict) | Content is typed data — the compiler validates 260 exercises |
+| Language | TypeScript (strict) | Content is typed data — the compiler validates 300 exercises |
 | Styling | Tailwind CSS v4 (CSS-first tokens) | No JS config; theme lives in `globals.css` as `@theme` |
 | Components | shadcn-style primitives over Radix | Owned in-repo, no black boxes |
 | Editor | Monaco + custom BigQuery language definition | Real IDE affordances: completion, hover docs, signature help |
@@ -82,7 +82,7 @@ src/
       analyze.ts           static analysis → diagnoses
     content/
       curriculum/          14 day modules
-      exercises/           260 exercises, module-split
+      exercises/           300 exercises, module-split
       projects.ts  interviews.ts  labs.ts  capstone.ts
       cheatsheets.ts  glossary.ts  flashcards.ts
     progress/              XP maths, levels, streaks, badge rules, SM-2
@@ -168,7 +168,7 @@ relies on emulated behaviour, so the learner is never taught a falsehood.
 
 ## 6. Rendering strategy
 
-- Curriculum pages are **server components**. 260 exercises and 14 days of prose never
+- Curriculum pages are **server components**. 300 exercises and 14 days of prose never
   enter the client bundle; only the active exercise is serialised.
 - The playground, editor, quizzes and charts are client islands.
 - Monaco is `dynamic(..., { ssr: false })` and code-split; it is not in the initial

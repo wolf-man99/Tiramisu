@@ -153,7 +153,7 @@ taxonomy, weak-area detection feeding the dashboard's recommendations.
 
 ## 9. Release scope (v1 — this build)
 
-Shipped: FR-1 … FR-12, all 10 modules, 14 days, 260 exercises, 10 projects, 10
+Shipped: FR-1 … FR-12, all 10 modules, 14 days, 300 exercises, 10 projects, 10
 interview sets, 9 labs, 6 cheatsheets, 3 glossaries, 100-question capstone.
 
 Deferred: multi-user auth, real BigQuery OAuth passthrough, community solutions feed,
