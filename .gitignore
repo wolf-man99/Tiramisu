@@ -1,0 +1,54 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# GrowthSQL Academy
+# Generated marketing warehouse (~95 MB). Rebuild with `npm run setup`.
+/.data/
+# Learner progress database. Created by `npm run setup`.
+/prisma/dev.db
+/prisma/dev.db-journal
+# Prisma client is generated into src/generated
+/src/generated/
+
+# The default DATABASE_URL is a local SQLite path with no secret in it, so it is
+# committed to keep `git clone && npm install && npm run dev` working out of the box.
+!.env

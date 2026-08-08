@@ -1,0 +1,197 @@
+// Learner state. The marketing warehouse the learner *queries* is a separate,
+// read-only database — see docs/DATA-MODEL.md.
+//
+// v1 has a single local profile (`id = "local"`), but every table is keyed by
+// profileId so adding auth later is a drop-in change rather than a migration.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id             String   @id @default("local")
+  displayName    String   @default("Analyst")
+  avatarSeed     String   @default("northbeam")
+  timezone       String   @default("UTC")
+  xp             Int      @default(0)
+  coins          Int      @default(0)
+  level          Int      @default(1)
+  title          String   @default("Curious")
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  streakFreezes  Int      @default(2)
+  lastActiveDate String? // ISO date; drives streak maths
+  dailyGoalXp    Int      @default(150)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  lessonProgress LessonProgress[]
+  attempts       Attempt[]
+  conceptStats   ConceptStat[]
+  badges         BadgeAward[]
+  bookmarks      Bookmark[]
+  notes          Note[]
+  cardReviews    CardReview[]
+  dailyActivity  DailyActivity[]
+}
+
+/// One row per (day, section) — the ten beats of a day page.
+model LessonProgress {
+  id          String    @id @default(cuid())
+  profileId   String
+  dayNumber   Int
+  section     String
+  status      String    @default("in_progress") // in_progress | complete
+  score       Float? // 0..1 for scored sections
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, dayNumber, section])
+  @@index([profileId, dayNumber])
+}
+
+/// Every graded submission, pass or fail. The raw material for all analytics.
+model Attempt {
+  id           String   @id @default(cuid())
+  profileId    String
+  itemType     String // exercise | quiz | assessment | project | interview | capstone | lab | challenge
+  itemId       String
+  sql          String   @default("")
+  passed       Boolean  @default(false)
+  ms           Int      @default(0)
+  rowsReturned Int      @default(0)
+  hintsUsed    Int      @default(0)
+  revealed     Boolean  @default(false)
+  diagnosis    String? // coach diagnosis code, for the mistake taxonomy
+  xpAwarded    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, itemType])
+  @@index([profileId, itemId])
+  @@index([profileId, createdAt])
+}
+
+/// Rolling mastery per concept — feeds weak-area detection and revision.
+model ConceptStat {
+  id         String   @id @default(cuid())
+  profileId  String
+  concept    String
+  attempts   Int      @default(0)
+  passes     Int      @default(0)
+  firstTryOk Int      @default(0)
+  totalMs    Int      @default(0)
+  mastery    Float    @default(0) // 0..1, decayed by recency
+  lastSeenAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, concept])
+  @@index([profileId, mastery])
+}
+
+model BadgeAward {
+  id        String   @id @default(cuid())
+  profileId String
+  badgeId   String
+  awardedAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, badgeId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  profileId String
+  itemType  String
+  itemId    String
+  label     String   @default("")
+  createdAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, itemType, itemId])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  profileId String
+  itemType  String
+  itemId    String
+  body      String   @default("")
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, itemType, itemId])
+}
+
+/// Flashcard content is seeded, not user-authored.
+model Flashcard {
+  id      String @id
+  deck    String
+  front   String
+  back    String
+  concept String
+
+  reviews CardReview[]
+}
+
+/// SM-2 scheduling state, one row per (profile, card).
+model CardReview {
+  id           String   @id @default(cuid())
+  profileId    String
+  cardId       String
+  ease         Float    @default(2.5)
+  intervalDays Int      @default(0)
+  reps         Int      @default(0)
+  lapses       Int      @default(0)
+  dueDate      String // ISO date
+  lastGrade    Int?
+  updatedAt    DateTime @updatedAt
+
+  profile Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  card    Flashcard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, cardId])
+  @@index([profileId, dueDate])
+}
+
+/// Simulated leaderboard opponents. They progress on a curve so the board moves.
+model Rival {
+  id          String @id
+  displayName String
+  avatarSeed  String
+  country     String
+  baseXp      Int
+  dailyXp     Int
+  streak      Int
+  level       Int
+  title       String
+}
+
+model DailyActivity {
+  id               String @id @default(cuid())
+  profileId        String
+  date             String // ISO date
+  xpEarned         Int    @default(0)
+  exercisesSolved  Int    @default(0)
+  exercisesFailed  Int    @default(0)
+  minutesActive    Int    @default(0)
+  accuracyNumerator Int   @default(0)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+}
