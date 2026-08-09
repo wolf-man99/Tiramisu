@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogOut, Settings, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import posthog from '@/lib/posthog/client';
 
-interface Me { displayName: string; email: string | null; image: string | null; avatarSeed: string }
+interface Me { id: string; displayName: string; email: string | null; image: string | null; avatarSeed: string }
 
 export function UserMenu() {
   const router = useRouter();
@@ -14,7 +15,18 @@ export function UserMenu() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/auth/me').then((r) => r.json()).then((d) => setMe(d.user)).catch(() => {});
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.user?.id) {
+          posthog.identify(d.user.id, {
+            email: d.user.email ?? undefined,
+            name: d.user.displayName,
+          });
+        }
+        setMe(d.user);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -24,7 +36,10 @@ export function UserMenu() {
   }, []);
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    const response = await fetch('/api/auth/logout', { method: 'POST' });
+    if (!response.ok) return;
+
+    posthog.reset();
     router.push('/');
     router.refresh();
   };

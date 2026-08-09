@@ -12,6 +12,7 @@ import { SchemaPanel } from './SchemaPanel';
 import { cn, formatMs } from '@/lib/utils';
 import type { CompareResult } from '@/lib/grading/compare';
 import type { Analysis } from '@/lib/coach/analyze';
+import posthog from '@/lib/posthog/client';
 
 const SqlEditor = dynamic(() => import('./SqlEditor').then((m) => m.SqlEditor), {
   ssr: false,
@@ -62,11 +63,12 @@ export function QueryWorkspace({
     setRunning(true); setError(null); setPassed(null); setCoach(null); setMentor(null); setAward(null);
     try {
       const res = await fetch('/api/sql/run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sql }) }).then((r) => r.json());
+      posthog.capture('sql_query_executed', { source: 'workspace', succeeded: Boolean(res.ok), has_exercise: Boolean(exercise) });
       if (res.ok) { setResult(res); setTab('results'); }
       else setError({ message: res.error, hint: res.hint });
     } catch { setError({ message: 'Could not reach the query engine.' }); }
     setRunning(false);
-  }, [sql]);
+  }, [sql, exercise]);
 
   const submit = useCallback(async () => {
     if (!grade) return;
@@ -131,7 +133,7 @@ export function QueryWorkspace({
                   </div>
                 ))}
                 {revealed < exercise.hints.length && (
-                  <button onClick={() => setRevealed((r) => r + 1)} className="flex items-center gap-1.5 text-xs font-medium text-[var(--warn)] hover:underline">
+                  <button onClick={() => { posthog.capture('exercise_hint_revealed', { hint_number: revealed + 1, has_exercise: true }); setRevealed((r) => r + 1); }} className="flex items-center gap-1.5 text-xs font-medium text-[var(--warn)] hover:underline">
                     <Lightbulb size={13} /> Reveal hint {revealed + 1} of {exercise.hints.length}
                   </button>
                 )}

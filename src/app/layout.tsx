@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Bricolage_Grotesque, DM_Sans, DM_Mono } from 'next/font/google';
 import './globals.css';
-import { PostHogProvider } from './providers';
 
 /* Display / headings */
 const heading = Bricolage_Grotesque({
@@ -36,9 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${heading.variable} ${body.variable} ${code.variable}`}>
-      <body className="antialiased">
-        <PostHogProvider>{children}</PostHogProvider>
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
