@@ -13,6 +13,3 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
-
-/** v1 is single-profile; every table keys on this id so auth is a drop-in later. */
-export const LOCAL_PROFILE_ID = 'local';

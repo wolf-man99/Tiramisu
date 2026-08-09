@@ -1,4 +1,5 @@
 import { recordAttempt } from '@/lib/progress/persist';
+import { getProfileId } from '@/lib/auth/server';
 
 export const runtime = 'nodejs';
 
@@ -7,6 +8,9 @@ export const runtime = 'nodejs';
  * flashcard drill. SQL exercises go through /api/sql/grade instead.
  */
 export async function POST(req: Request) {
+  const profileId = await getProfileId();
+  if (!profileId) return Response.json({ error: 'Not signed in.' }, { status: 401 });
+
   let body: {
     itemType?: string;
     itemId?: string;
@@ -25,6 +29,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'itemType and itemId are required.' }, { status: 400 });
   }
   const progress = await recordAttempt({
+    profileId,
     itemType: body.itemType,
     itemId: body.itemId,
     sql: '',

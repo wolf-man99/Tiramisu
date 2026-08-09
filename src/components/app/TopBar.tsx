@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Flame, Zap, Coins, Star } from 'lucide-react';
+import { Flame, Zap, Coins } from 'lucide-react';
 import { compactNumber } from '@/lib/utils';
+import { UserMenu } from './UserMenu';
+import { ShareButton } from './ShareButton';
 
 interface ProfileHeader {
   displayName: string;
@@ -33,18 +35,14 @@ export function TopBar() {
         <span className="md:hidden font-semibold text-[var(--text)]">GrowthSQL</span>
       </div>
       <div className="flex items-center gap-2">
-        <Metric icon={<Flame size={15} />} value={p ? String(p.currentStreak) : '—'} label="day streak" tone={p?.streakAtRisk ? 'var(--warn)' : 'var(--warn)'} pulse={p?.streakAtRisk} />
+        <Metric icon={<Flame size={15} />} value={p ? String(p.currentStreak) : '—'} label="day streak" tone="var(--warn)" pulse={p?.streakAtRisk} />
         <Metric icon={<Coins size={15} />} value={p ? compactNumber(p.coins) : '—'} label="coins" tone="var(--warn)" />
         <Metric icon={<Zap size={15} />} value={p ? compactNumber(p.xp) : '—'} label="XP" tone="var(--accent-text)" />
-        <div className="ml-1 flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-2)] py-1 pl-1 pr-3">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--accent-soft)] text-xs font-bold text-[var(--accent-text)]">
-            <Star size={13} />
-          </span>
-          <div className="leading-tight">
-            <div className="text-[13px] font-semibold">Lvl {p?.level ?? '—'}</div>
-            <div className="text-[10px] text-[var(--text-subtle)]">{p?.title ?? ''}</div>
-          </div>
-        </div>
+        <span className="hidden items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--accent-text)] sm:flex" title={p?.title ?? ''}>
+          Lvl {p?.level ?? '—'}
+        </span>
+        <ShareButton />
+        <UserMenu />
       </div>
     </header>
   );

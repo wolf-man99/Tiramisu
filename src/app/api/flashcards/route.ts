@@ -1,16 +1,16 @@
-import { prisma, LOCAL_PROFILE_ID } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { review, freshCard, isDue } from '@/lib/progress/srs';
-import { ensureProfile } from '@/lib/progress/persist';
+import { getProfileId } from '@/lib/auth/server';
 
 export const runtime = 'nodejs';
 
 /** Due cards for review today, oldest-due first, plus deck counts. */
 export async function GET(req: Request) {
-  await ensureProfile();
+  const profileId = await getProfileId();
   const today = new URL(req.url).searchParams.get('today') ?? new Date().toISOString().slice(0, 10);
   const [cards, reviews] = await Promise.all([
     prisma.flashcard.findMany(),
-    prisma.cardReview.findMany({ where: { profileId: LOCAL_PROFILE_ID } }),
+    profileId ? prisma.cardReview.findMany({ where: { profileId } }) : Promise.resolve([]),
   ]);
   const reviewByCard = new Map(reviews.map((r) => [r.cardId, r]));
 
@@ -35,6 +35,9 @@ export async function GET(req: Request) {
 
 /** Grade one card (0–5) and reschedule via SM-2. */
 export async function POST(req: Request) {
+  const profileId = await getProfileId();
+  if (!profileId) return Response.json({ error: 'Not signed in.' }, { status: 401 });
+
   let body: { cardId?: string; grade?: number; today?: string };
   try {
     body = await req.json();
@@ -44,19 +47,18 @@ export async function POST(req: Request) {
   if (!body.cardId || typeof body.grade !== 'number') {
     return Response.json({ error: 'cardId and grade are required.' }, { status: 400 });
   }
-  await ensureProfile();
   const today = body.today ?? new Date().toISOString().slice(0, 10);
   const existing = await prisma.cardReview.findUnique({
-    where: { profileId_cardId: { profileId: LOCAL_PROFILE_ID, cardId: body.cardId } },
+    where: { profileId_cardId: { profileId, cardId: body.cardId } },
   });
   const state = existing
     ? { ease: existing.ease, intervalDays: existing.intervalDays, reps: existing.reps, lapses: existing.lapses, dueDate: existing.dueDate }
     : freshCard(today);
   const next = review(state, body.grade, today);
   const saved = await prisma.cardReview.upsert({
-    where: { profileId_cardId: { profileId: LOCAL_PROFILE_ID, cardId: body.cardId } },
+    where: { profileId_cardId: { profileId, cardId: body.cardId } },
     update: { ease: next.ease, intervalDays: next.intervalDays, reps: next.reps, lapses: next.lapses, dueDate: next.dueDate, lastGrade: next.lastGrade },
-    create: { profileId: LOCAL_PROFILE_ID, cardId: body.cardId, ease: next.ease, intervalDays: next.intervalDays, reps: next.reps, lapses: next.lapses, dueDate: next.dueDate, lastGrade: next.lastGrade },
+    create: { profileId, cardId: body.cardId, ease: next.ease, intervalDays: next.intervalDays, reps: next.reps, lapses: next.lapses, dueDate: next.dueDate, lastGrade: next.lastGrade },
   });
   return Response.json({ ok: true, review: saved });
 }

@@ -1,4 +1,4 @@
-import { prisma, LOCAL_PROFILE_ID } from '../db';
+import { prisma } from '../db';
 import type { Badge, Difficulty } from '../content/types';
 import { exerciseById } from '../content/exercises';
 import { levelForXp, titleForLevel, xpForPass, coinsForXp } from './leveling';
@@ -12,6 +12,8 @@ import { newlyEarnedBadges, type BadgeContext } from './badges';
  */
 
 export interface RecordAttemptInput {
+  profileId: string;
+  courseId?: string; // defaults to the SQL course
   itemType: string; // exercise | quiz | assessment | project | interview | capstone | lab | challenge
   itemId: string;
   sql: string;
@@ -27,6 +29,8 @@ export interface RecordAttemptInput {
   today?: string;
 }
 
+export const DEFAULT_COURSE = 'sql-for-marketers';
+
 export interface RecordAttemptResult {
   xpAwarded: number;
   coinsAwarded: number;
@@ -41,39 +45,38 @@ export interface RecordAttemptResult {
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
-/** Ensure the singleton profile exists. */
-export async function ensureProfile() {
-  return prisma.profile.upsert({
-    where: { id: LOCAL_PROFILE_ID },
-    update: {},
-    create: { id: LOCAL_PROFILE_ID },
+/** Ensure the learner is enrolled in a course (idempotent), bumping last-active. */
+export async function ensureEnrollment(profileId: string, courseId = DEFAULT_COURSE) {
+  return prisma.enrollment.upsert({
+    where: { profileId_courseId: { profileId, courseId } },
+    update: { lastActive: new Date() },
+    create: { profileId, courseId },
   });
 }
 
 export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAttemptResult> {
   const today = input.today ?? todayIso();
+  const courseId = input.courseId ?? DEFAULT_COURSE;
   const hintsUsed = input.hintsUsed ?? 0;
   const revealed = input.revealed ?? false;
   const ex = input.itemType === 'exercise' || input.itemType === 'challenge' ? exerciseById(input.itemId) : undefined;
   const difficulty: Difficulty = input.difficulty ?? ex?.difficulty ?? 'medium';
   const concepts = input.concepts ?? ex?.concepts ?? [];
 
+  await ensureEnrollment(input.profileId, courseId);
+
   return prisma.$transaction(async (tx) => {
-    const profile = await tx.profile.upsert({
-      where: { id: LOCAL_PROFILE_ID },
-      update: {},
-      create: { id: LOCAL_PROFILE_ID },
-    });
+    const profile = await tx.profile.findUniqueOrThrow({ where: { id: input.profileId } });
 
     // First-try = no prior attempt for this item.
     const priorAttempts = await tx.attempt.count({
-      where: { profileId: profile.id, itemId: input.itemId, itemType: input.itemType },
+      where: { profileId: profile.id, courseId, itemId: input.itemId, itemType: input.itemType },
     });
     const firstTry = priorAttempts === 0 && input.passed;
 
     // Award XP only the first time an item is passed.
     const alreadyPassed = await tx.attempt.count({
-      where: { profileId: profile.id, itemId: input.itemId, itemType: input.itemType, passed: true },
+      where: { profileId: profile.id, courseId, itemId: input.itemId, itemType: input.itemType, passed: true },
     });
     const xpAwarded = input.passed && alreadyPassed === 0
       ? xpForPass({ difficulty, attemptNumber: priorAttempts + 1, hintsUsed, revealed, firstTry })
@@ -83,6 +86,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
     await tx.attempt.create({
       data: {
         profileId: profile.id,
+        courseId,
         itemType: input.itemType,
         itemId: input.itemId,
         sql: input.sql.slice(0, 8000),
@@ -99,7 +103,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
     // Per-concept mastery.
     for (const concept of concepts) {
       const existing = await tx.conceptStat.findUnique({
-        where: { profileId_concept: { profileId: profile.id, concept } },
+        where: { profileId_courseId_concept: { profileId: profile.id, courseId, concept } },
       });
       const attempts = (existing?.attempts ?? 0) + 1;
       const passes = (existing?.passes ?? 0) + (input.passed ? 1 : 0);
@@ -110,9 +114,9 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
       const firstRate = firstTryOk / attempts;
       const mastery = Math.min(1, Math.round((passRate * 0.6 + firstRate * 0.4) * 1000) / 1000);
       await tx.conceptStat.upsert({
-        where: { profileId_concept: { profileId: profile.id, concept } },
+        where: { profileId_courseId_concept: { profileId: profile.id, courseId, concept } },
         update: { attempts, passes, firstTryOk, totalMs, mastery, lastSeenAt: new Date() },
-        create: { profileId: profile.id, concept, attempts, passes, firstTryOk, totalMs, mastery },
+        create: { profileId: profile.id, courseId, concept, attempts, passes, firstTryOk, totalMs, mastery },
       });
     }
 
@@ -170,6 +174,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
     // Badge evaluation.
     const ctx = await buildBadgeContext(tx, {
       profileId: profile.id,
+      courseId,
       level,
       totalXp,
       streak,
@@ -210,6 +215,7 @@ async function buildBadgeContext(
   tx: Tx,
   base: {
     profileId: string;
+    courseId: string;
     level: number;
     totalXp: number;
     streak: { currentStreak: number; longestStreak: number };
@@ -218,7 +224,7 @@ async function buildBadgeContext(
   },
 ): Promise<BadgeContext> {
   const attempts = await tx.attempt.findMany({
-    where: { profileId: base.profileId },
+    where: { profileId: base.profileId, courseId: base.courseId },
     select: { itemType: true, itemId: true, passed: true, hintsUsed: true, ms: true, createdAt: true },
     orderBy: { createdAt: 'asc' },
   });
@@ -257,7 +263,7 @@ async function buildBadgeContext(
   const notesCount = await tx.note.count({ where: { profileId: base.profileId } });
   const cardReviews = await tx.cardReview.aggregate({ where: { profileId: base.profileId }, _sum: { reps: true } });
   const lessons = await tx.lessonProgress.findMany({
-    where: { profileId: base.profileId, status: 'complete' },
+    where: { profileId: base.profileId, courseId: base.courseId, status: 'complete' },
     select: { dayNumber: true, section: true },
   });
 

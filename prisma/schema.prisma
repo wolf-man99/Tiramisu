@@ -14,11 +14,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// A learner account. Platform-wide gamification (XP, level, streak) lives here;
+/// per-course content progress is scoped by courseId on the child tables.
 model Profile {
-  id             String   @id @default("local")
+  id             String   @id @default(cuid())
+  // Auth
+  email          String?  @unique
+  passwordHash   String? // null for OAuth-only accounts
+  provider       String   @default("credentials") // credentials | google
+  googleId       String?  @unique
+  emailVerified  Boolean  @default(false)
+  image          String? // avatar URL (from Google, say)
+  // Profile
   displayName    String   @default("Analyst")
   avatarSeed     String   @default("northbeam")
   timezone       String   @default("UTC")
+  referralCode   String?  @unique // for share-to-friends invites
+  // Platform-wide gamification
   xp             Int      @default(0)
   coins          Int      @default(0)
   level          Int      @default(1)
@@ -28,6 +40,7 @@ model Profile {
   streakFreezes  Int      @default(2)
   lastActiveDate String? // ISO date; drives streak maths
   dailyGoalXp    Int      @default(150)
+  isDemo         Boolean  @default(false) // the seeded showcase profile
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -39,12 +52,31 @@ model Profile {
   notes          Note[]
   cardReviews    CardReview[]
   dailyActivity  DailyActivity[]
+  enrollments    Enrollment[]
+}
+
+/// One row per (profile, course) a learner has started. Carries the access model so
+/// paid courses / bundles are a data change later, not a schema change.
+model Enrollment {
+  id          String    @id @default(cuid())
+  profileId   String
+  courseId    String
+  access      String    @default("free") // free | paid | bundle | trial
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  lastActive  DateTime  @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, courseId])
+  @@index([courseId])
 }
 
 /// One row per (day, section) — the ten beats of a day page.
 model LessonProgress {
   id          String    @id @default(cuid())
   profileId   String
+  courseId    String    @default("sql-for-marketers")
   dayNumber   Int
   section     String
   status      String    @default("in_progress") // in_progress | complete
@@ -54,14 +86,15 @@ model LessonProgress {
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, dayNumber, section])
-  @@index([profileId, dayNumber])
+  @@unique([profileId, courseId, dayNumber, section])
+  @@index([profileId, courseId, dayNumber])
 }
 
 /// Every graded submission, pass or fail. The raw material for all analytics.
 model Attempt {
   id           String   @id @default(cuid())
   profileId    String
+  courseId     String   @default("sql-for-marketers")
   itemType     String // exercise | quiz | assessment | project | interview | capstone | lab | challenge
   itemId       String
   sql          String   @default("")
@@ -85,6 +118,7 @@ model Attempt {
 model ConceptStat {
   id         String   @id @default(cuid())
   profileId  String
+  courseId   String   @default("sql-for-marketers")
   concept    String
   attempts   Int      @default(0)
   passes     Int      @default(0)
@@ -95,8 +129,8 @@ model ConceptStat {
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, concept])
-  @@index([profileId, mastery])
+  @@unique([profileId, courseId, concept])
+  @@index([profileId, courseId, mastery])
 }
 
 model BadgeAward {

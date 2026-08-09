@@ -1,4 +1,4 @@
-import { prisma, LOCAL_PROFILE_ID } from '../db';
+import { prisma } from '../db';
 import { EXERCISES } from '../content/exercises';
 import { PROJECTS } from '../content/projects';
 import { INTERVIEWS } from '../content/interviews';
@@ -8,18 +8,22 @@ import { BADGES } from '../content/badges';
 import { levelState } from './leveling';
 import { streakAtRisk } from './streak';
 import { weakAreas, recommendExercises, type ConceptStatLike } from './recommend';
-import { ensureProfile } from './persist';
+import { ensureEnrollment, DEFAULT_COURSE } from './persist';
 
 /** The full payload the dashboard renders. One call, so the client stays simple. */
-export async function dashboardSummary(today = new Date().toISOString().slice(0, 10)) {
-  await ensureProfile();
-  const profile = await prisma.profile.findUniqueOrThrow({ where: { id: LOCAL_PROFILE_ID } });
+export async function dashboardSummary(
+  profileId: string,
+  courseId = DEFAULT_COURSE,
+  today = new Date().toISOString().slice(0, 10),
+) {
+  await ensureEnrollment(profileId, courseId);
+  const profile = await prisma.profile.findUniqueOrThrow({ where: { id: profileId } });
 
   const [attempts, conceptStats, badgeAwards, lessons, todayActivity, recent] = await Promise.all([
-    prisma.attempt.findMany({ where: { profileId: profile.id }, select: { itemType: true, itemId: true, passed: true, ms: true } }),
-    prisma.conceptStat.findMany({ where: { profileId: profile.id } }),
+    prisma.attempt.findMany({ where: { profileId: profile.id, courseId }, select: { itemType: true, itemId: true, passed: true, ms: true } }),
+    prisma.conceptStat.findMany({ where: { profileId: profile.id, courseId } }),
     prisma.badgeAward.findMany({ where: { profileId: profile.id } }),
-    prisma.lessonProgress.findMany({ where: { profileId: profile.id, status: 'complete' }, select: { dayNumber: true, section: true } }),
+    prisma.lessonProgress.findMany({ where: { profileId: profile.id, courseId, status: 'complete' }, select: { dayNumber: true, section: true } }),
     prisma.dailyActivity.findUnique({ where: { profileId_date: { profileId: profile.id, date: today } } }),
     prisma.dailyActivity.findMany({ where: { profileId: profile.id }, orderBy: { date: 'desc' }, take: 14 }),
   ]);

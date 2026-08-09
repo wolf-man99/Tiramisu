@@ -2,6 +2,7 @@ import { Award, Lock } from 'lucide-react';
 import { dashboardSummary } from '@/lib/progress/summary';
 import { BADGE_TIER_ORDER } from '@/lib/content/badges';
 import { PageHeader } from '@/components/app/PageHeader';
+import { requireProfileId } from '@/lib/auth/server';
 import { cn } from '@/lib/utils';
 
 export const runtime = 'nodejs';
@@ -15,7 +16,8 @@ const TIER_META: Record<string, { emoji: string; color: string; label: string }>
 };
 
 export default async function BadgesPage() {
-  const s = await dashboardSummary();
+  const profileId = await requireProfileId('/badges');
+  const s = await dashboardSummary(profileId);
   const earned = s.badges.filter((b) => b.earned).length;
 
   return (

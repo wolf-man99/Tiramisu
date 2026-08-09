@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { GraduationCap, Clock, ArrowRight, CircleCheck } from 'lucide-react';
 import { DAYS } from '@/lib/content/curriculum';
-import { prisma, LOCAL_PROFILE_ID } from '@/lib/db';
-import { ensureProfile } from '@/lib/progress/persist';
+import { prisma } from '@/lib/db';
+import { requireProfileId } from '@/lib/auth/server';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, Chip } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils';
@@ -11,8 +11,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export default async function LearnPage() {
-  await ensureProfile();
-  const lessons = await prisma.lessonProgress.findMany({ where: { profileId: LOCAL_PROFILE_ID, status: 'complete' }, select: { dayNumber: true, section: true } });
+  const profileId = await requireProfileId('/learn');
+  const lessons = await prisma.lessonProgress.findMany({ where: { profileId, courseId: 'sql-for-marketers', status: 'complete' }, select: { dayNumber: true, section: true } });
   const perDay = new Map<number, Set<string>>();
   for (const l of lessons) { if (!perDay.has(l.dayNumber)) perDay.set(l.dayNumber, new Set()); perDay.get(l.dayNumber)!.add(l.section); }
   const doneDays = new Set([...perDay.entries()].filter(([, s]) => s.size >= 10).map(([d]) => d));

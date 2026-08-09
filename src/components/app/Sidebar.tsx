@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, GraduationCap, Terminal, Dumbbell, FolderKanban, Briefcase,
   FlaskConical, ScrollText, BookOpen, Layers, Trophy, Brain, BarChart3, Sparkles,
+  ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +13,7 @@ const NAV: { group: string; items: { href: string; label: string; icon: React.Co
   {
     group: 'Learn',
     items: [
-      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/learn', label: 'Curriculum', icon: GraduationCap },
       { href: '/playground', label: 'Playground', icon: Terminal },
       { href: '/practice', label: 'Practice', icon: Dumbbell },
@@ -46,11 +47,11 @@ const NAV: { group: string; items: { href: string; label: string; icon: React.Co
 
 export function Sidebar() {
   const pathname = usePathname();
-  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+  const isActive = (href: string) => (href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href));
 
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-subtle)]">
-      <Link href="/" className="flex items-center gap-2.5 px-5 py-5">
+      <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-5">
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--accent)] shadow-[0_4px_20px_-6px_var(--accent)]">
           <Sparkles size={17} className="text-white" />
         </span>
@@ -58,6 +59,18 @@ export function Sidebar() {
           Growth<span className="text-[var(--accent-text)]">SQL</span>
         </span>
       </Link>
+
+      {/* Current course + switcher */}
+      <div className="px-3 pb-2">
+        <Link href="/courses" className="flex items-center gap-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 transition-colors hover:border-[var(--border-strong)]">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[var(--accent-soft)] text-sm">🗃️</span>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[13px] font-medium">SQL for Marketers</div>
+            <div className="text-[10px] text-[var(--text-faint)]">Switch course</div>
+          </div>
+          <ChevronLeft size={14} className="rotate-180 text-[var(--text-faint)]" />
+        </Link>
+      </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-2">
         {NAV.map((section) => (

@@ -5,6 +5,7 @@ import { PROJECTS } from '@/lib/content/projects';
 import { INTERVIEWS } from '@/lib/content/interviews';
 import { CAPSTONE } from '@/lib/content/capstone';
 import { LABS } from '@/lib/content/labs';
+import { getProfileId } from '@/lib/auth/server';
 
 export const runtime = 'nodejs';
 
@@ -52,17 +53,21 @@ export async function POST(req: Request) {
   const result = grade({ sql, solution: ref.solution, orderMatters: ref.orderMatters });
   const analysis = analyze({ sql, passed: result.passed, compare: result.compare, error: result.error });
 
-  const progress = await recordAttempt({
-    itemType: body.collection,
-    itemId: ref.itemId,
-    sql,
-    passed: result.passed,
-    ms: result.ms,
-    rowsReturned: result.result?.rowCount ?? 0,
-    hintsUsed: body.hintsUsed ?? 0,
-    difficulty: body.collection === 'capstone' || body.collection === 'lab' ? 'expert' : 'hard',
-    today: body.today,
-  });
+  const profileId = await getProfileId();
+  const progress = profileId
+    ? await recordAttempt({
+      profileId,
+      itemType: body.collection,
+      itemId: ref.itemId,
+      sql,
+      passed: result.passed,
+      ms: result.ms,
+      rowsReturned: result.result?.rowCount ?? 0,
+      hintsUsed: body.hintsUsed ?? 0,
+      difficulty: body.collection === 'capstone' || body.collection === 'lab' ? 'expert' : 'hard',
+      today: body.today,
+    })
+    : null;
 
   return Response.json({ ...result, analysis, progress });
 }

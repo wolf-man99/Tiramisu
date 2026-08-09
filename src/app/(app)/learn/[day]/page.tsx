@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { dayByNumber } from '@/lib/content/curriculum';
 import { exerciseById } from '@/lib/content/exercises';
-import { prisma, LOCAL_PROFILE_ID } from '@/lib/db';
-import { ensureProfile } from '@/lib/progress/persist';
+import { prisma } from '@/lib/db';
+import { requireProfileId } from '@/lib/auth/server';
 import { BlockRenderer } from '@/components/content/BlockRenderer';
 import { RunnableSnippet } from '@/components/content/RunnableSnippet';
 import { VisualPanel } from '@/components/content/VisualPanel';
@@ -23,8 +23,8 @@ export default async function DayPage({ params }: { params: Promise<{ day: strin
   const day = dayByNumber(Number(dayParam));
   if (!day) notFound();
 
-  await ensureProfile();
-  const lessons = await prisma.lessonProgress.findMany({ where: { profileId: LOCAL_PROFILE_ID, dayNumber: day.day, status: 'complete' }, select: { section: true } });
+  const profileId = await requireProfileId(`/learn/${day.day}`);
+  const lessons = await prisma.lessonProgress.findMany({ where: { profileId, courseId: 'sql-for-marketers', dayNumber: day.day, status: 'complete' }, select: { section: true } });
   const dayDone = lessons.length >= 10;
 
   return (

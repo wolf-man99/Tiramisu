@@ -2,6 +2,7 @@ import { grade } from '@/lib/grading/grade';
 import { exerciseById } from '@/lib/content/exercises';
 import { recordAttempt } from '@/lib/progress/persist';
 import { analyze } from '@/lib/coach/analyze';
+import { getProfileId } from '@/lib/auth/server';
 
 export const runtime = 'nodejs';
 
@@ -52,11 +53,13 @@ export async function POST(req: Request) {
     hintsUsed: body.hintsUsed,
   });
 
-  // Persist the attempt unless the caller opts out (e.g. sandbox mode).
+  // Persist the attempt for signed-in learners (skipped in anonymous/sandbox use).
+  const profileId = await getProfileId();
   let progress = null;
-  if (body.record !== false) {
+  if (body.record !== false && profileId) {
     progress = await recordAttempt({
-      itemType: body.itemType ?? (ex ? 'exercise' : 'exercise'),
+      profileId,
+      itemType: body.itemType ?? 'exercise',
       itemId: body.itemId ?? body.exerciseId ?? 'unknown',
       sql,
       passed: result.passed,

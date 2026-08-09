@@ -1,9 +1,18 @@
 # GrowthSQL Academy
 
-**Zero to marketing analyst in 14 days.** An interactive web platform that takes a
-Growth / Performance Marketer from no SQL to independently analysing marketing data in
-Google BigQuery — a real editor, a real warehouse, an AI coach, and 300 graded
-exercises, all in one app.
+**A multi-course platform for growth & performance marketers.** Interactive, gamified,
+hands-on courses — starting with **SQL for Marketers** (live now), with **Meta Ads**,
+**Google Ads**, and LinkedIn / Reddit / Snapchat Ads on the way.
+
+Learners sign up (email + password, or Google), and their XP, streaks, badges and
+per-course progress save to their account. A platform-wide leaderboard lets people
+learn together and compete; an invite/share flow brings friends in.
+
+## SQL for Marketers (the first course)
+
+**Zero to marketing analyst in 14 days.** Takes a Growth / Performance Marketer from no
+SQL to independently analysing marketing data in Google BigQuery — a real editor, a real
+warehouse, an AI coach, and 300 graded exercises, all in one app.
 
 Not another SQL tutorial. Every lesson, example and exercise is built on realistic
 Growth / SaaS / e-commerce data: Google, Meta and LinkedIn ads, GA4, HubSpot,
@@ -52,7 +61,18 @@ npm run dev        # runs setup (db + warehouse) then starts on http://localhost
 ```
 
 `predev` / `prebuild` automatically create the SQLite learner DB, seed it, and build the
-marketing warehouse on first run.
+marketing warehouse on first run. The seed creates a ready-to-use demo account:
+
+```
+demo@growthsql.academy  /  demopass123
+```
+
+### Accounts & auth
+
+Sign-in is email + password (scrypt-hashed) with HMAC-signed session cookies — no
+external auth service, fully offline. Optional Google sign-in activates when
+`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are set (see `.env`). Set `AUTH_SECRET` to a
+long random value in production.
 
 ### Optional: the AI mentor
 

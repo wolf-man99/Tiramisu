@@ -1,9 +1,10 @@
 import { PrismaClient } from '../src/generated/prisma';
 import { FLASHCARDS } from '../src/lib/content/flashcards';
+import { hashPassword } from '../src/lib/auth/session';
 
 /**
- * Seeds content-derived rows (flashcards), the simulated leaderboard rivals, and the
- * single local profile. Idempotent — safe to run on every `db:setup`.
+ * Seeds content-derived rows (flashcards), the simulated leaderboard rivals, and a
+ * demo account so the platform is usable out of the box. Idempotent.
  */
 const prisma = new PrismaClient();
 
@@ -64,15 +65,30 @@ async function main() {
   }
 
   // The single local profile.
+  // A ready-to-use demo account with a little progress, so the platform and the
+  // leaderboard are alive on first run.
   await prisma.profile.upsert({
-    where: { id: 'local' },
+    where: { email: 'demo@growthsql.academy' },
     update: {},
-    create: { id: 'local' },
+    create: {
+      email: 'demo@growthsql.academy',
+      passwordHash: hashPassword('demopass123'),
+      provider: 'credentials',
+      displayName: 'Demo Analyst',
+      avatarSeed: 'demo',
+      referralCode: 'demo1234',
+      isDemo: true,
+      xp: 640,
+      level: 4,
+      coins: 64,
+      currentStreak: 3,
+      longestStreak: 3,
+    },
   });
 
   const cards = await prisma.flashcard.count();
   const rivals = await prisma.rival.count();
-  console.log(`Seeded ${cards} flashcards, ${rivals} rivals, 1 profile.`);
+  console.log(`Seeded ${cards} flashcards, ${rivals} rivals, and the demo account (demo@growthsql.academy / demopass123).`);
 }
 
 main()

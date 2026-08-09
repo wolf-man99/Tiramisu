@@ -1,12 +1,16 @@
-import { prisma, LOCAL_PROFILE_ID } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { SECTION_ORDER } from '@/lib/content/types';
-import { ensureProfile } from '@/lib/progress/persist';
+import { ensureEnrollment, DEFAULT_COURSE } from '@/lib/progress/persist';
+import { getProfileId } from '@/lib/auth/server';
 
 export const runtime = 'nodejs';
 
 /** Mark a day's section complete (theory read, quiz done, reflection saved, …). */
 export async function POST(req: Request) {
-  let body: { dayNumber?: number; section?: string; status?: string; score?: number };
+  const profileId = await getProfileId();
+  if (!profileId) return Response.json({ error: 'Not signed in.' }, { status: 401 });
+
+  let body: { dayNumber?: number; section?: string; status?: string; score?: number; courseId?: string };
   try {
     body = await req.json();
   } catch {
@@ -19,12 +23,13 @@ export async function POST(req: Request) {
   if (!SECTION_ORDER.includes(section as (typeof SECTION_ORDER)[number])) {
     return Response.json({ error: `Unknown section: ${section}` }, { status: 400 });
   }
-  await ensureProfile();
+  const courseId = body.courseId ?? DEFAULT_COURSE;
+  await ensureEnrollment(profileId, courseId);
   const status = body.status ?? 'complete';
   const row = await prisma.lessonProgress.upsert({
-    where: { profileId_dayNumber_section: { profileId: LOCAL_PROFILE_ID, dayNumber, section } },
+    where: { profileId_courseId_dayNumber_section: { profileId, courseId, dayNumber, section } },
     update: { status, score: body.score, completedAt: status === 'complete' ? new Date() : null },
-    create: { profileId: LOCAL_PROFILE_ID, dayNumber, section, status, score: body.score, completedAt: status === 'complete' ? new Date() : null },
+    create: { profileId, courseId, dayNumber, section, status, score: body.score, completedAt: status === 'complete' ? new Date() : null },
   });
   return Response.json({ ok: true, lesson: row });
 }
