@@ -43,7 +43,7 @@ export default async function MetaAdsHome() {
               <h1 className="text-2xl font-semibold tracking-tight">Meta Ads Mastery</h1>
               <p className="mt-0.5 text-[var(--text-muted)]">Run Facebook &amp; Instagram ads that actually convert.</p>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[var(--text-subtle)]">
-                <span className="chip border-[var(--warn)]/40 bg-[var(--warn-soft)] text-[var(--warn)]"><Sparkles size={11} /> Beta · new modules dropping</span>
+                <span className="chip border-[var(--warn)]/40 bg-[var(--warn-soft)] text-[var(--warn)]"><Sparkles size={11} /> Full course · 7 modules</span>
                 <span className="flex items-center gap-1"><Clock size={12} /> {META_AVAILABLE_LESSONS} lessons live</span>
                 <span className="flex items-center gap-1"><Zap size={12} /> {META_TOTAL_XP} XP available</span>
               </div>

@@ -8,6 +8,8 @@ export function MetaCalculator({ variant }: { variant: CalcVariant }) {
   if (variant === 'roas') return <RoasCalc />;
   if (variant === 'breakeven-roas') return <BreakevenCalc />;
   if (variant === 'cpa') return <CpaCalc />;
+  if (variant === 'learning-budget') return <LearningBudgetCalc />;
+  if (variant === 'frequency') return <FrequencyCalc />;
   return <BudgetSplit />;
 }
 
@@ -103,6 +105,36 @@ function BudgetSplit() {
       <Result label="Retargeting (30%)" value={`$${Math.round(budget * 0.3).toLocaleString()}`} tone="var(--warn)" />
     </>}>
       <Row label="Monthly budget"><Num value={budget} onChange={setBudget} prefix="$" step={500} /></Row>
+    </Shell>
+  );
+}
+
+function LearningBudgetCalc() {
+  const [cpa, setCpa] = useState(25);
+  const events = 50; // Meta's rule of thumb to exit the learning phase.
+  const weekly = cpa * events;
+  const daily = weekly / 7;
+  return (
+    <Shell results={<>
+      <Result label="Budget / week" value={`$${Math.round(weekly).toLocaleString()}`} tone="var(--accent-text)" />
+      <Result label="Budget / day" value={`$${Math.round(daily).toLocaleString()}`} tone="var(--info)" />
+    </>}>
+      <Row label="Target cost per conversion"><Num value={cpa} onChange={setCpa} prefix="$" /></Row>
+      <p className="pt-2 text-[11px] text-[var(--text-faint)]">An ad set needs ~50 conversions/week to exit learning. Below this budget, it never stabilises — so consolidate ad sets or optimise for a cheaper event.</p>
+    </Shell>
+  );
+}
+
+function FrequencyCalc() {
+  const [impressions, setImpressions] = useState(120000);
+  const [reach, setReach] = useState(40000);
+  const freq = reach > 0 ? impressions / reach : 0;
+  const hot = freq >= 3;
+  return (
+    <Shell results={<Result label="Frequency" value={`${freq.toFixed(1)}×`} tone={hot ? 'var(--danger)' : 'var(--success)'} />}>
+      <Row label="Impressions"><Num value={impressions} onChange={setImpressions} step={5000} /></Row>
+      <Row label="Reach (unique people)"><Num value={reach} onChange={setReach} step={5000} /></Row>
+      <p className="pt-2 text-[11px] text-[var(--text-faint)]">Frequency = impressions ÷ reach. Past ~3× on cold audiences, fatigue sets in — CTR falls and CPMs rise. Refresh creative or widen the audience.</p>
     </Shell>
   );
 }

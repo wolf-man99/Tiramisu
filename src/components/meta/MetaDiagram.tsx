@@ -131,4 +131,63 @@ const DIAGRAMS: Record<DiagramVariant, () => React.ReactElement> = {
       {box(150, 116, 150, 22, 'CTA button', P)}
     </svg>
   ),
+  'creative-formats': () => (
+    <svg viewBox="0 0 320 160" className="w-full"><Defs />
+      <text x="160" y="16" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text)">Pick the canvas that fits the message</text>
+      {box(12, 30, 70, 100, 'Reel', P, '9:16 video')}
+      {box(90, 30, 70, 100, 'Story', W, '9:16 full')}
+      {box(168, 55, 64, 50, 'Image', B, '1:1')}
+      {box(240, 40, 68, 80, 'Carousel', C, 'swipe')}
+      <text x="160" y="150" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">Vertical video is native to feeds and cheapest to reach — start there.</text>
+    </svg>
+  ),
+  'learning-phase': () => (
+    <svg viewBox="0 0 320 160" className="w-full"><Defs />
+      <text x="160" y="16" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text)">The learning phase settles after ~50 events</text>
+      <line x1="30" y1="120" x2="300" y2="120" stroke="var(--border-strong)" strokeWidth="1" />
+      <line x1="30" y1="30" x2="30" y2="120" stroke="var(--border-strong)" strokeWidth="1" />
+      <path d="M30,110 C70,40 90,100 110,70 C130,45 150,95 170,72" fill="none" stroke={`${W}`} strokeWidth="2" />
+      <path d="M170,72 C210,68 260,64 300,62" fill="none" stroke={`${C}`} strokeWidth="2" />
+      <line x1="170" y1="30" x2="170" y2="120" stroke={`${A}88`} strokeWidth="1" strokeDasharray="3 3" />
+      <text x="95" y="44" textAnchor="middle" fontSize="8.5" fill="var(--warn)">Learning · erratic cost</text>
+      <text x="245" y="52" textAnchor="middle" fontSize="8.5" fill="var(--success)">Stable · optimised</text>
+      <text x="170" y="134" textAnchor="middle" fontSize="8.5" fill="var(--accent-text)">~50 conversions / ad set / week</text>
+    </svg>
+  ),
+  'testing-matrix': () => (
+    <svg viewBox="0 0 320 150" className="w-full"><Defs />
+      <text x="160" y="16" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text)">Change ONE variable per test</text>
+      {box(20, 30, 84, 30, 'Same audience', B)}
+      {box(20, 66, 84, 30, 'Same budget', B)}
+      {box(20, 102, 84, 30, 'Same offer', B)}
+      <text x="128" y="90" textAnchor="middle" fontSize="16" fill="var(--text-subtle)">→</text>
+      {box(150, 48, 76, 30, 'Creative A', C)}
+      {box(234, 48, 76, 30, 'Creative B', W)}
+      <text x="188" y="100" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">only this differs</text>
+      <text x="226" y="118" textAnchor="middle" fontSize="8.5" fill="var(--text-subtle)">so the winner is unambiguous</text>
+    </svg>
+  ),
+  'fatigue-curve': () => (
+    <svg viewBox="0 0 320 160" className="w-full"><Defs />
+      <text x="160" y="16" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text)">As frequency climbs, performance fades</text>
+      <line x1="30" y1="120" x2="300" y2="120" stroke="var(--border-strong)" strokeWidth="1" />
+      <line x1="30" y1="30" x2="30" y2="120" stroke="var(--border-strong)" strokeWidth="1" />
+      <path d="M30,105 C90,95 130,80 180,62 C230,46 270,40 300,38" fill="none" stroke={`${B}`} strokeWidth="2" />
+      <text x="150" y="52" fontSize="8.5" fill="var(--info)">CPM / frequency ↑</text>
+      <path d="M30,50 C90,60 140,80 200,98 C240,108 270,112 300,114" fill="none" stroke={`${W}`} strokeWidth="2" />
+      <text x="210" y="90" fontSize="8.5" fill="var(--warn)">CTR / ROAS ↓</text>
+      <text x="165" y="140" textAnchor="middle" fontSize="8.5" fill="var(--text-subtle)">Refresh the creative before the lines cross.</text>
+    </svg>
+  ),
+  'scaling-paths': () => (
+    <svg viewBox="0 0 320 160" className="w-full"><Defs />
+      {box(115, 12, 90, 30, 'A winner', C, 'proven ad set')}
+      {arrow(140, 42, 80, 66, A)} {arrow(180, 42, 240, 66, A)}
+      {box(14, 68, 128, 34, 'Vertical', B, 'raise its budget')}
+      {box(178, 68, 128, 34, 'Horizontal', W, 'duplicate / new audiences')}
+      <text x="78" y="120" textAnchor="middle" fontSize="8.5" fill="var(--text-subtle)">fast, but resets learning</text>
+      <text x="242" y="120" textAnchor="middle" fontSize="8.5" fill="var(--text-subtle)">stable, but more to manage</text>
+      <text x="160" y="146" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">Scale slow enough to keep the algorithm learning.</text>
+    </svg>
+  ),
 };

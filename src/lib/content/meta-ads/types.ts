@@ -15,9 +15,20 @@ export type DiagramVariant =
   | 'audiences'
   | 'cbo'
   | 'creative-anatomy'
-  | 'metrics-flow';
+  | 'metrics-flow'
+  | 'creative-formats'
+  | 'learning-phase'
+  | 'testing-matrix'
+  | 'fatigue-curve'
+  | 'scaling-paths';
 
-export type CalcVariant = 'roas' | 'breakeven-roas' | 'cpa' | 'budget-split';
+export type CalcVariant =
+  | 'roas'
+  | 'breakeven-roas'
+  | 'cpa'
+  | 'budget-split'
+  | 'learning-budget'
+  | 'frequency';
 
 export type MetaCard =
   | { kind: 'teach'; id: string; title?: string; art?: DiagramVariant; blocks: Block[] }
