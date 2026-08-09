@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CircleCheck, Loader } from 'lucide-react';
 import { SECTION_ORDER } from '@/lib/content/types';
 import { Button } from '@/components/ui/primitives';
+import posthog from '@/lib/posthog/client';
 
 /** Marks every section of a day complete — the simple "I finished this day" control. */
 export function LessonComplete({ day, done }: { day: number; done: boolean }) {
@@ -14,17 +15,22 @@ export function LessonComplete({ day, done }: { day: number; done: boolean }) {
 
   const finish = async () => {
     setSaving(true);
-    await Promise.all(
-      SECTION_ORDER.map((section) =>
-        fetch('/api/progress/lesson', {
-          method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ dayNumber: day, section, status: 'complete' }),
-        }),
-      ),
-    );
-    setComplete(true);
-    setSaving(false);
-    router.refresh();
+    try {
+      const results = await Promise.all(
+        SECTION_ORDER.map((section) =>
+          fetch('/api/progress/lesson', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ dayNumber: day, section, status: 'complete' }),
+          }),
+        ),
+      );
+      if (!results.every((result) => result.ok)) return;
+      posthog.capture('lesson_day_completed', { day_number: day });
+      setComplete(true);
+      router.refresh();
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (complete) {

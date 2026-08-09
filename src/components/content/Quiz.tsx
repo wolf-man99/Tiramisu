@@ -5,6 +5,7 @@ import { Check, X, CircleCheck } from 'lucide-react';
 import type { QuizQuestion } from '@/lib/content/types';
 import { CodeBlock } from './BlockRenderer';
 import { cn } from '@/lib/utils';
+import posthog from '@/lib/posthog/client';
 
 /** Interactive quiz: MCQ / predict / debug / explain / order. Self-graded, no scoring pressure. */
 export function Quiz({ questions }: { questions: QuizQuestion[] }) {
@@ -59,7 +60,11 @@ function Question({ q }: { q: QuizQuestion }) {
           return (
             <button
               key={i}
-              onClick={() => picked === null && setPicked(i)}
+              onClick={() => {
+                if (picked !== null) return;
+                posthog.capture('quiz_answered', { question_kind: q.kind, correct: i === q.answer });
+                setPicked(i);
+              }}
               disabled={picked !== null}
               className={cn(
                 'flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-sm transition-colors',

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Sparkles, Loader, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/primitives';
+import posthog from '@/lib/posthog/client';
 
 const ERRORS: Record<string, string> = {
   google_unconfigured: 'Google sign-in isn’t configured on this deployment yet — use email and password.',
@@ -38,8 +39,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email, password, displayName }),
       }).then((r) => r.json());
-      if (res.ok) { router.push(next); router.refresh(); }
-      else setError(res.error ?? 'Please check your details.');
+      if (res.ok) {
+        posthog.capture('account_authenticated', { method: 'password', mode });
+        router.push(next);
+        router.refresh();
+      } else setError(res.error ?? 'Please check your details.');
     } catch { setError('Network error — please try again.'); }
     setLoading(false);
   };

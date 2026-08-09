@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Layers, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { Button, Card } from '@/components/ui/primitives';
+import posthog from '@/lib/posthog/client';
 
 interface Card { id: string; deck: string; front: string; back: string; concept: string }
 
@@ -19,7 +20,9 @@ export function FlashcardReview() {
   const gradeCard = async (grade: number) => {
     if (!cards) return;
     const card = cards[i];
-    await fetch('/api/flashcards', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ cardId: card.id, grade }) });
+    const response = await fetch('/api/flashcards', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ cardId: card.id, grade }) });
+    if (!response.ok) return;
+    posthog.capture('flashcard_reviewed', { deck: card.deck, concept: card.concept, grade });
     setReviewed((r) => r + 1);
     if (i + 1 < cards.length) { setI(i + 1); setFlipped(false); }
     else { setCards([]); }
