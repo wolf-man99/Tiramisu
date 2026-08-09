@@ -10,6 +10,7 @@ import { SESSION_COOKIE } from '@/lib/auth/constants';
 const PROTECTED = [
   '/dashboard', '/learn', '/playground', '/practice', '/projects', '/interviews',
   '/labs', '/capstone', '/cheatsheets', '/glossary', '/flashcards', '/leaderboard', '/badges',
+  '/courses/meta-ads',
 ];
 
 export function middleware(req: NextRequest) {

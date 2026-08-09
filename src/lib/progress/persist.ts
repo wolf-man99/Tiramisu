@@ -25,6 +25,8 @@ export interface RecordAttemptInput {
   difficulty?: Difficulty; // resolved from the exercise when omitted
   concepts?: string[];
   diagnosis?: string;
+  /** Flat XP to award instead of the difficulty-derived value (e.g. course lessons). */
+  xpOverride?: number;
   /** Today's date (ISO) in the profile's timezone. Defaults to server UTC date. */
   today?: string;
 }
@@ -79,7 +81,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
       where: { profileId: profile.id, courseId, itemId: input.itemId, itemType: input.itemType, passed: true },
     });
     const xpAwarded = input.passed && alreadyPassed === 0
-      ? xpForPass({ difficulty, attemptNumber: priorAttempts + 1, hintsUsed, revealed, firstTry })
+      ? (input.xpOverride ?? xpForPass({ difficulty, attemptNumber: priorAttempts + 1, hintsUsed, revealed, firstTry }))
       : 0;
     const coinsAwarded = coinsForXp(xpAwarded);
 

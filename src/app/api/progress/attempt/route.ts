@@ -14,10 +14,12 @@ export async function POST(req: Request) {
   let body: {
     itemType?: string;
     itemId?: string;
+    courseId?: string;
     passed?: boolean;
     difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
     concepts?: string[];
     ms?: number;
+    xpOverride?: number;
     today?: string;
   };
   try {
@@ -30,6 +32,7 @@ export async function POST(req: Request) {
   }
   const progress = await recordAttempt({
     profileId,
+    courseId: body.courseId,
     itemType: body.itemType,
     itemId: body.itemId,
     sql: '',
@@ -37,6 +40,7 @@ export async function POST(req: Request) {
     ms: body.ms ?? 0,
     difficulty: body.difficulty,
     concepts: body.concepts,
+    xpOverride: typeof body.xpOverride === 'number' ? Math.max(0, Math.min(500, body.xpOverride)) : undefined,
     today: body.today,
   });
   return Response.json({ ok: true, progress });
