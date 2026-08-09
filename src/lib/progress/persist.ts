@@ -43,17 +43,27 @@ export interface RecordAttemptResult {
   totalXp: number;
   streak: { current: number; longest: number; freezes: number; extended: boolean; freezeUsed: boolean };
   newBadges: Badge[];
+  isNewEnrollment?: boolean;
+  newLevel?: number;
 }
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
 /** Ensure the learner is enrolled in a course (idempotent), bumping last-active. */
 export async function ensureEnrollment(profileId: string, courseId = DEFAULT_COURSE) {
-  return prisma.enrollment.upsert({
+  const existing = await prisma.enrollment.findUnique({
+    where: { profileId_courseId: { profileId, courseId } },
+  });
+
+  const isNew = !existing;
+
+  const enrollment = await prisma.enrollment.upsert({
     where: { profileId_courseId: { profileId, courseId } },
     update: { lastActive: new Date() },
     create: { profileId, courseId },
   });
+
+  return { enrollment, isNew };
 }
 
 export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAttemptResult> {
@@ -65,7 +75,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
   const difficulty: Difficulty = input.difficulty ?? ex?.difficulty ?? 'medium';
   const concepts = input.concepts ?? ex?.concepts ?? [];
 
-  await ensureEnrollment(input.profileId, courseId);
+  const { isNew: isNewEnrollment } = await ensureEnrollment(input.profileId, courseId);
 
   return prisma.$transaction(async (tx) => {
     const profile = await tx.profile.findUniqueOrThrow({ where: { id: input.profileId } });
@@ -206,6 +216,8 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
         freezeUsed: streak.freezeUsed,
       },
       newBadges: fresh,
+      isNewEnrollment,
+      newLevel: level > oldLevel ? level : undefined,
     };
   });
 }

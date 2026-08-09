@@ -6,6 +6,7 @@ import { INTERVIEWS } from '@/lib/content/interviews';
 import { CAPSTONE } from '@/lib/content/capstone';
 import { LABS } from '@/lib/content/labs';
 import { getProfileId } from '@/lib/auth/server';
+import { captureEvent } from '@/lib/analytics/server';
 
 export const runtime = 'nodejs';
 
@@ -68,6 +69,47 @@ export async function POST(req: Request) {
       today: body.today,
     })
     : null;
+
+  if (profileId && progress) {
+    await captureEvent(profileId, 'task_submitted', {
+      collection: body.collection,
+      slug: body.slug,
+      taskId: body.taskId,
+      itemId: ref.itemId,
+      passed: result.passed,
+      ms: result.ms,
+      hintsUsed: body.hintsUsed ?? 0,
+    });
+
+    if (result.passed) {
+      await captureEvent(profileId, 'task_passed', {
+        collection: body.collection,
+        slug: body.slug,
+        ms: result.ms,
+      });
+
+      if (progress?.xpAwarded && progress.xpAwarded > 0) {
+        await captureEvent(profileId, 'xp_earned', {
+          amount: progress.xpAwarded,
+          source: body.collection,
+          itemId: ref.itemId,
+        });
+      }
+
+      if (progress?.leveledUp) {
+        await captureEvent(profileId, 'level_up', {
+          newLevel: progress.newLevel,
+          totalXp: progress.totalXp,
+        });
+      }
+    } else {
+      await captureEvent(profileId, 'task_failed', {
+        collection: body.collection,
+        slug: body.slug,
+        ms: result.ms,
+      });
+    }
+  }
 
   return Response.json({ ...result, analysis, progress });
 }
