@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Lock, Check } from 'lucide-react';
 import { type Course, STATUS_LABEL } from '@/lib/courses/registry';
 import { Card } from '@/components/ui/primitives';
+import { CourseLogo } from '@/components/app/CourseLogo';
 import { cn } from '@/lib/utils';
 
 const STATUS_STYLE: Record<Course['status'], string> = {
@@ -21,8 +22,8 @@ export function CourseCard({ course }: { course: Course }) {
       {/* A flat colour band along the top — no blur, just a block of colour. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5" style={{ background: course.accent }} />
       <div className="relative flex items-start justify-between">
-        <span className="grid h-12 w-12 place-items-center rounded-xl border-2 border-[var(--ink)] text-2xl" style={{ background: `${course.accent}2e` }}>
-          {course.emoji}
+        <span className="grid h-12 w-12 place-items-center rounded-xl border-2 border-[var(--ink)]" style={{ background: `${course.accent}2e` }}>
+          <CourseLogo courseId={course.id} emoji={course.emoji} size={48} />
         </span>
         <span className={cn('chip', STATUS_STYLE[course.status])}>
           {course.status === 'live' && <Check size={11} />}

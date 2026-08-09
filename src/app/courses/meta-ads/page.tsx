@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { requireProfileId } from '@/lib/auth/server';
 import { ensureEnrollment } from '@/lib/progress/persist';
 import { Card, Progress } from '@/components/ui/primitives';
+import { CourseLogo } from '@/components/app/CourseLogo';
 import { cn } from '@/lib/utils';
 
 export const runtime = 'nodejs';
@@ -38,7 +39,9 @@ export default async function MetaAdsHome() {
         {/* Hero */}
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] bg-white text-3xl shadow-[3px_3px_0_var(--blue)]">📘</span>
+            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--blue)]" style={{ background: 'color-mix(in srgb, var(--blue) 18%, white)' }}>
+              <CourseLogo courseId="meta-ads" emoji="📘" size={64} />
+            </span>
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight">Meta Ads Mastery</h1>
               <p className="mt-0.5 text-[var(--text-muted)]">Run Facebook &amp; Instagram ads that actually convert.</p>

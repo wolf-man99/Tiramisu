@@ -4,6 +4,7 @@ import { Sparkles, ArrowLeft, Check, Clock, Bell, Bot, Zap, Trophy, Share2 } fro
 import { courseBySlug, STATUS_LABEL } from '@/lib/courses/registry';
 import { getProfileId } from '@/lib/auth/server';
 import { Button, Card, Chip } from '@/components/ui/primitives';
+import { CourseLogo } from '@/components/app/CourseLogo';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         <Link href="/courses" className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> All courses</Link>
 
         <div className="flex items-start gap-4">
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] text-3xl shadow-[3px_3px_0_var(--ink)]" style={{ background: `${course.accent}2e` }}>{course.emoji}</span>
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]" style={{ background: `${course.accent}2e` }}>
+            <CourseLogo courseId={course.id} emoji={course.emoji} size={64} />
+          </span>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-display text-3xl font-extrabold tracking-tight">{course.title}</h1>
