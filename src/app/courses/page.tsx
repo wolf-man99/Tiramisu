@@ -18,8 +18,8 @@ export default async function CoursesPage() {
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)]"><Sparkles size={17} className="text-white" /></span>
-            <span className="text-[15px] font-semibold tracking-tight">Growth<span className="text-[var(--accent-text)]">SQL</span> Academy</span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)] shadow-[3px_3px_0_var(--ink)]"><Sparkles size={17} className="text-white" /></span>
+            <span className="font-display text-[17px] font-extrabold tracking-tight">Tiramisu</span>
           </Link>
           {authed
             ? <Link href="/dashboard"><Button size="sm">Dashboard</Button></Link>
@@ -29,7 +29,7 @@ export default async function CoursesPage() {
 
       <div className="mx-auto max-w-6xl px-5 py-10 md:px-8">
         <Link href="/" className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> Home</Link>
-        <h1 className="text-3xl font-semibold tracking-tight">All courses</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">All courses</h1>
         <p className="mt-1 text-[var(--text-muted)]">One platform for the whole growth stack. Take a course, or bundle several as they launch.</p>
 
         {byCategory.map((cat) => {

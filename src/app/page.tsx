@@ -59,7 +59,7 @@ export default async function LandingPage() {
             { icon: <Terminal size={18} />, label: 'Real tools, in-browser', tint: 'var(--blue)' },
             { icon: <Bot size={18} />, label: 'AI coach on every task', tint: 'var(--purple)' },
             { icon: <Zap size={18} />, label: 'XP, streaks & levels', tint: 'var(--amber)' },
-            { icon: <Trophy size={18} />, label: 'Compete on leaderboards', tint: 'var(--teal)' },
+            { icon: <Trophy size={18} />, label: 'Compete on leaderboards', tint: 'var(--green)' },
           ].map((f) => (
             <div key={f.label} className="flex flex-col items-center gap-2 rounded-[14px] border-2 border-[var(--ink)] bg-white p-4 shadow-[3px_3px_0_var(--ink)]">
               <span className="grid h-9 w-9 place-items-center rounded-lg border-2 border-[var(--ink)] text-white" style={{ background: f.tint }}>{f.icon}</span>

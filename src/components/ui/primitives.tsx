@@ -15,7 +15,7 @@ const BUTTON_VARIANT: Record<ButtonVariant, string> = {
   secondary: 'bg-white text-[var(--ink)] shadow-[3px_3px_0_var(--ink)]',
   ghost: 'border-transparent shadow-none text-[var(--text-muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-3)]',
   danger: 'bg-[var(--red)] text-white shadow-[3px_3px_0_var(--ink)]',
-  success: 'bg-[var(--teal)] text-white shadow-[3px_3px_0_var(--ink)]',
+  success: 'bg-[var(--green)] text-white shadow-[3px_3px_0_var(--ink)]',
 };
 const BUTTON_SIZE: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-[13px] gap-1.5',

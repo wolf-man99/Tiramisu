@@ -61,7 +61,7 @@ export function Sidebar() {
       {/* Current course + switcher */}
       <div className="px-3 pb-2">
         <Link href="/courses" className="flex items-center gap-2.5 rounded-[10px] border-2 border-[var(--ink)] bg-[var(--surface)] px-3 py-2 shadow-[3px_3px_0_var(--ink)] transition-all hover:-translate-x-px hover:-translate-y-px">
-          <span className="grid h-7 w-7 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--amber)] text-sm">🗃️</span>
+          <span className="grid h-7 w-7 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)] text-sm">🗃️</span>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[13px] font-bold">SQL for Marketers</div>
             <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">Switch course</div>
@@ -100,7 +100,7 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t-2 border-[var(--ink)] p-3">
-        <div className="rounded-[10px] border-2 border-[var(--ink)] bg-[var(--teal)] p-3 text-xs font-semibold text-white">
+        <div className="rounded-[10px] border-2 border-[var(--ink)] bg-[var(--green)] p-3 text-xs font-semibold text-white">
           <span className="font-extrabold">Zero to analyst</span> in 14 days — one query at a time.
         </div>
       </div>

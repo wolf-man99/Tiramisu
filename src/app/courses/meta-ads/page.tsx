@@ -30,7 +30,7 @@ export default async function MetaAdsHome() {
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-5 md:px-8">
           <Link href="/dashboard" className="flex items-center gap-1.5 text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> Platform</Link>
-          <span className="flex items-center gap-1.5 rounded-full border-2 border-[var(--ink)] bg-[var(--amber)] px-3 py-1 text-[13px] font-bold text-[var(--ink)]"><Zap size={13} /> {profile.xp} XP · Lvl {profile.level}</span>
+          <span className="flex items-center gap-1.5 rounded-full border-2 border-[var(--ink)] bg-[var(--blue)] px-3 py-1 text-[13px] font-bold text-white"><Zap size={13} /> {profile.xp} XP · Lvl {profile.level}</span>
         </div>
       </header>
 
@@ -84,7 +84,7 @@ export default async function MetaAdsHome() {
                     return (
                       <Link key={l.slug} href={`/courses/meta-ads/${l.slug}`}>
                         <Card hover className="flex items-center gap-3 p-3.5">
-                          <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-lg border-2 border-[var(--ink)] text-xs font-bold', complete ? 'bg-[var(--teal)] text-white' : 'bg-white text-[var(--ink)]')}>
+                          <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-lg border-2 border-[var(--ink)] text-xs font-bold', complete ? 'bg-[var(--green)] text-white' : 'bg-white text-[var(--ink)]')}>
                             {complete ? <Check size={16} /> : <Play size={13} />}
                           </span>
                           <div className="min-w-0 flex-1">

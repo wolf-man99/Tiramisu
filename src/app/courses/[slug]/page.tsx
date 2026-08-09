@@ -23,8 +23,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 md:px-8">
           <Link href="/courses" className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)]"><Sparkles size={17} className="text-white" /></span>
-            <span className="text-[15px] font-semibold tracking-tight">Growth<span className="text-[var(--accent-text)]">SQL</span> Academy</span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)] shadow-[3px_3px_0_var(--ink)]"><Sparkles size={17} className="text-white" /></span>
+            <span className="font-display text-[17px] font-extrabold tracking-tight">Tiramisu</span>
           </Link>
           {authed ? <Link href="/dashboard"><Button size="sm">Dashboard</Button></Link> : <Link href="/signup"><Button size="sm">Get started</Button></Link>}
         </div>
@@ -34,13 +34,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         <Link href="/courses" className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> All courses</Link>
 
         <div className="flex items-start gap-4">
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-3xl" style={{ background: `${course.accent}1a`, border: `1px solid ${course.accent}33` }}>{course.emoji}</span>
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] text-3xl shadow-[3px_3px_0_var(--ink)]" style={{ background: `${course.accent}2e` }}>{course.emoji}</span>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-semibold tracking-tight">{course.title}</h1>
-              <Chip style={{ color: course.accent, borderColor: `${course.accent}55` }}>{STATUS_LABEL[course.status]}</Chip>
+              <h1 className="font-display text-3xl font-extrabold tracking-tight">{course.title}</h1>
+              <Chip style={{ color: course.accent }}>{STATUS_LABEL[course.status]}</Chip>
             </div>
-            <p className="mt-1 text-lg" style={{ color: course.accent }}>{course.tagline}</p>
+            <p className="mt-1 text-lg font-bold" style={{ color: course.accent }}>{course.tagline}</p>
           </div>
         </div>
 
@@ -96,15 +96,15 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         {/* Why this platform */}
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
           {[
-            { icon: <Bot size={17} />, t: 'AI coach', d: 'Feedback and hints on every task.' },
-            { icon: <Zap size={17} />, t: 'Gamified', d: 'XP, streaks, levels and badges.' },
-            { icon: <Trophy size={17} />, t: 'Competitive', d: 'Climb the platform leaderboard.' },
+            { icon: <Bot size={17} />, t: 'AI coach', d: 'Feedback and hints on every task.', tint: 'var(--purple)' },
+            { icon: <Zap size={17} />, t: 'Gamified', d: 'XP, streaks, levels and badges.', tint: 'var(--amber)' },
+            { icon: <Trophy size={17} />, t: 'Competitive', d: 'Climb the platform leaderboard.', tint: 'var(--green)' },
           ].map((f) => (
-            <div key={f.t} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-              <span className="text-[var(--accent-text)]">{f.icon}</span>
-              <div className="mt-2 text-sm font-semibold">{f.t}</div>
+            <Card key={f.t} className="p-4">
+              <span className="grid h-9 w-9 place-items-center rounded-lg border-2 border-[var(--ink)] text-white" style={{ background: f.tint }}>{f.icon}</span>
+              <div className="mt-2.5 text-sm font-bold">{f.t}</div>
               <p className="text-xs text-[var(--text-muted)]">{f.d}</p>
-            </div>
+            </Card>
           ))}
         </div>
 

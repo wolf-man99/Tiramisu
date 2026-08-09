@@ -6,6 +6,13 @@
  * Payments are deliberately out of scope for now, but the shape is ready: `price`,
  * `bundleEligible` and the Enrollment.access field let paid courses and bundle offers
  * drop in without a schema change.
+ *
+ * Each course's `accent` is one slot in Tiramisu's six-colour system (see the
+ * comment atop globals.css): every course owns exactly one hue, and no two
+ * courses share one — purple/SQL, blue/Meta, green/Google, teal/LinkedIn,
+ * red/Reddit, amber/Snapchat. Blue and purple additionally carry a
+ * non-course job (the flagship platform action colour, and AI-coach
+ * features) but that only shows up outside the catalog.
  */
 
 export type CourseStatus = 'live' | 'in-progress' | 'coming-soon';
@@ -78,7 +85,7 @@ export const COURSES: Course[] = [
     description: 'Capture demand where it lives. Search, Shopping and Performance Max, from keyword match types to bidding strategy.',
     status: 'coming-soon',
     emoji: '🔍',
-    accent: '#17a398',
+    accent: '#1e8e4a',
     category: 'Paid media',
     href: '/courses/google-ads',
     level: 'Beginner → Advanced',
@@ -95,7 +102,7 @@ export const COURSES: Course[] = [
     description: 'The most expensive clicks in advertising — spent well. Targeting, sponsored content, and lead gen for B2B.',
     status: 'coming-soon',
     emoji: '💼',
-    accent: '#045099',
+    accent: '#17a398',
     category: 'Paid media',
     href: '/courses/linkedin-ads',
     level: 'Intermediate',

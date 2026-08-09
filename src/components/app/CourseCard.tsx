@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils';
 
 const STATUS_STYLE: Record<Course['status'], string> = {
-  live: 'text-white bg-[var(--teal)]',
+  live: 'text-white bg-[var(--green)]',
   'in-progress': 'text-[var(--ink)] bg-[var(--amber)]',
   'coming-soon': 'text-[var(--text-muted)] bg-[var(--surface-3)]',
 };
