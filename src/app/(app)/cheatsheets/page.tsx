@@ -3,7 +3,7 @@ import { CHEATSHEETS } from '@/lib/content/cheatsheets';
 import { PageHeader } from '@/components/app/PageHeader';
 import { CheatsheetTabs } from '@/components/content/CheatsheetTabs';
 
-export const metadata = { title: 'Cheatsheets — GrowthSQL Academy' };
+export const metadata = { title: 'Cheatsheets — Tiramisu' };
 
 export default function CheatsheetsPage() {
   return (

@@ -50,23 +50,21 @@ export function Sidebar() {
   const isActive = (href: string) => (href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href));
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-subtle)]">
+    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r-2 border-[var(--ink)] bg-[var(--bg-subtle)]">
       <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-5">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--accent)] shadow-[0_4px_20px_-6px_var(--accent)]">
-          <Sparkles size={17} className="text-white" />
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-[var(--purple)] border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]">
+          <Sparkles size={18} className="text-white" />
         </span>
-        <span className="text-[15px] font-semibold tracking-tight">
-          Growth<span className="text-[var(--accent-text)]">SQL</span>
-        </span>
+        <span className="font-display text-[19px] font-extrabold tracking-tight">Tiramisu</span>
       </Link>
 
       {/* Current course + switcher */}
       <div className="px-3 pb-2">
-        <Link href="/courses" className="flex items-center gap-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 transition-colors hover:border-[var(--border-strong)]">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[var(--accent-soft)] text-sm">🗃️</span>
+        <Link href="/courses" className="flex items-center gap-2.5 rounded-[10px] border-2 border-[var(--ink)] bg-[var(--surface)] px-3 py-2 shadow-[3px_3px_0_var(--ink)] transition-all hover:-translate-x-px hover:-translate-y-px">
+          <span className="grid h-7 w-7 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--amber)] text-sm">🗃️</span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-medium">SQL for Marketers</div>
-            <div className="text-[10px] text-[var(--text-faint)]">Switch course</div>
+            <div className="truncate text-[13px] font-bold">SQL for Marketers</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">Switch course</div>
           </div>
           <ChevronLeft size={14} className="rotate-180 text-[var(--text-faint)]" />
         </Link>
@@ -75,9 +73,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-2">
         {NAV.map((section) => (
           <div key={section.group}>
-            <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">
-              {section.group}
-            </div>
+            <div className="px-3 pb-1.5 eyebrow">{section.group}</div>
             <div className="space-y-0.5">
               {section.items.map((item) => {
                 const active = isActive(item.href);
@@ -87,13 +83,13 @@ export function Sidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                      'flex items-center gap-3 rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all',
                       active
-                        ? 'bg-[var(--accent-soft)] text-[var(--accent-text)] font-medium'
-                        : 'text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]',
+                        ? 'border-[var(--ink)] bg-[var(--ink)] font-bold text-white'
+                        : 'border-transparent text-[var(--text-muted)] hover:border-[var(--ink)] hover:bg-white hover:text-[var(--ink)]',
                     )}
                   >
-                    <Icon size={17} className={active ? 'text-[var(--accent-text)]' : 'text-[var(--text-subtle)]'} />
+                    <Icon size={17} className={active ? 'text-white' : 'text-[var(--text-subtle)]'} />
                     {item.label}
                   </Link>
                 );
@@ -103,9 +99,9 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-[var(--border)] p-3">
-        <div className="rounded-lg bg-[var(--surface)] p-3 text-xs text-[var(--text-muted)]">
-          <span className="font-medium text-[var(--text)]">Zero to analyst</span> in 14 days — one query at a time.
+      <div className="border-t-2 border-[var(--ink)] p-3">
+        <div className="rounded-[10px] border-2 border-[var(--ink)] bg-[var(--teal)] p-3 text-xs font-semibold text-white">
+          <span className="font-extrabold">Zero to analyst</span> in 14 days — one query at a time.
         </div>
       </div>
     </aside>

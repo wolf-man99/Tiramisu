@@ -4,7 +4,7 @@ import { LABS } from '@/lib/content/labs';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, Chip } from '@/components/ui/primitives';
 
-export const metadata = { title: 'BigQuery Labs — GrowthSQL Academy' };
+export const metadata = { title: 'BigQuery Labs — Tiramisu' };
 
 export default function LabsPage() {
   return (

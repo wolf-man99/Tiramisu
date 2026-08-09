@@ -32,7 +32,7 @@ export function ShareButton() {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch { /* ignore */ }
   };
 
-  const text = encodeURIComponent("I'm learning SQL for marketing on GrowthSQL Academy — come compete with me! 🚀");
+  const text = encodeURIComponent("I'm learning SQL for marketing on Tiramisu — come compete with me! 🚀");
   const url = encodeURIComponent(link);
 
   return (

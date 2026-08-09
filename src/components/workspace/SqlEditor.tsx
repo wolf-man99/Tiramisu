@@ -1,7 +1,11 @@
 'use client';
 
 import { useRef } from 'react';
-import Editor, { type OnMount } from '@monaco-editor/react';
+import Editor, { type OnMount, loader } from '@monaco-editor/react';
+
+// Serve Monaco from our own /public copy instead of the default CDN, so the
+// editor works offline and matches the monaco-editor version we depend on.
+loader.config({ paths: { vs: '/monaco/vs' } });
 
 /** Monaco, themed to match the app, with BigQuery-flavoured SQL highlighting. */
 export function SqlEditor({
@@ -21,30 +25,31 @@ export function SqlEditor({
   runRef.current = onRun;
 
   const handleMount: OnMount = (editor, monaco) => {
-    monaco.editor.defineTheme('growthsql', {
-      base: 'vs-dark',
+    // Light theme on cream, matching the Tiramisu palette.
+    monaco.editor.defineTheme('tiramisu', {
+      base: 'vs',
       inherit: true,
       rules: [
-        { token: 'keyword', foreground: 'b3a9ff', fontStyle: 'bold' },
-        { token: 'string.sql', foreground: '34d399' },
-        { token: 'number.sql', foreground: 'fbbf24' },
-        { token: 'operator.sql', foreground: '60a5fa' },
-        { token: 'comment', foreground: '52525f', fontStyle: 'italic' },
-        { token: 'predefined.sql', foreground: '22d3ee' },
+        { token: 'keyword', foreground: '6c3bff', fontStyle: 'bold' },
+        { token: 'string.sql', foreground: '0f8f74' },
+        { token: 'number.sql', foreground: 'b46f04' },
+        { token: 'operator.sql', foreground: '045099' },
+        { token: 'comment', foreground: '8d9aa6', fontStyle: 'italic' },
+        { token: 'predefined.sql', foreground: '17a398' },
       ],
       colors: {
-        'editor.background': '#0c0c11',
-        'editor.foreground': '#ededf2',
-        'editorLineNumber.foreground': '#33333f',
-        'editorLineNumber.activeForeground': '#a1a1b0',
-        'editor.selectionBackground': '#7c6cf633',
-        'editor.lineHighlightBackground': '#17171f',
-        'editorCursor.foreground': '#7c6cf6',
-        'editorIndentGuide.background1': '#1e1e28',
-        'editorGutter.background': '#0c0c11',
+        'editor.background': '#fbf8f2',
+        'editor.foreground': '#0f2438',
+        'editorLineNumber.foreground': '#b3bcc4',
+        'editorLineNumber.activeForeground': '#0f2438',
+        'editor.selectionBackground': '#f5a62366',
+        'editor.lineHighlightBackground': '#f1e9da',
+        'editorCursor.foreground': '#0f2438',
+        'editorIndentGuide.background1': '#e6ddcc',
+        'editorGutter.background': '#fbf8f2',
       },
     });
-    monaco.editor.setTheme('growthsql');
+    monaco.editor.setTheme('tiramisu');
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runRef.current?.());
   };
 
@@ -54,7 +59,7 @@ export function SqlEditor({
       defaultLanguage="sql"
       language="sql"
       value={value}
-      theme="growthsql"
+      theme="tiramisu"
       onChange={(v) => onChange(v ?? '')}
       onMount={handleMount}
       loading={<div className="p-4 text-sm text-[var(--text-subtle)]">Loading editor…</div>}

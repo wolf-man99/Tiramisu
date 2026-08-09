@@ -19,6 +19,8 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
       "src/generated/**",
+      // Vendored Monaco bundle, copied from node_modules by `npm run monaco`.
+      "public/monaco/**",
     ],
   },
 ];

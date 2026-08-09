@@ -58,7 +58,7 @@ export function LessonPlayer({ lesson, nextSlug }: { lesson: MetaLesson; nextSlu
     return (
       <div className="mx-auto max-w-lg px-5 py-16 text-center">
         <div className="animate-fade-up">
-          <span className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-[var(--accent-soft)] glow-accent"><PartyPopper size={30} className="text-[var(--accent-text)]" /></span>
+          <span className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border-2 border-[var(--ink)] bg-[var(--amber)] shadow-[3px_3px_0_var(--ink)]"><PartyPopper size={30} className="text-[var(--ink)]" /></span>
           <h1 className="text-2xl font-semibold tracking-tight">Lesson complete!</h1>
           <p className="mt-2 text-[var(--text-muted)]">{lesson.title}</p>
           <div className="mx-auto mt-6 grid max-w-xs grid-cols-2 gap-3">
@@ -100,7 +100,7 @@ export function LessonPlayer({ lesson, nextSlug }: { lesson: MetaLesson; nextSlu
       </div>
 
       {/* Controls */}
-      <div className="sticky bottom-0 mt-6 flex items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--bg)]/80 py-4 backdrop-blur">
+      <div className="sticky bottom-0 mt-6 flex items-center justify-between gap-3 border-t-2 border-[var(--ink)] bg-[var(--bg)] py-4">
         <Button variant="ghost" size="sm" onClick={() => setI(Math.max(0, i - 1))} disabled={i === 0}><ArrowLeft size={15} /> Back</Button>
         <Button size="lg" onClick={next} disabled={!canContinue || saving}>
           {saving ? <Loader size={16} className="animate-spin" /> : null}

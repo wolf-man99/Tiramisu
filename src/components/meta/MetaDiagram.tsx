@@ -5,7 +5,7 @@ export function MetaDiagram({ variant }: { variant: DiagramVariant }) {
   const D = DIAGRAMS[variant];
   if (!D) return null;
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-4">
+    <div className="overflow-hidden rounded-[14px] border-2 border-[var(--ink)] bg-white p-4 shadow-[3px_3px_0_var(--ink)]">
       <D />
     </div>
   );
@@ -13,27 +13,28 @@ export function MetaDiagram({ variant }: { variant: DiagramVariant }) {
 
 const box = (x: number, y: number, w: number, h: number, label: string, color: string, sub?: string) => (
   <g>
-    <rect x={x} y={y} width={w} height={h} rx="8" fill={`${color}1a`} stroke={`${color}66`} />
+    <rect x={x} y={y} width={w} height={h} rx="8" fill={`${color}2e`} stroke="var(--ink)" strokeWidth="1.5" />
     <text x={x + w / 2} y={y + (sub ? h / 2 - 4 : h / 2 + 4)} textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--text)">{label}</text>
     {sub && <text x={x + w / 2} y={y + h / 2 + 11} textAnchor="middle" fontSize="8.5" fill="var(--text-subtle)">{sub}</text>}
   </g>
 );
 
-const arrow = (x1: number, y1: number, x2: number, y2: number, color = 'var(--border-strong)') => (
-  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1.5" markerEnd="url(#m-arrow)" />
+const arrow = (x1: number, y1: number, x2: number, y2: number, color = 'var(--ink)') => (
+  <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1.75" markerEnd="url(#m-arrow)" />
 );
 
 function Defs() {
   return (
     <defs>
       <marker id="m-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-        <path d="M0,0 L6,3.5 L0,7 Z" fill="var(--border-strong)" />
+        <path d="M0,0 L6,3.5 L0,7 Z" fill="var(--ink)" />
       </marker>
     </defs>
   );
 }
 
-const A = '#7c6cf6', B = '#3b82f6', C = '#34d399', W = '#fbbf24', P = '#f472b6';
+/* Tiramisu palette: purple, blue, teal, amber, red. */
+const A = '#6c3bff', B = '#045099', C = '#17a398', W = '#f5a623', P = '#e51f27';
 
 const DIAGRAMS: Record<DiagramVariant, () => React.ReactElement> = {
   'campaign-structure': () => (

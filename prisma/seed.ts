@@ -64,14 +64,18 @@ async function main() {
     });
   }
 
-  // The single local profile.
   // A ready-to-use demo account with a little progress, so the platform and the
   // leaderboard are alive on first run.
+  // Drop any earlier demo row first: it holds the same referralCode, so a rename
+  // of the demo email would otherwise collide on that unique column.
+  await prisma.profile.deleteMany({
+    where: { isDemo: true, email: { not: 'demo@tiramisu.academy' } },
+  });
   await prisma.profile.upsert({
-    where: { email: 'demo@growthsql.academy' },
+    where: { email: 'demo@tiramisu.academy' },
     update: {},
     create: {
-      email: 'demo@growthsql.academy',
+      email: 'demo@tiramisu.academy',
       passwordHash: hashPassword('demopass123'),
       provider: 'credentials',
       displayName: 'Demo Analyst',
@@ -88,7 +92,7 @@ async function main() {
 
   const cards = await prisma.flashcard.count();
   const rivals = await prisma.rival.count();
-  console.log(`Seeded ${cards} flashcards, ${rivals} rivals, and the demo account (demo@growthsql.academy / demopass123).`);
+  console.log(`Seeded ${cards} flashcards, ${rivals} rivals, and the demo account (demo@tiramisu.academy / demopass123).`);
 }
 
 main()

@@ -1,9 +1,9 @@
 {
-  "name": "growthsql-academy",
+  "name": "tiramisu",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "setup": "npm run db:setup && npm run warehouse",
+    "setup": "npm run db:setup && npm run warehouse && npm run monaco",
     "warehouse": "tsx scripts/build-warehouse.ts",
     "db:setup": "prisma db push --skip-generate --accept-data-loss && tsx prisma/seed.ts",
     "predev": "npm run setup",
@@ -16,7 +16,8 @@
     "smoke": "tsx scripts/smoke.ts",
     "validate:content": "tsx scripts/validate-content.ts",
     "check": "npm run typecheck && npm run lint && npm run smoke && npm run validate:content",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "monaco": "tsx scripts/copy-monaco.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

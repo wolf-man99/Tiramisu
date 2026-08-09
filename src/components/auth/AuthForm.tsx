@@ -47,16 +47,16 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   return (
     <div className="w-full max-w-sm">
       <Link href="/" className="mb-8 flex items-center justify-center gap-2.5">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent)] shadow-[0_4px_20px_-6px_var(--accent)]"><Sparkles size={18} className="text-white" /></span>
-        <span className="text-lg font-semibold tracking-tight">Growth<span className="text-[var(--accent-text)]">SQL</span></span>
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--purple)] border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]"><Sparkles size={19} className="text-white" /></span>
+        <span className="font-display text-2xl font-extrabold tracking-tight">Tiramisu</span>
       </Link>
 
       <div className="card p-6">
-        <h1 className="text-xl font-semibold tracking-tight">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">{mode === 'signup' ? 'Start learning in under a minute — your progress saves automatically.' : 'Sign in to pick up where you left off.'}</p>
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-[var(--danger-soft)] bg-[var(--danger-soft)] p-3 text-sm text-[var(--danger)]">
+          <div className="mt-4 flex items-start gap-2 rounded-lg border-2 border-[var(--ink)] bg-[var(--danger-soft)] p-3 text-sm font-semibold text-[var(--danger)]">
             <AlertCircle size={15} className="mt-0.5 shrink-0" /> {error}
           </div>
         )}
@@ -99,14 +99,14 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
 function Field({ label, value, onChange, placeholder, type, required }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; type: string; required?: boolean }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{label}</span>
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--text-muted)]">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] px-3 text-sm outline-none transition-colors placeholder:text-[var(--text-faint)] focus:border-[var(--accent-border)]"
+        className="h-11 w-full rounded-lg border-2 border-[var(--ink)] bg-white px-3 text-sm font-medium outline-none transition-all placeholder:font-normal placeholder:text-[var(--text-faint)] focus:shadow-[3px_3px_0_var(--blue)]"
       />
     </label>
   );

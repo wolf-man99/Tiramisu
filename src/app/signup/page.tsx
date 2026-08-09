@@ -5,7 +5,7 @@ import { AuthForm } from '@/components/auth/AuthForm';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Create your account — GrowthSQL Academy' };
+export const metadata = { title: 'Create your account — Tiramisu' };
 
 export default async function SignupPage() {
   if (await getProfileId()) redirect('/dashboard');

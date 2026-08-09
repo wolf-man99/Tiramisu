@@ -3,7 +3,7 @@ import { GLOSSARY } from '@/lib/content/glossary';
 import { PageHeader } from '@/components/app/PageHeader';
 import { GlossaryView } from '@/components/content/GlossaryView';
 
-export const metadata = { title: 'Glossary — GrowthSQL Academy' };
+export const metadata = { title: 'Glossary — Tiramisu' };
 
 export default function GlossaryPage() {
   return (

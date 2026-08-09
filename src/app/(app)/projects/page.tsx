@@ -4,7 +4,7 @@ import { PROJECTS } from '@/lib/content/projects';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, DifficultyPill } from '@/components/ui/primitives';
 
-export const metadata = { title: 'Projects — GrowthSQL Academy' };
+export const metadata = { title: 'Projects — Tiramisu' };
 
 export default function ProjectsPage() {
   return (

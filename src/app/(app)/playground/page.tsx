@@ -1,6 +1,6 @@
 import { QueryWorkspace } from '@/components/workspace/QueryWorkspace';
 
-export const metadata = { title: 'SQL Playground — GrowthSQL Academy' };
+export const metadata = { title: 'SQL Playground — Tiramisu' };
 
 const STARTER = `-- The Northbeam marketing warehouse — 28 tables, ~240k rows, all real.
 -- Try: which channel had the best blended ROAS last quarter?

@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/app/PageHeader';
 import { Card, DifficultyPill, Chip } from '@/components/ui/primitives';
 import { PracticeFilters } from '@/components/app/PracticeFilters';
 
-export const metadata = { title: 'Practice — GrowthSQL Academy' };
+export const metadata = { title: 'Practice — Tiramisu' };
 
 export default function PracticePage() {
   const modules = [...new Set(EXERCISES.map((e) => e.day))].sort((a, b) => a - b);

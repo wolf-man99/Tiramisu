@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/primitives';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Courses — GrowthSQL Academy' };
+export const metadata = { title: 'Courses — Tiramisu' };
 
 export default async function CoursesPage() {
   const authed = Boolean(await getProfileId());
@@ -18,7 +18,7 @@ export default async function CoursesPage() {
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--accent)]"><Sparkles size={17} className="text-white" /></span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)]"><Sparkles size={17} className="text-white" /></span>
             <span className="text-[15px] font-semibold tracking-tight">Growth<span className="text-[var(--accent-text)]">SQL</span> Academy</span>
           </Link>
           {authed

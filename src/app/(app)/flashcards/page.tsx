@@ -2,7 +2,7 @@ import { Layers } from 'lucide-react';
 import { PageHeader } from '@/components/app/PageHeader';
 import { FlashcardReview } from '@/components/content/FlashcardReview';
 
-export const metadata = { title: 'Flashcards — GrowthSQL Academy' };
+export const metadata = { title: 'Flashcards — Tiramisu' };
 
 export default function FlashcardsPage() {
   return (

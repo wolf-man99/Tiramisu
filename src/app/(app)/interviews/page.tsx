@@ -4,7 +4,7 @@ import { INTERVIEWS } from '@/lib/content/interviews';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, DifficultyPill } from '@/components/ui/primitives';
 
-export const metadata = { title: 'Mock Interviews — GrowthSQL Academy' };
+export const metadata = { title: 'Mock Interviews — Tiramisu' };
 
 export default function InterviewsPage() {
   return (

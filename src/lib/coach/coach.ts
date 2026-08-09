@@ -30,7 +30,7 @@ export interface CoachResponse {
 const MODEL = process.env.COACH_MODEL ?? 'claude-opus-5';
 const API_URL = 'https://api.anthropic.com/v1/messages';
 
-const SYSTEM_PROMPT = `You are the AI SQL mentor inside GrowthSQL Academy, a platform that
+const SYSTEM_PROMPT = `You are the AI SQL mentor inside Tiramisu, a platform that
 teaches marketers BigQuery SQL. You are coaching a learner on one exercise.
 
 Absolute rules, in priority order:

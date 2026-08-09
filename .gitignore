@@ -52,3 +52,6 @@ next-env.d.ts
 # The default DATABASE_URL is a local SQLite path with no secret in it, so it is
 # committed to keep `git clone && npm install && npm run dev` working out of the box.
 !.env
+
+# Monaco editor assets, copied from node_modules by `npm run monaco`.
+/public/monaco/

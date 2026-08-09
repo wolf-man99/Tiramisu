@@ -9,7 +9,7 @@ import { scryptSync, randomBytes, timingSafeEqual, createHmac } from 'node:crypt
 export { SESSION_COOKIE, SESSION_MAX_AGE } from './constants';
 import { SESSION_MAX_AGE } from './constants';
 
-const SECRET = process.env.AUTH_SECRET ?? 'growthsql-dev-secret-change-me-in-production';
+const SECRET = process.env.AUTH_SECRET ?? 'tiramisu-dev-secret-change-me-in-production';
 
 if (!process.env.AUTH_SECRET && process.env.NODE_ENV === 'production') {
   console.warn('[auth] AUTH_SECRET is not set — using an insecure development default.');

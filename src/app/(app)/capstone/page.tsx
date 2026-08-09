@@ -4,7 +4,7 @@ import { CAPSTONE, capstoneSections, capstoneBySection } from '@/lib/content/cap
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, DifficultyPill } from '@/components/ui/primitives';
 
-export const metadata = { title: 'Capstone — GrowthSQL Academy' };
+export const metadata = { title: 'Capstone — Tiramisu' };
 
 export default function CapstonePage() {
   return (

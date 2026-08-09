@@ -1,5 +1,5 @@
 /**
- * The course catalog. GrowthSQL Academy is now a multi-course platform; "SQL for
+ * The course catalog. Tiramisu is now a multi-course platform; "SQL for
  * Marketers" is the first live course. Adding a course later — Meta Ads content, then
  * Google Ads, then the rest — is a data change here plus its content, not a rebuild.
  *
@@ -41,7 +41,7 @@ export const COURSES: Course[] = [
       'Learn BigQuery SQL on a real marketing warehouse — a real editor, an AI coach, and 300 graded exercises. Answer the questions a growth team actually argues about.',
     status: 'live',
     emoji: '🗃️',
-    accent: '#7c6cf6',
+    accent: '#6c3bff',
     category: 'Analytics',
     href: '/dashboard',
     level: 'Beginner → Advanced',
@@ -60,7 +60,7 @@ export const COURSES: Course[] = [
       'From the pixel to CBO to creative testing — build, launch, and scale Meta campaigns the way a performance marketer does. Interactive, gamified, and hands-on.',
     status: 'live',
     emoji: '📘',
-    accent: '#3b82f6',
+    accent: '#045099',
     category: 'Paid media',
     href: '/courses/meta-ads',
     level: 'Beginner → Advanced',
@@ -78,7 +78,7 @@ export const COURSES: Course[] = [
     description: 'Capture demand where it lives. Search, Shopping and Performance Max, from keyword match types to bidding strategy.',
     status: 'coming-soon',
     emoji: '🔍',
-    accent: '#22c55e',
+    accent: '#17a398',
     category: 'Paid media',
     href: '/courses/google-ads',
     level: 'Beginner → Advanced',
@@ -95,7 +95,7 @@ export const COURSES: Course[] = [
     description: 'The most expensive clicks in advertising — spent well. Targeting, sponsored content, and lead gen for B2B.',
     status: 'coming-soon',
     emoji: '💼',
-    accent: '#0ea5e9',
+    accent: '#045099',
     category: 'Paid media',
     href: '/courses/linkedin-ads',
     level: 'Intermediate',
@@ -112,7 +112,7 @@ export const COURSES: Course[] = [
     description: 'Reach passionate niches without getting downvoted. Subreddit targeting, native creative, and community-safe messaging.',
     status: 'coming-soon',
     emoji: '👽',
-    accent: '#f97316',
+    accent: '#e51f27',
     category: 'Paid media',
     href: '/courses/reddit-ads',
     level: 'Intermediate',
@@ -129,7 +129,7 @@ export const COURSES: Course[] = [
     description: 'Reach a younger audience with thumb-stopping vertical creative, AR lenses, and Snap Pixel optimisation.',
     status: 'coming-soon',
     emoji: '👻',
-    accent: '#eab308',
+    accent: '#f5a623',
     category: 'Paid media',
     href: '/courses/snapchat-ads',
     level: 'Beginner',

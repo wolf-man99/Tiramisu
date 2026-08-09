@@ -30,15 +30,15 @@ export function TopBar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[var(--border)] glass px-5">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b-2 border-[var(--ink)] bg-[var(--cream)] px-5">
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-        <span className="md:hidden font-semibold text-[var(--text)]">GrowthSQL</span>
+        <span className="font-display text-[17px] font-extrabold text-[var(--text)] md:hidden">Tiramisu</span>
       </div>
       <div className="flex items-center gap-2">
-        <Metric icon={<Flame size={15} />} value={p ? String(p.currentStreak) : '—'} label="day streak" tone="var(--warn)" pulse={p?.streakAtRisk} />
-        <Metric icon={<Coins size={15} />} value={p ? compactNumber(p.coins) : '—'} label="coins" tone="var(--warn)" />
-        <Metric icon={<Zap size={15} />} value={p ? compactNumber(p.xp) : '—'} label="XP" tone="var(--accent-text)" />
-        <span className="hidden items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--accent-text)] sm:flex" title={p?.title ?? ''}>
+        <Metric icon={<Flame size={15} />} value={p ? String(p.currentStreak) : '—'} label="day streak" tone="var(--red)" pulse={p?.streakAtRisk} />
+        <Metric icon={<Coins size={15} />} value={p ? compactNumber(p.coins) : '—'} label="coins" tone="var(--amber)" />
+        <Metric icon={<Zap size={15} />} value={p ? compactNumber(p.xp) : '—'} label="XP" tone="var(--blue)" />
+        <span className="hidden items-center rounded-full border-2 border-[var(--ink)] bg-[var(--purple)] px-2.5 py-1 text-[12px] font-bold text-white sm:flex" title={p?.title ?? ''}>
           Lvl {p?.level ?? '—'}
         </span>
         <ShareButton />
@@ -50,9 +50,9 @@ export function TopBar() {
 
 function Metric({ icon, value, label, tone, pulse }: { icon: React.ReactNode; value: string; label: string; tone: string; pulse?: boolean }) {
   return (
-    <div className="hidden items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 sm:flex" title={label}>
+    <div className="hidden items-center gap-1.5 rounded-full border-2 border-[var(--ink)] bg-white px-3 py-1 sm:flex" title={label}>
       <span style={{ color: tone }} className={pulse ? 'animate-pulse' : ''}>{icon}</span>
-      <span className="text-[13px] font-semibold tabular-nums">{value}</span>
+      <span className="text-[13px] font-bold tabular-nums">{value}</span>
     </div>
   );
 }

@@ -1,75 +1,89 @@
 @import "tailwindcss";
 
 /*
-  GrowthSQL Academy design system.
-  Dark-first, inspired by Linear / Vercel / Supabase / Raycast. A single accent
-  (violet) carries the brand; a restrained set of surface layers builds depth.
+  Tiramisu design system.
+  Neo-brutalist and warm: a cream page, ink-dark text, 2px ink borders and hard
+  offset shadows (no blur). Colour is used in confident, flat blocks. Display
+  type is Bricolage Grotesque; body is DM Sans; code is DM Mono.
 */
 
 :root {
-  /* Surface layers, darkest to lightest */
-  --bg: #08080b;
-  --bg-subtle: #0c0c11;
-  --surface: #121218;
-  --surface-2: #17171f;
-  --surface-3: #1e1e28;
-  --elevated: #1a1a22;
+  /* ─── Brand primitives ─────────────────────────────────────────────── */
+  --ink: #0f2438;
+  --cream: #fbf8f2;
+  --blue: #045099;
+  --red: #e51f27;
+  --amber: #f5a623;
+  --teal: #17a398;
+  --purple: #6c3bff;
 
-  /* Borders */
-  --border: #23232d;
-  --border-strong: #33333f;
-  --border-accent: #4f3fd633;
+  /* The signature hard shadow. No blur, always ink. */
+  --shadow: 3px 3px 0 var(--ink);
+  --shadow-lg: 5px 5px 0 var(--ink);
+  --shadow-hover: 7px 7px 0 var(--ink);
 
-  /* Text */
-  --text: #ededf2;
-  --text-muted: #a1a1b0;
-  --text-subtle: #6b6b７a;
-  --text-faint: #52525f;
+  /* ─── Surfaces ─────────────────────────────────────────────────────── */
+  --bg: var(--cream);
+  --bg-subtle: #f4eee2;
+  --surface: #ffffff;
+  --surface-2: #fbf8f2;
+  --surface-3: #f1e9da;
+  --elevated: #ffffff;
 
-  /* Brand accent — violet */
-  --accent: #7c6cf6;
-  --accent-hover: #8f80ff;
-  --accent-soft: #7c6cf61a;
-  --accent-border: #7c6cf644;
-  --accent-text: #b3a9ff;
+  /* ─── Borders — always ink, always solid ───────────────────────────── */
+  --border: var(--ink);
+  --border-strong: var(--ink);
+  --border-accent: var(--blue);
+  --border-soft: #0f24381f;
 
-  /* Semantic */
-  --success: #34d399;
-  --success-soft: #34d3991a;
-  --warn: #fbbf24;
-  --warn-soft: #fbbf241a;
-  --danger: #f87171;
-  --danger-soft: #f871711a;
-  --info: #60a5fa;
-  --info-soft: #60a5fa1a;
+  /* ─── Text ─────────────────────────────────────────────────────────── */
+  --text: var(--ink);
+  --text-muted: #4a5763;
+  --text-subtle: #6b7a88;
+  --text-faint: #8d9aa6;
 
-  /* Difficulty scale */
-  --easy: #34d399;
-  --medium: #60a5fa;
-  --hard: #fbbf24;
-  --expert: #f472b6;
+  /* ─── Accent — the primary action colour ───────────────────────────── */
+  --accent: var(--blue);
+  --accent-hover: #05639c;
+  --accent-soft: #0450991a;
+  --accent-border: var(--blue);
+  --accent-text: var(--blue);
 
-  /* Chart categorical palette */
-  --c1: #7c6cf6;
-  --c2: #34d399;
-  --c3: #60a5fa;
-  --c4: #fbbf24;
-  --c5: #f472b6;
-  --c6: #22d3ee;
-  --c7: #fb923c;
-  --c8: #a78bfa;
+  /* ─── Semantic ─────────────────────────────────────────────────────── */
+  --success: #0f8f74;
+  --success-soft: #17a3981f;
+  --warn: #b46f04;
+  --warn-soft: #f5a6232e;
+  --danger: var(--red);
+  --danger-soft: #e51f271a;
+  --info: var(--blue);
+  --info-soft: #0450991a;
 
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-lg: 16px;
+  /* ─── Difficulty scale ─────────────────────────────────────────────── */
+  --easy: var(--teal);
+  --medium: var(--blue);
+  --hard: #b46f04;
+  --expert: var(--red);
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo, Monaco, "Cascadia Code", Consolas, monospace;
-}
+  /* ─── Categorical palette ──────────────────────────────────────────── */
+  --c1: var(--purple);
+  --c2: var(--teal);
+  --c3: var(--blue);
+  --c4: var(--amber);
+  --c5: var(--red);
+  --c6: #2c7fb8;
+  --c7: #e07a1f;
+  --c8: #9a6bff;
 
-/* Fix the accidental full-width chars in text-subtle above via a clean override. */
-:root {
-  --text-subtle: #6b6b7a;
+  /* ─── Geometry ─────────────────────────────────────────────────────── */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 18px;
+  --bw: 2px; /* the standard border width */
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-body), sans-serif;
+  --font-mono: var(--font-code), ui-monospace, monospace;
 }
 
 @theme inline {
@@ -89,6 +103,13 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
   --color-accent-text: var(--accent-text);
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-blue: var(--blue);
+  --color-red: var(--red);
+  --color-amber: var(--amber);
+  --color-teal: var(--teal);
+  --color-purple: var(--purple);
   --color-success: var(--success);
   --color-warn: var(--warn);
   --color-danger: var(--danger);
@@ -98,6 +119,7 @@
   --color-hard: var(--hard);
   --color-expert: var(--expert);
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
   --radius: var(--radius);
 }
@@ -107,7 +129,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   scroll-behavior: smooth;
 }
 
@@ -117,66 +139,69 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-feature-settings: "cv11", "ss01";
 }
 
-/* Ambient gradient wash behind the app shell */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(900px 500px at 12% -8%, #7c6cf618, transparent 60%),
-    radial-gradient(800px 500px at 95% 0%, #22d3ee0d, transparent 55%);
-  pointer-events: none;
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 800;
 }
 
-::selection { background: var(--accent-soft); color: var(--accent-text); }
+::selection { background: var(--amber); color: var(--ink); }
 
-/* Scrollbars */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; border: 2px solid var(--bg); }
-::-webkit-scrollbar-thumb:hover { background: #45454f; }
+/* Scrollbars — squared off and inky */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-subtle); }
+::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 999px; border: 3px solid var(--bg-subtle); }
+::-webkit-scrollbar-thumb:hover { background: #1d3a56; }
 
 /* ─── Reusable component classes ─────────────────────────────────────────── */
 
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--bw) solid var(--ink);
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
-.card-hover { transition: border-color .18s ease, transform .18s ease, background .18s ease; }
-.card-hover:hover { border-color: var(--border-strong); background: var(--surface-2); }
 
+/* The signature interaction: the card physically lifts off the page. */
+.card-hover { transition: transform .14s ease, box-shadow .14s ease; }
+.card-hover:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-hover); }
+
+.lift { transition: transform .14s ease, box-shadow .14s ease; }
+.lift:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-hover); }
+
+/* No blur in this system — "glass" is just a solid bar with an ink rule. */
 .glass {
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  background: var(--cream);
+  border-bottom: var(--bw) solid var(--ink);
 }
 
-.gradient-text {
-  background: linear-gradient(120deg, #b3a9ff, #7c6cf6 40%, #22d3ee);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+.gradient-text { color: var(--blue); }
 
-.glow-accent { box-shadow: 0 0 0 1px var(--accent-border), 0 8px 40px -12px #7c6cf655; }
+/* An accent "glow" becomes a coloured hard shadow. */
+.glow-accent { box-shadow: 3px 3px 0 var(--blue); }
 
 .chip {
   display: inline-flex; align-items: center; gap: .35rem;
-  padding: .18rem .55rem; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; letter-spacing: .01em;
-  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-muted);
+  padding: .2rem .6rem; border-radius: 999px;
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  border: var(--bw) solid var(--ink); background: var(--surface); color: var(--ink);
 }
 
-.hairline { border-top: 1px solid var(--border); }
+.hairline { border-top: var(--bw) solid var(--ink); }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: var(--bw) solid var(--ink);
   outline-offset: 2px;
+}
+
+/* Small uppercase label, wide tracking — used above sections. */
+.eyebrow {
+  font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .18em;
+  color: var(--text-muted);
 }
 
 @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -186,7 +211,7 @@ body::before {
 .shimmer { position: relative; overflow: hidden; }
 .shimmer::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, #ffffff0a, transparent);
+  background: linear-gradient(90deg, transparent, #0f24380f, transparent);
   transform: translateX(-100%); animation: shimmer 1.6s infinite;
 }
 
