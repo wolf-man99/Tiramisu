@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/generated/prisma';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * A single PrismaClient for the process. Next dev reloads modules on every edit, so we

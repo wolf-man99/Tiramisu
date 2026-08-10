@@ -48,8 +48,6 @@ next-env.d.ts
 # Learner progress database. Created by `npm run setup`.
 /prisma/dev.db
 /prisma/dev.db-journal
-# Prisma client is generated into src/generated
-/src/generated/
 
 
 # Monaco editor assets, copied from node_modules by `npm run monaco`.
