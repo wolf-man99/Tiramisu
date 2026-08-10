@@ -98,7 +98,7 @@ export default async function LandingPage() {
 
       {/* ─── 3. The method ───────────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-20">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-end">
           <div>
             <div className="eyebrow mb-2 flex items-center gap-1.5"><Layers size={13} /> The Tiramisu method</div>
             <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
@@ -109,10 +109,13 @@ export default async function LandingPage() {
               acquisition, creative, tracking, analytics, conversion, optimization, automation
               and growth.
             </p>
-            <p className="mt-4 max-w-lg font-bold">
-              Each skill makes you better. Together, they make you a complete performance marketer.
-            </p>
           </div>
+          <p className="max-w-lg font-bold lg:pb-1">
+            Each skill makes you better. Together, they make you a complete performance marketer.
+          </p>
+        </div>
+
+        <div className="mt-10">
           <MethodStack />
         </div>
       </section>
