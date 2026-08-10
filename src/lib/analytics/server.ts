@@ -1,7 +1,7 @@
 export async function captureEvent(
   userId: string,
   event: string,
-  properties?: Record<string, any>,
+  properties?: Record<string, unknown>,
 ) {
   const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!apiKey) {

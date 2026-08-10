@@ -11,7 +11,7 @@ export const initPostHog = () => {
 
   posthog.init(apiKey, {
     api_host: 'https://us.i.posthog.com',
-    loaded: (ph: any) => {
+    loaded: (ph) => {
       if (process.env.NODE_ENV === 'development') {
         ph.debug();
       }

@@ -164,7 +164,7 @@ function insertAll(db: DatabaseSync, d: Dataset): void {
   }
 }
 
-function populate(db: DatabaseSync): Record<string, number> {
+export function populate(db: DatabaseSync): Record<string, number> {
   for (const t of TABLES) db.exec(createTableSql(t));
 
   const rowCounts: Record<string, number> = {};
@@ -181,16 +181,7 @@ function populate(db: DatabaseSync): Record<string, number> {
   return rowCounts;
 }
 
-/** Stamps version + row counts so `openCached` can validate the file later. */
-function writeMeta(db: DatabaseSync, rowCounts: Record<string, number>): void {
-  db.exec('CREATE TABLE _growthsql_meta (key TEXT, value TEXT)');
-  const meta = db.prepare('INSERT INTO _growthsql_meta (key, value) VALUES (?, ?)');
-  meta.run('version', WAREHOUSE_VERSION);
-  meta.run('row_counts', JSON.stringify(rowCounts));
-  meta.run('built_at', new Date().toISOString());
-}
-
-function countViews(db: DatabaseSync, rowCounts: Record<string, number>): Record<string, number> {
+export function countViews(db: DatabaseSync, rowCounts: Record<string, number>): Record<string, number> {
   for (const v of VIEWS) {
     try {
       const r = db.prepare(`SELECT COUNT(*) AS n FROM "${v.name}"`).get() as { n: number };
@@ -220,26 +211,6 @@ function openCached(): { db: DatabaseSync; rowCounts: Record<string, number> } |
   } catch {
     return null;
   }
-}
-
-/** Writes the warehouse to disk so later processes start instantly. Best-effort. */
-export function buildWarehouseFile(): { path: string; ms: number; rowCounts: Record<string, number> } {
-  const t0 = performance.now();
-  fs.mkdirSync(path.dirname(WAREHOUSE_PATH), { recursive: true });
-  const tmp = `${WAREHOUSE_PATH}.tmp-${process.pid}`;
-  for (const f of [tmp, `${tmp}-journal`]) if (fs.existsSync(f)) fs.rmSync(f);
-
-  const db = new DatabaseSync(tmp);
-  db.exec('PRAGMA journal_mode = OFF');
-  db.exec('PRAGMA synchronous = OFF');
-  // Views must be counted before the meta row is written, or the cached totals
-  // silently exclude them.
-  const rowCounts = countViews(db, populate(db));
-  writeMeta(db, rowCounts);
-  db.close();
-  // Rename last so a crashed build never leaves a half-written cache behind.
-  fs.renameSync(tmp, WAREHOUSE_PATH);
-  return { path: WAREHOUSE_PATH, ms: performance.now() - t0, rowCounts };
 }
 
 function build(): Cached {

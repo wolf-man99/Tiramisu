@@ -2,8 +2,11 @@
   "name": "tiramisu",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
-    "setup": "npm run warehouse && npm run monaco",
+    "setup": "(npm run warehouse || echo 'warehouse prebuild skipped -- will build in-memory at runtime') && npm run monaco",
     "warehouse": "tsx scripts/build-warehouse.ts",
     "db:push": "prisma db push --skip-generate --accept-data-loss",
     "db:seed": "tsx prisma/seed.ts",

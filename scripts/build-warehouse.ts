@@ -8,7 +8,8 @@
 
 import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { buildWarehouseFile, WAREHOUSE_PATH, WAREHOUSE_VERSION } from '../src/lib/warehouse/engine';
+import { WAREHOUSE_PATH, WAREHOUSE_VERSION } from '../src/lib/warehouse/engine';
+import { buildWarehouseFile } from '../src/lib/warehouse/build-file';
 
 /** True when a warehouse file already exists at the current version. */
 function isCurrent(): boolean {
