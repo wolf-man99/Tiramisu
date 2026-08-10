@@ -19,14 +19,15 @@ export async function dashboardSummary(
   await ensureEnrollment(profileId, courseId);
   const profile = await prisma.profile.findUniqueOrThrow({ where: { id: profileId } });
 
-  const [attempts, conceptStats, badgeAwards, lessons, todayActivity, recent] = await Promise.all([
-    prisma.attempt.findMany({ where: { profileId: profile.id, courseId }, select: { itemType: true, itemId: true, passed: true, ms: true } }),
-    prisma.conceptStat.findMany({ where: { profileId: profile.id, courseId } }),
-    prisma.badgeAward.findMany({ where: { profileId: profile.id } }),
-    prisma.lessonProgress.findMany({ where: { profileId: profile.id, courseId, status: 'complete' }, select: { dayNumber: true, section: true } }),
-    prisma.dailyActivity.findUnique({ where: { profileId_date: { profileId: profile.id, date: today } } }),
-    prisma.dailyActivity.findMany({ where: { profileId: profile.id }, orderBy: { date: 'desc' }, take: 14 }),
-  ]);
+  // Sequential, not Promise.all: Supabase's pooled connection (pgbouncer, transaction
+  // mode) can route concurrent queries from one client to different backend
+  // connections, which breaks Prisma's prepared-statement reuse and throws.
+  const attempts = await prisma.attempt.findMany({ where: { profileId: profile.id, courseId }, select: { itemType: true, itemId: true, passed: true, ms: true } });
+  const conceptStats = await prisma.conceptStat.findMany({ where: { profileId: profile.id, courseId } });
+  const badgeAwards = await prisma.badgeAward.findMany({ where: { profileId: profile.id } });
+  const lessons = await prisma.lessonProgress.findMany({ where: { profileId: profile.id, courseId, status: 'complete' }, select: { dayNumber: true, section: true } });
+  const todayActivity = await prisma.dailyActivity.findUnique({ where: { profileId_date: { profileId: profile.id, date: today } } });
+  const recent = await prisma.dailyActivity.findMany({ where: { profileId: profile.id }, orderBy: { date: 'desc' }, take: 14 });
 
   // Distinct passed items by type.
   const passed = new Map<string, Set<string>>();

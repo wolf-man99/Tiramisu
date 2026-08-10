@@ -15,10 +15,11 @@ export const metadata = { title: 'Meta Ads Mastery — Tiramisu' };
 export default async function MetaAdsHome() {
   const profileId = await requireProfileId('/courses/meta-ads');
   await ensureEnrollment(profileId, 'meta-ads');
-  const [profile, done] = await Promise.all([
-    prisma.profile.findUniqueOrThrow({ where: { id: profileId } }),
-    prisma.attempt.findMany({ where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true }, select: { itemId: true } }),
-  ]);
+  // Sequential, not Promise.all: Supabase's pooled connection (pgbouncer, transaction
+  // mode) can route concurrent queries from one client to different backend
+  // connections, which breaks Prisma's prepared-statement reuse and throws.
+  const profile = await prisma.profile.findUniqueOrThrow({ where: { id: profileId } });
+  const done = await prisma.attempt.findMany({ where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true }, select: { itemId: true } });
   const completed = new Set(done.map((d) => d.itemId));
   const isDone = (moduleSlug: string, slug: string) => completed.has(`${moduleSlug}/${slug}`);
   const completedCount = META_LESSONS.filter((l) => isDone(l.moduleSlug, l.slug)).length;

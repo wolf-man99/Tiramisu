@@ -11,13 +11,14 @@ export const runtime = 'nodejs';
  */
 export async function GET() {
   const meId = await getProfileId();
-  const [profiles, rivals] = await Promise.all([
-    prisma.profile.findMany({
-      where: { xp: { gt: 0 } },
-      select: { id: true, displayName: true, avatarSeed: true, image: true, xp: true, level: true, title: true, currentStreak: true },
-    }),
-    prisma.rival.findMany(),
-  ]);
+  // Sequential, not Promise.all: Supabase's pooled connection (pgbouncer, transaction
+  // mode) can route concurrent queries from one client to different backend
+  // connections, which breaks Prisma's prepared-statement reuse and throws.
+  const profiles = await prisma.profile.findMany({
+    where: { xp: { gt: 0 } },
+    select: { id: true, displayName: true, avatarSeed: true, image: true, xp: true, level: true, title: true, currentStreak: true },
+  });
+  const rivals = await prisma.rival.findMany();
 
   const daysSinceEpoch = Math.floor(Date.now() / 86_400_000);
 

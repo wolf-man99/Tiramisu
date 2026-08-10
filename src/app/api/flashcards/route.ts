@@ -8,10 +8,11 @@ export const runtime = 'nodejs';
 export async function GET(req: Request) {
   const profileId = await getProfileId();
   const today = new URL(req.url).searchParams.get('today') ?? new Date().toISOString().slice(0, 10);
-  const [cards, reviews] = await Promise.all([
-    prisma.flashcard.findMany(),
-    profileId ? prisma.cardReview.findMany({ where: { profileId } }) : Promise.resolve([]),
-  ]);
+  // Sequential, not Promise.all: Supabase's pooled connection (pgbouncer, transaction
+  // mode) can route concurrent queries from one client to different backend
+  // connections, which breaks Prisma's prepared-statement reuse and throws.
+  const cards = await prisma.flashcard.findMany();
+  const reviews = profileId ? await prisma.cardReview.findMany({ where: { profileId } }) : [];
   const reviewByCard = new Map(reviews.map((r) => [r.cardId, r]));
 
   const due = cards.filter((c) => {
