@@ -1,9 +1,11 @@
 import Link from 'next/link';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { COURSES } from '@/lib/courses/registry';
+import { STACK } from '@/lib/courses/stack';
 import { getProfileId } from '@/lib/auth/server';
 import { CourseCard } from '@/components/app/CourseCard';
-import { Button } from '@/components/ui/primitives';
+import { StackCard } from '@/components/marketing/StackCard';
+import { SiteHeader, SiteFooter } from '@/components/marketing/SiteChrome';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,40 +13,56 @@ export const metadata = { title: 'Courses — Tiramisu' };
 
 export default async function CoursesPage() {
   const authed = Boolean(await getProfileId());
-  const byCategory = ['Analytics', 'Paid media'] as const;
+  const live = COURSES.filter((c) => c.status === 'live');
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 glass">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)] shadow-[3px_3px_0_var(--ink)]"><Sparkles size={17} className="text-white" /></span>
-            <span className="font-display text-[17px] font-extrabold tracking-tight">Tiramisu</span>
-          </Link>
-          {authed
-            ? <Link href="/dashboard"><Button size="sm">Dashboard</Button></Link>
-            : <Link href="/signup"><Button size="sm">Get started</Button></Link>}
-        </div>
-      </header>
+      <SiteHeader authed={authed} />
 
       <div className="mx-auto max-w-6xl px-5 py-10 md:px-8">
-        <Link href="/" className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> Home</Link>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">All courses</h1>
-        <p className="mt-1 text-[var(--text-muted)]">One platform for the whole growth stack. Take a course, or bundle several as they launch.</p>
+        <Link href="/" className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)]">
+          <ArrowLeft size={15} /> Home
+        </Link>
 
-        {byCategory.map((cat) => {
-          const list = COURSES.filter((c) => c.category === cat);
-          if (!list.length) return null;
-          return (
-            <section key={cat} className="mt-8">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--text-faint)]">{cat}</h2>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {list.map((c) => <CourseCard key={c.id} course={c} />)}
-              </div>
-            </section>
-          );
-        })}
+        {/* Hero */}
+        <div className="max-w-3xl">
+          <div className="eyebrow mb-2">The curriculum</div>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight md:text-5xl">
+            Build your performance marketing stack.
+          </h1>
+          <p className="mt-4 text-lg text-[var(--text-muted)]">
+            Learn the tools. Understand the systems. Practice the decisions.
+          </p>
+        </div>
+
+        {/* What you can start today */}
+        {live.length > 0 && (
+          <section className="mt-12">
+            <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide">Start today</h2>
+            <p className="mb-4 text-sm text-[var(--text-muted)]">
+              {live.length === 1 ? 'One course is' : `${live.length} courses are`} live and fully playable right now.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {live.map((c) => <CourseCard key={c.id} course={c} />)}
+            </div>
+          </section>
+        )}
+
+        {/* The four layers */}
+        <section className="mt-14">
+          <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide">The full stack</h2>
+          <p className="mb-5 text-sm text-[var(--text-muted)]">
+            Four layers. Everything shipping, and everything on the way.
+          </p>
+          {/* items-start so a shorter layer hugs its content instead of stretching
+              into a tall empty box beside a longer one. */}
+          <div className="grid items-start gap-4 md:grid-cols-2">
+            {STACK.map((layer) => <StackCard key={layer.slug} layer={layer} detailed />)}
+          </div>
+        </section>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }
