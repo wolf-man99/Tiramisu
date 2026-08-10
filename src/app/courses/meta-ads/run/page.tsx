@@ -14,17 +14,19 @@ export const metadata = { title: 'Run — Meta Ads Mastery — Tiramisu' };
 export default async function MetaAdsRun() {
   const profileId = await requireProfileId('/courses/meta-ads/run');
 
-  // Sequential, not Promise.all — see the same note in courses/meta-ads/page.tsx.
   const unlocked = await isRunUnlocked(profileId, 'meta-ads');
 
   if (!unlocked) {
-    // Sequential, not Promise.all — Supabase's pooled connection can route concurrent
-    // queries to different backend connections and break Prisma's prepared statements.
-    const profile = await prisma.profile.findUniqueOrThrow({ where: { id: profileId } });
-    const done = await prisma.attempt.findMany({
-      where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true },
-      select: { itemId: true },
-    });
+    // Parallel is safe: DATABASE_URL carries pgbouncer=true, so Prisma's engine never
+    // relies on server-side prepared statements — see the fuller note in
+    // courses/meta-ads/page.tsx.
+    const [profile, done] = await Promise.all([
+      prisma.profile.findUniqueOrThrow({ where: { id: profileId } }),
+      prisma.attempt.findMany({
+        where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true },
+        select: { itemId: true },
+      }),
+    ]);
     return <LockedState completedCount={done.length} xp={profile.xp} level={profile.level} />;
   }
 

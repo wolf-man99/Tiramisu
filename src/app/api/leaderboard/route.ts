@@ -11,14 +11,16 @@ export const runtime = 'nodejs';
  */
 export async function GET() {
   const meId = await getProfileId();
-  // Sequential, not Promise.all: Supabase's pooled connection (pgbouncer, transaction
-  // mode) can route concurrent queries from one client to different backend
-  // connections, which breaks Prisma's prepared-statement reuse and throws.
-  const profiles = await prisma.profile.findMany({
-    where: { xp: { gt: 0 } },
-    select: { id: true, displayName: true, avatarSeed: true, image: true, xp: true, level: true, title: true, currentStreak: true },
-  });
-  const rivals = await prisma.rival.findMany();
+  // Parallel is safe: DATABASE_URL carries pgbouncer=true, so Prisma's engine never
+  // relies on server-side prepared statements, which is what made concurrent queries
+  // hazardous under Supabase's transaction-mode pooling in the first place.
+  const [profiles, rivals] = await Promise.all([
+    prisma.profile.findMany({
+      where: { xp: { gt: 0 } },
+      select: { id: true, displayName: true, avatarSeed: true, image: true, xp: true, level: true, title: true, currentStreak: true },
+    }),
+    prisma.rival.findMany(),
+  ]);
 
   const daysSinceEpoch = Math.floor(Date.now() / 86_400_000);
 

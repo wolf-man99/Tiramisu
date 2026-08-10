@@ -15,13 +15,16 @@ export const metadata = { title: 'Meta Ads Mastery — Tiramisu' };
 
 export default async function MetaAdsHome() {
   const profileId = await requireProfileId('/courses/meta-ads');
+  // Must complete first: isRunUnlocked below looks up this Enrollment row.
   await ensureEnrollment(profileId, 'meta-ads');
-  // Sequential, not Promise.all: Supabase's pooled connection (pgbouncer, transaction
-  // mode) can route concurrent queries from one client to different backend
-  // connections, which breaks Prisma's prepared-statement reuse and throws.
-  const profile = await prisma.profile.findUniqueOrThrow({ where: { id: profileId } });
-  const done = await prisma.attempt.findMany({ where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true }, select: { itemId: true } });
-  const runUnlocked = await isRunUnlocked(profileId, 'meta-ads');
+  // Parallel is safe: DATABASE_URL carries pgbouncer=true, so Prisma's engine never
+  // relies on server-side prepared statements, which is what made concurrent queries
+  // hazardous under Supabase's transaction-mode pooling in the first place.
+  const [profile, done, runUnlocked] = await Promise.all([
+    prisma.profile.findUniqueOrThrow({ where: { id: profileId } }),
+    prisma.attempt.findMany({ where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true }, select: { itemId: true } }),
+    isRunUnlocked(profileId, 'meta-ads'),
+  ]);
   const completed = new Set(done.map((d) => d.itemId));
   const isDone = (moduleSlug: string, slug: string) => completed.has(`${moduleSlug}/${slug}`);
   const completedCount = META_LESSONS.filter((l) => isDone(l.moduleSlug, l.slug)).length;
