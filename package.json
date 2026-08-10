@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "setup": "npm run db:setup && npm run warehouse && npm run monaco",
+    "setup": "npm run warehouse && npm run monaco",
     "warehouse": "tsx scripts/build-warehouse.ts",
-    "db:setup": "prisma db push --skip-generate --accept-data-loss && tsx prisma/seed.ts",
+    "db:push": "prisma db push --skip-generate --accept-data-loss",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:setup": "npm run db:push && npm run db:seed",
     "predev": "npm run setup",
     "dev": "next dev",
     "prebuild": "npm run setup",
