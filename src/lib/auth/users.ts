@@ -1,6 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { prisma } from '../db';
 import { hashPassword, verifyPassword } from './session';
+import { isValidLearningGoal, isValidHeardFrom } from './onboarding';
+import { COURSES } from '../courses/registry';
 
 /**
  * Account creation and authentication. Kept separate from the HTTP layer so the same
@@ -14,6 +16,9 @@ export interface AuthResult {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Lenient on purpose — accepts international formats (+, spaces, dashes, parens)
+// without enforcing a specific country's numbering plan.
+const PHONE_RE = /^[+\d][\d\s\-()]{6,19}$/;
 
 function referral(): string {
   return randomBytes(4).toString('hex');
@@ -25,11 +30,35 @@ function nameFromEmail(email: string): string {
   return local.replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 40) || 'Analyst';
 }
 
-/** Sign up with email + password. */
-export async function signup(email: string, password: string, displayName?: string): Promise<AuthResult> {
+export interface SignupOnboarding {
+  displayName: string;
+  phone: string;
+  courseInterest: string;
+  learningGoal: string;
+  heardFrom: string;
+}
+
+/** Sign up with email + password, plus the required onboarding fields. */
+export async function signup(email: string, password: string, onboarding: SignupOnboarding): Promise<AuthResult> {
   email = email.trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return { ok: false, error: 'Enter a valid email address.' };
   if (password.length < 8) return { ok: false, error: 'Password must be at least 8 characters.' };
+
+  const displayName = onboarding.displayName.trim();
+  if (!displayName) return { ok: false, error: 'Enter your name.' };
+
+  const phone = onboarding.phone.trim();
+  if (!PHONE_RE.test(phone)) return { ok: false, error: 'Enter a valid phone number.' };
+
+  if (!COURSES.some((c) => c.id === onboarding.courseInterest)) {
+    return { ok: false, error: 'Choose which course you want to learn.' };
+  }
+  if (!isValidLearningGoal(onboarding.learningGoal)) {
+    return { ok: false, error: 'Choose what you’re learning for.' };
+  }
+  if (!isValidHeardFrom(onboarding.heardFrom)) {
+    return { ok: false, error: 'Let us know how you heard about Tiramisu.' };
+  }
 
   const existing = await prisma.profile.findUnique({ where: { email } });
   if (existing) return { ok: false, error: 'An account with that email already exists.' };
@@ -39,9 +68,13 @@ export async function signup(email: string, password: string, displayName?: stri
       email,
       passwordHash: hashPassword(password),
       provider: 'credentials',
-      displayName: displayName?.trim() || nameFromEmail(email),
+      displayName: displayName || nameFromEmail(email),
       avatarSeed: email,
       referralCode: referral(),
+      phone,
+      courseInterest: onboarding.courseInterest,
+      learningGoal: onboarding.learningGoal,
+      heardFrom: onboarding.heardFrom,
     },
   });
   return { ok: true, profileId: profile.id };

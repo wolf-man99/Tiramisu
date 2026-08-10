@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Sparkles, Loader, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/primitives';
+import { COURSES } from '@/lib/courses/registry';
+import { LEARNING_GOALS, HEARD_FROM_OPTIONS } from '@/lib/auth/onboarding';
+import { cn } from '@/lib/utils';
 
 const ERRORS: Record<string, string> = {
   google_unconfigured: 'Google sign-in isn’t configured on this deployment yet — use email and password.',
@@ -17,9 +20,15 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const params = useSearchParams();
   const next = params.get('next') || '/dashboard';
 
+  const [step, setStep] = useState<1 | 2>(1);
+  const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [courseInterest, setCourseInterest] = useState('');
+  const [learningGoal, setLearningGoal] = useState('');
+  const [heardFrom, setHeardFrom] = useState('');
+
   const [error, setError] = useState<string | null>(null);
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,19 +39,38 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
     fetch('/api/auth/me').then((r) => r.json()).then((d) => setGoogleEnabled(d.googleEnabled)).catch(() => {});
   }, [params]);
 
+  const goToStep2 = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!displayName.trim() || !phone.trim() || !email.trim() || password.length < 8) {
+      setError('Fill in every field — password needs at least 8 characters.');
+      return;
+    }
+    setError(null);
+    setStep(2);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (mode === 'signup' && (!courseInterest || !learningGoal || !heardFrom)) {
+      setError('Pick one option in each group to finish.');
+      return;
+    }
     setLoading(true); setError(null);
     try {
+      const body = mode === 'signup'
+        ? { email, password, displayName, phone, courseInterest, learningGoal, heardFrom }
+        : { email, password };
       const res = await fetch(`/api/auth/${mode === 'signup' ? 'signup' : 'login'}`, {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, password, displayName }),
+        body: JSON.stringify(body),
       }).then((r) => r.json());
       if (res.ok) { router.push(next); router.refresh(); }
-      else setError(res.error ?? 'Please check your details.');
+      else { setError(res.error ?? 'Please check your details.'); if (mode === 'signup') setStep(1); }
     } catch { setError('Network error — please try again.'); }
     setLoading(false);
   };
+
+  const showingStep2 = mode === 'signup' && step === 2;
 
   return (
     <div className="w-full max-w-sm">
@@ -52,8 +80,25 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       </Link>
 
       <div className="card p-6">
-        <h1 className="text-2xl font-extrabold tracking-tight">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h1>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">{mode === 'signup' ? 'Start learning in under a minute — your progress saves automatically.' : 'Sign in to pick up where you left off.'}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {mode === 'login' ? 'Welcome back' : showingStep2 ? 'Almost there' : 'Create your account'}
+            </h1>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
+              {mode === 'login'
+                ? 'Sign in to pick up where you left off.'
+                : showingStep2
+                  ? 'A few quick picks so we can point you the right way.'
+                  : 'Start learning in a couple of minutes — your progress saves automatically.'}
+            </p>
+          </div>
+          {mode === 'signup' && (
+            <span className="mono shrink-0 rounded-full border-2 border-[var(--ink)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold tabular-nums">
+              {step} / 2
+            </span>
+          )}
+        </div>
 
         {error && (
           <div className="mt-4 flex items-start gap-2 rounded-lg border-2 border-[var(--ink)] bg-[var(--danger-soft)] p-3 text-sm font-semibold text-[var(--danger)]">
@@ -61,28 +106,59 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
           </div>
         )}
 
-        <form onSubmit={submit} className="mt-5 space-y-3">
-          {mode === 'signup' && (
-            <Field label="Name (optional)" value={displayName} onChange={setDisplayName} placeholder="Alex Marketer" type="text" />
-          )}
-          <Field label="Email" value={email} onChange={setEmail} placeholder="you@company.com" type="email" required />
-          <Field label="Password" value={password} onChange={setPassword} placeholder="At least 8 characters" type="password" required />
-          <Button type="submit" size="lg" className="w-full justify-center" disabled={loading}>
-            {loading ? <Loader size={16} className="animate-spin" /> : null}
-            {mode === 'signup' ? 'Create account' : 'Sign in'}
-          </Button>
-        </form>
+        {mode === 'login' && (
+          <form onSubmit={submit} className="mt-5 space-y-3">
+            <Field label="Email" value={email} onChange={setEmail} placeholder="you@company.com" type="email" required />
+            <Field label="Password" value={password} onChange={setPassword} placeholder="At least 8 characters" type="password" required />
+            <Button type="submit" size="lg" className="w-full justify-center" disabled={loading}>
+              {loading ? <Loader size={16} className="animate-spin" /> : null}
+              Sign in
+            </Button>
+          </form>
+        )}
 
-        <div className="my-4 flex items-center gap-3 text-xs text-[var(--text-faint)]">
-          <div className="h-px flex-1 bg-[var(--border)]" /> or <div className="h-px flex-1 bg-[var(--border)]" />
-        </div>
+        {mode === 'signup' && step === 1 && (
+          <form onSubmit={goToStep2} className="mt-5 space-y-3">
+            <Field label="Name" value={displayName} onChange={setDisplayName} placeholder="Alex Marketer" type="text" required />
+            <Field label="Phone number" value={phone} onChange={setPhone} placeholder="+91 98765 43210" type="tel" required />
+            <Field label="Email" value={email} onChange={setEmail} placeholder="you@company.com" type="email" required />
+            <Field label="Password" value={password} onChange={setPassword} placeholder="At least 8 characters" type="password" required />
+            <Button type="submit" size="lg" className="w-full justify-center">Continue</Button>
+          </form>
+        )}
 
-        <a href="/api/auth/google" className="block">
-          <Button variant="secondary" size="lg" className="w-full justify-center gap-2" type="button">
-            <GoogleIcon /> Continue with Google
-          </Button>
-        </a>
-        {!googleEnabled && <p className="mt-2 text-center text-[11px] text-[var(--text-faint)]">Google sign-in activates once credentials are configured.</p>}
+        {mode === 'signup' && step === 2 && (
+          <form onSubmit={submit} className="mt-5 space-y-4">
+            <ChipGroup label="What do you want to learn?" options={COURSES.map((c) => ({ id: c.id, label: c.title }))} value={courseInterest} onChange={setCourseInterest} />
+            <ChipGroup label="What are you learning for?" options={LEARNING_GOALS} value={learningGoal} onChange={setLearningGoal} />
+            <ChipGroup label="How did you hear about Tiramisu?" options={HEARD_FROM_OPTIONS} value={heardFrom} onChange={setHeardFrom} />
+
+            <div className="flex gap-2 pt-1">
+              <Button type="button" variant="secondary" size="lg" aria-label="Back" onClick={() => { setError(null); setStep(1); }}>
+                <ArrowLeft size={15} />
+              </Button>
+              <Button type="submit" size="lg" className="flex-1 justify-center" disabled={loading}>
+                {loading ? <Loader size={16} className="animate-spin" /> : null}
+                Create account
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {step === 1 && (
+          <>
+            <div className="my-4 flex items-center gap-3 text-xs text-[var(--text-faint)]">
+              <div className="h-px flex-1 bg-[var(--border)]" /> or <div className="h-px flex-1 bg-[var(--border)]" />
+            </div>
+
+            <a href="/api/auth/google" className="block">
+              <Button variant="secondary" size="lg" className="w-full justify-center gap-2" type="button">
+                <GoogleIcon /> Continue with Google
+              </Button>
+            </a>
+            {!googleEnabled && <p className="mt-2 text-center text-[11px] text-[var(--text-faint)]">Google sign-in activates once credentials are configured.</p>}
+          </>
+        )}
 
         <p className="mt-5 text-center text-sm text-[var(--text-muted)]">
           {mode === 'signup' ? (
@@ -109,6 +185,41 @@ function Field({ label, value, onChange, placeholder, type, required }: { label:
         className="h-11 w-full rounded-lg border-2 border-[var(--ink)] bg-white px-3 text-sm font-medium outline-none transition-all placeholder:font-normal placeholder:text-[var(--text-faint)] focus:shadow-[3px_3px_0_var(--blue)]"
       />
     </label>
+  );
+}
+
+/** A single-select group of chip buttons — used for the step-2 onboarding picks. */
+function ChipGroup({
+  label, options, value, onChange,
+}: {
+  label: string;
+  options: { id: string; label: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[var(--text-muted)]">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((o) => {
+          const selected = value === o.id;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => onChange(o.id)}
+              className={cn(
+                'rounded-full border-2 border-[var(--ink)] px-3 py-1.5 text-[13px] font-bold transition-all focus-ring',
+                selected ? 'bg-[var(--ink)] text-white' : 'bg-white text-[var(--ink)] hover:bg-[var(--surface-2)]',
+              )}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

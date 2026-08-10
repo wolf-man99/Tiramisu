@@ -30,6 +30,12 @@ model Profile {
   avatarSeed     String   @default("northbeam")
   timezone       String   @default("UTC")
   referralCode   String?  @unique // for share-to-friends invites
+  // Onboarding — nullable in the DB (existing/seeded rows predate these), required
+  // by application-level signup validation for every new account going forward.
+  phone          String?
+  courseInterest String? // a Course.id from the registry
+  learningGoal   String? // why they're here — fixed set, see AuthForm's ONBOARDING_GOALS
+  heardFrom      String? // acquisition channel — fixed set, see AuthForm's ONBOARDING_SOURCES
   // Platform-wide gamification
   xp             Int      @default(0)
   coins          Int      @default(0)
@@ -58,13 +64,17 @@ model Profile {
 /// One row per (profile, course) a learner has started. Carries the access model so
 /// paid courses / bundles are a data change later, not a schema change.
 model Enrollment {
-  id          String    @id @default(cuid())
-  profileId   String
-  courseId    String
-  access      String    @default("free") // free | paid | bundle | trial
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  lastActive  DateTime  @default(now())
+  id            String    @id @default(cuid())
+  profileId     String
+  courseId      String
+  access        String    @default("free") // free | paid | bundle | trial
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  lastActive    DateTime  @default(now())
+  // Set once, the moment every "Learn" lesson in this course is first passed — the
+  // gate that unlocks the course's "Run" tier. Deliberately separate from `access`,
+  // which represents payment tier: this is a progress unlock, not a purchase.
+  runUnlockedAt DateTime?
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 

@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { ArrowLeft, Check, Lock, Play, Zap, Clock, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Lock, Play, Zap, Clock, Sparkles, PartyPopper } from 'lucide-react';
 import { META_MODULES, META_LESSONS, META_AVAILABLE_LESSONS, META_TOTAL_XP } from '@/lib/content/meta-ads';
 import { prisma } from '@/lib/db';
 import { requireProfileId } from '@/lib/auth/server';
 import { ensureEnrollment } from '@/lib/progress/persist';
+import { isRunUnlocked } from '@/lib/progress/gating';
 import { Card, Progress } from '@/components/ui/primitives';
 import { CourseLogo } from '@/components/app/CourseLogo';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,7 @@ export default async function MetaAdsHome() {
   // connections, which breaks Prisma's prepared-statement reuse and throws.
   const profile = await prisma.profile.findUniqueOrThrow({ where: { id: profileId } });
   const done = await prisma.attempt.findMany({ where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true }, select: { itemId: true } });
+  const runUnlocked = await isRunUnlocked(profileId, 'meta-ads');
   const completed = new Set(done.map((d) => d.itemId));
   const isDone = (moduleSlug: string, slug: string) => completed.has(`${moduleSlug}/${slug}`);
   const completedCount = META_LESSONS.filter((l) => isDone(l.moduleSlug, l.slug)).length;
@@ -65,14 +67,18 @@ export default async function MetaAdsHome() {
         {/* Progress */}
         <Card className="mt-6 p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-bold">Your progress</span>
+            <span className="font-bold">Learn progress</span>
             <span className="font-bold tabular-nums text-[var(--text-muted)]">{completedCount} / {META_AVAILABLE_LESSONS} lessons</span>
           </div>
           <Progress value={META_AVAILABLE_LESSONS ? completedCount / META_AVAILABLE_LESSONS : 0} color="var(--blue)" />
         </Card>
 
-        {/* Modules */}
-        <div className="mt-8 space-y-4">
+        {/* Learn */}
+        <div className="mt-8 mb-3 flex items-center gap-2">
+          <span className="chip bg-[var(--ink)] text-white">Learn</span>
+          <span className="text-xs text-[var(--text-faint)]">Every concept, module by module — finish it all to unlock Run.</span>
+        </div>
+        <div className="space-y-4">
           {META_MODULES.map((m) => (
             <div key={m.slug}>
               <div className="mb-2 flex items-center gap-2">
@@ -109,6 +115,31 @@ export default async function MetaAdsHome() {
             </div>
           ))}
         </div>
+
+        {/* Run */}
+        <div className="mt-10 mb-3 flex items-center gap-2">
+          <span className={cn('chip', runUnlocked ? 'bg-[var(--green)] text-white' : 'bg-[var(--surface-3)] text-[var(--text-muted)]')}>Run</span>
+          <span className="text-xs text-[var(--text-faint)]">The hands-on account simulator.</span>
+        </div>
+        <Link href="/courses/meta-ads/run">
+          <Card hover className="flex items-center gap-4 p-5">
+            <span
+              className={cn(
+                'grid h-12 w-12 shrink-0 place-items-center rounded-xl border-2 border-[var(--ink)]',
+                runUnlocked ? 'bg-[var(--green)] text-white' : 'bg-[var(--surface-3)] text-[var(--text-muted)]',
+              )}
+            >
+              {runUnlocked ? <PartyPopper size={22} /> : <Lock size={20} />}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="font-extrabold">{runUnlocked ? 'Run is unlocked' : 'Run — locked until Learn is complete'}</div>
+              <div className="text-sm text-[var(--text-muted)]">
+                {runUnlocked ? 'Step into the account simulator.' : `Finish all ${META_AVAILABLE_LESSONS} Learn lessons to unlock it.`}
+              </div>
+            </div>
+            <ArrowRight size={18} className="shrink-0 text-[var(--text-faint)]" />
+          </Card>
+        </Link>
       </div>
     </div>
   );

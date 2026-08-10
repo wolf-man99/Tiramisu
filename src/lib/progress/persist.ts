@@ -4,6 +4,7 @@ import { exerciseById } from '../content/exercises';
 import { levelForXp, titleForLevel, xpForPass, coinsForXp } from './leveling';
 import { applyActivity } from './streak';
 import { newlyEarnedBadges, type BadgeContext } from './badges';
+import { isLearnComplete } from './gating';
 
 /**
  * The single place learner state changes after a graded submission. Everything —
@@ -111,6 +112,19 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
         xpAwarded,
       },
     });
+
+    // Learn -> Run unlock. Only worth checking on a fresh lesson pass, not every
+    // attempt of every item type — isLearnComplete() re-reads every lesson's attempt
+    // state, so it's not free.
+    if (input.passed && input.itemType === 'lesson') {
+      const learnDone = await isLearnComplete(tx, profile.id, courseId);
+      if (learnDone) {
+        await tx.enrollment.updateMany({
+          where: { profileId: profile.id, courseId, runUnlockedAt: null },
+          data: { runUnlockedAt: new Date() },
+        });
+      }
+    }
 
     // Per-concept mastery.
     for (const concept of concepts) {
