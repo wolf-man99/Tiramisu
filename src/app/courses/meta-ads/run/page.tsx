@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 import { requireProfileId } from '@/lib/auth/server';
 import { isRunUnlocked } from '@/lib/progress/gating';
 import { Card, Button, Progress } from '@/components/ui/primitives';
-import { SimulatorDemo } from '@/components/marketing/SimulatorDemo';
+import { RunDashboard } from '@/components/meta/RunDashboard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,7 +41,7 @@ export default async function MetaAdsRun() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-5 py-8 md:px-8">
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-8">
         <div className="flex items-start gap-3">
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border-2 border-[var(--ink)] bg-[var(--green)] text-white shadow-[3px_3px_0_var(--ink)]">
             <PartyPopper size={22} />
@@ -49,14 +49,14 @@ export default async function MetaAdsRun() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">You unlocked Run</h1>
             <p className="mt-1 max-w-xl text-[var(--text-muted)]">
-              You&apos;ve finished every Learn lesson — the full account simulator is what we&apos;re
-              building next. In the meantime, here&apos;s a preview account to get a feel for it.
+              You&apos;ve finished every Learn lesson. Below is NORTHBOUND&apos;s account —
+              built to feel like the real Ads Manager you&apos;ll actually use on the job.
             </p>
           </div>
         </div>
 
         <div className="mt-8">
-          <SimulatorDemo />
+          <RunDashboard />
         </div>
       </div>
     </div>

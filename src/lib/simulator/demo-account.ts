@@ -15,6 +15,18 @@ export interface DemoCampaign {
   spend: number;
   revenue: number;
   purchases: number;
+  /** Everything below is additional Ads-Manager-style detail for the Run dashboard.
+   *  Stored as raw counts (impressions, clicks, reach) rather than pre-computed
+   *  rates, so CPM/CPC/CTR/frequency/cost-per-result derive from them via the
+   *  helpers below and can never drift out of arithmetic consistency. */
+  impressions: number;
+  linkClicks: number;
+  reach: number;
+  bidStrategy: 'Highest volume' | 'Cost per result goal';
+  /** Only meaningful when bidStrategy is 'Cost per result goal'. */
+  costPerResultGoal?: number;
+  dailyBudget: number;
+  delivery: 'Active' | 'Not delivering' | 'Learning';
 }
 
 export const DEMO_BRAND = {
@@ -28,13 +40,54 @@ export const DEMO_BRAND = {
   mission: 'Generate profitable revenue while scaling paid acquisition.',
 } as const;
 
+/**
+ * Impressions/clicks/reach below are chosen, not random: each campaign's implied CTR
+ * (clicks÷impressions) and conversion rate (purchases÷clicks) sit in realistic bands
+ * for Indian D2C paid social — prospecting around 1.0–1.5% CTR and 3% conversion,
+ * warm retargeting much higher on both, catalog/DPA in between. Frequency (derived
+ * as impressions÷reach) is deliberately low for broad prospecting and high for the
+ * small warm retargeting pools, matching how those audiences actually behave.
+ */
 export const DEMO_CAMPAIGNS: DemoCampaign[] = [
-  { name: 'Prospecting — Advantage+ Broad', type: 'Prospecting', spend: 118_000, revenue: 401_200, purchases: 452 },
-  { name: 'Prospecting — Interest Stack', type: 'Prospecting', spend: 74_000, revenue: 233_000, purchases: 268 },
-  { name: 'Retargeting — Add-to-Cart 7D', type: 'Retargeting', spend: 52_000, revenue: 302_000, purchases: 331 },
-  { name: 'Retargeting — IG Engagers 30D', type: 'Retargeting', spend: 38_000, revenue: 158_400, purchases: 178 },
-  { name: 'Catalog Sales — DPA', type: 'Catalog', spend: 60_000, revenue: 189_400, purchases: 197 },
+  {
+    name: 'Prospecting — Advantage+ Broad', type: 'Prospecting', spend: 118_000, revenue: 401_200, purchases: 452,
+    impressions: 1_086_000, linkClicks: 14_120, reach: 603_000,
+    bidStrategy: 'Highest volume', dailyBudget: 4_000, delivery: 'Active',
+  },
+  {
+    name: 'Prospecting — Interest Stack', type: 'Prospecting', spend: 74_000, revenue: 233_000, purchases: 268,
+    impressions: 638_000, linkClicks: 8_930, reach: 304_000,
+    bidStrategy: 'Highest volume', dailyBudget: 2_500, delivery: 'Active',
+  },
+  {
+    name: 'Retargeting — Add-to-Cart 7D', type: 'Retargeting', spend: 52_000, revenue: 302_000, purchases: 331,
+    impressions: 108_800, linkClicks: 3_480, reach: 22_700,
+    bidStrategy: 'Cost per result goal', costPerResultGoal: 850, dailyBudget: 1_800, delivery: 'Active',
+  },
+  {
+    name: 'Retargeting — IG Engagers 30D', type: 'Retargeting', spend: 38_000, revenue: 158_400, purchases: 178,
+    impressions: 94_100, linkClicks: 2_540, reach: 24_100,
+    bidStrategy: 'Cost per result goal', costPerResultGoal: 900, dailyBudget: 1_300, delivery: 'Active',
+  },
+  {
+    name: 'Catalog Sales — DPA', type: 'Catalog', spend: 60_000, revenue: 189_400, purchases: 197,
+    impressions: 162_700, linkClicks: 3_580, reach: 50_800,
+    bidStrategy: 'Highest volume', dailyBudget: 2_000, delivery: 'Active',
+  },
 ];
+
+/** CPM: cost per 1,000 impressions. */
+export const cpm = (c: DemoCampaign): number => (c.spend / c.impressions) * 1000;
+/** CPC: cost per link click. */
+export const cpc = (c: DemoCampaign): number => c.spend / c.linkClicks;
+/** CTR: link clicks ÷ impressions, as a percentage. */
+export const ctr = (c: DemoCampaign): number => (c.linkClicks / c.impressions) * 100;
+/** Frequency: average number of times a person saw this campaign. */
+export const frequency = (c: DemoCampaign): number => c.impressions / c.reach;
+/** Cost per result — Meta's term for cost per purchase on a sales campaign. */
+export const costPerResult = (c: DemoCampaign): number => c.spend / c.purchases;
+/** Purchase ROAS for a single campaign. */
+export const campaignRoas = (c: DemoCampaign): number => c.revenue / c.spend;
 
 /**
  * Headline account figures. Spend/revenue/purchases are the campaign sums.
