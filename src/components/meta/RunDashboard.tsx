@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ChevronDown, Plus, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronDown, GalleryHorizontal, Image as ImageIcon, LayoutGrid, Plus, SlidersHorizontal, Video, X } from 'lucide-react';
 import {
-  DEMO_BRAND, DEMO_CAMPAIGNS, DEMO_TOTALS, DEMO_ADSETS, DEMO_ADS, NEW_CUSTOMER_RATE, inr,
+  DEMO_BRAND, DEMO_CAMPAIGNS, DEMO_TOTALS, DEMO_ADSETS, DEMO_ADS, DEMO_AUDIENCES, NEW_CUSTOMER_RATE, inr,
   cpm, cpc, ctr, costPerResult, campaignRoas, estimateReach, funnelFor, scaleTotals,
   aggregateRange, rangeDayCount, DEMO_DAILY, LATEST_DATE, EARLIEST_DATE, isoDaysBefore,
-  type DemoCampaign, type MetricTotals, type FunnelCounts,
+  type DemoCampaign, type MetricTotals, type FunnelCounts, type DemoAd,
 } from '@/lib/simulator/demo-account';
 
 /**
@@ -37,11 +37,39 @@ const LEVEL_TITLE: Record<NavKey, string> = {
   audiences: 'Audiences', creative: 'Creative', reporting: 'Reporting',
 };
 const LEVEL_NAME_HEADER: Record<string, string> = { campaigns: 'Campaign', adsets: 'Ad set', ads: 'Ad' };
-const NOT_BUILT_COPY: Record<string, string> = {
-  audiences: 'Audience definitions — saved audiences, lookalikes, custom audiences — aren’t modeled in this simulator. The course is about the Campaign → Ad set → Ad decision loop above, not audience-list management.',
-  creative: 'There’s no separate creative library here. Ad-level creative format (image, video, carousel, collection) already shows up as each ad’s subtitle in the Ads tab.',
-  reporting: 'Custom report building isn’t modeled here — every metric across Campaigns, Ad sets, and Ads above is already a live report of the account for whichever date range you pick.',
+
+const FORMAT_META: Record<DemoAd['format'], { icon: typeof ImageIcon; color: string }> = {
+  Image: { icon: ImageIcon, color: '#f0a20d' },
+  Video: { icon: Video, color: '#e0245e' },
+  Carousel: { icon: GalleryHorizontal, color: '#1877f2' },
+  Collection: { icon: LayoutGrid, color: '#31a24c' },
 };
+
+function compactNum(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`;
+  return num(n);
+}
+
+const EMPTY_TOTALS: MetricTotals = { spend: 0, revenue: 0, purchases: 0, impressions: 0, linkClicks: 0 };
+
+/** Groups already range-aggregated rows into buckets — used by the Reporting tab's
+ *  breakdown selector. Reuses each row's own totals rather than recomputing, so a
+ *  breakdown always matches the account totals for the active date range exactly. */
+function groupRows(rows: DisplayRow[], keyFn: (r: DisplayRow) => string): { key: string; t: MetricTotals; reach: number }[] {
+  const map = new Map<string, { t: MetricTotals; reach: number }>();
+  for (const r of rows) {
+    const k = keyFn(r);
+    const cur = map.get(k) ?? { t: { ...EMPTY_TOTALS }, reach: 0 };
+    cur.t = {
+      spend: cur.t.spend + r.t.spend, revenue: cur.t.revenue + r.t.revenue, purchases: cur.t.purchases + r.t.purchases,
+      impressions: cur.t.impressions + r.t.impressions, linkClicks: cur.t.linkClicks + r.t.linkClicks,
+    };
+    cur.reach += r.reach;
+    map.set(k, cur);
+  }
+  return Array.from(map.entries()).map(([key, v]) => ({ key, ...v }));
+}
 
 const FILTERS = ['All', 'Prospecting', 'Retargeting', 'Catalog'] as const;
 type Filter = (typeof FILTERS)[number];
@@ -213,6 +241,7 @@ export function RunDashboard({ storageScope = 'run' }: { storageScope?: string }
   const [customCampaigns, setCustomCampaigns] = useState<DemoCampaign[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [reportBy, setReportBy] = useState<'type' | 'delivery'>('type');
 
   useEffect(() => {
     try {
@@ -284,6 +313,26 @@ export function RunDashboard({ storageScope = 'run' }: { storageScope?: string }
   const levelRows = nav === 'campaigns' ? campaignDisplayRows : nav === 'adsets' ? adSetDisplayRows : nav === 'ads' ? adDisplayRows : [];
   const rows = levelRows.filter((r) => filter === 'All' || r.filterType === filter);
   const visibleColumns = COLUMNS.filter((col) => enabledColumns.includes(col.id));
+
+  const audienceRows = useMemo(() => DEMO_AUDIENCES.map((aud) => {
+    const adSet = adSetDisplayRows.find((r) => r.id === aud.adSetId);
+    return {
+      id: aud.id, name: aud.name, type: aud.type, size: aud.size,
+      adSetName: adSet?.name ?? '', campaignName: adSet?.subtitle ?? '',
+      t: adSet?.t ?? EMPTY_TOTALS,
+    };
+  }), [adSetDisplayRows]);
+
+  const creativeCards = useMemo(() => DEMO_ADS.map((ad) => {
+    const row = adDisplayRows.find((r) => r.id === ad.id);
+    const adSet = adSetDisplayRows.find((r) => r.id === ad.adSetId);
+    return row ? { ad, row, adSetName: adSet?.name ?? '' } : null;
+  }).filter((x): x is { ad: DemoAd; row: DisplayRow; adSetName: string } => x !== null), [adDisplayRows, adSetDisplayRows]);
+
+  const reportGroups = useMemo(
+    () => groupRows(campaignDisplayRows, reportBy === 'type' ? (r) => r.filterType : (r) => r.delivery),
+    [campaignDisplayRows, reportBy],
+  );
 
   const kpiSpend = allRows.reduce((n, r) => n + r.t.spend, 0);
   const kpiRevenue = allRows.reduce((n, r) => n + r.t.revenue, 0);
@@ -470,11 +519,12 @@ export function RunDashboard({ storageScope = 'run' }: { storageScope?: string }
               to notice, holding across whatever date range or level (campaign, ad set, ad) you view.
             </p>
           </>
+        ) : nav === 'audiences' ? (
+          <AudiencesPanel rows={audienceRows} />
+        ) : nav === 'creative' ? (
+          <CreativePanel cards={creativeCards} />
         ) : (
-          <div className="mb-notbuilt">
-            <div className="mb-notbuilt-title">Not part of this simulator</div>
-            <p>{NOT_BUILT_COPY[nav]}</p>
-          </div>
+          <ReportingPanel groups={reportGroups} breakdown={reportBy} onBreakdown={setReportBy} />
         )}
       </div>
 
@@ -619,9 +669,14 @@ export function RunDashboard({ storageScope = 'run' }: { storageScope?: string }
 
         .mb-footnote { margin-top: 14px; font-size: 12px; color: var(--m-faint); max-width: 74ch; }
 
-        .mb-notbuilt { background: var(--m-card); border: 1px dashed var(--m-line); border-radius: 8px; padding: 36px 24px; text-align: center; }
-        .mb-notbuilt-title { font-size: 13.5px; font-weight: 700; color: var(--m-ink); margin-bottom: 6px; }
-        .mb-notbuilt p { max-width: 48ch; margin: 0 auto; font-size: 12.5px; line-height: 1.65; color: var(--m-muted); }
+        .mb-creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+        .mb-creative-card { background: var(--m-card); border: 1px solid var(--m-line); border-radius: 8px; overflow: hidden; }
+        .mb-creative-thumb { height: 110px; display: flex; align-items: center; justify-content: center; }
+        .mb-creative-body { padding: 11px 12px 13px; }
+        .mb-creative-name { font-size: 12.5px; font-weight: 600; color: var(--m-ink); line-height: 1.35; }
+        .mb-creative-meta { font-size: 11px; color: var(--m-faint); margin-top: 3px; }
+        .mb-creative-stats { display: flex; gap: 14px; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--m-line); font-size: 11px; color: var(--m-muted); }
+        .mb-creative-stats b { font-size: 12.5px; color: var(--m-ink); font-variant-numeric: tabular-nums; display: block; }
 
         .mb-modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
         .mb-modal { width: 100%; max-width: 420px; background: var(--m-card); border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
@@ -670,6 +725,136 @@ function TableRow({ row, columns }: { row: DisplayRow; columns: ColumnDef[] }) {
         <td key={col.id} className={col.numeric ? 'num' : undefined}>{col.render(row)}</td>
       ))}
     </tr>
+  );
+}
+
+interface AudienceDisplay {
+  id: string; name: string; type: string; size: number; adSetName: string; campaignName: string; t: MetricTotals;
+}
+
+function AudiencesPanel({ rows }: { rows: AudienceDisplay[] }) {
+  return (
+    <>
+      <div className="mb-table-wrap">
+        <table className="mb-table">
+          <thead>
+            <tr>
+              <th>Audience</th>
+              <th>Type</th>
+              <th className="num">Estimated size</th>
+              <th>Used in</th>
+              <th className="num">Results</th>
+              <th className="num">Amount spent</th>
+              <th className="num">Cost / result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((a) => (
+              <tr key={a.id}>
+                <td><span className="mb-campaign-name">{a.name}</span></td>
+                <td>{a.type}</td>
+                <td className="num">{compactNum(a.size)} people</td>
+                <td>
+                  <span className="mb-campaign-name" style={{ color: 'var(--m-ink)', fontWeight: 400 }}>{a.adSetName}</span>
+                  <span className="mb-campaign-type">{a.campaignName}</span>
+                </td>
+                <td className="num">{num(a.t.purchases)}</td>
+                <td className="num">{inr(a.t.spend)}</td>
+                <td className="num">{a.t.purchases > 0 ? inr(Math.round(costPerResult(a.t))) : '–'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mb-footnote">
+        Audience sizes are invented estimates for teaching, not real reach figures. Results and
+        spend per audience are pulled live from that audience&apos;s ad set, for whichever date
+        range you&apos;ve selected above.
+      </p>
+    </>
+  );
+}
+
+function CreativePanel({ cards }: { cards: { ad: DemoAd; row: DisplayRow; adSetName: string }[] }) {
+  return (
+    <>
+      <div className="mb-creative-grid">
+        {cards.map(({ ad, row, adSetName }) => {
+          const meta = FORMAT_META[ad.format];
+          const Icon = meta.icon;
+          return (
+            <div key={ad.id} className="mb-creative-card">
+              <div className="mb-creative-thumb" style={{ background: meta.color }}>
+                <Icon size={26} color="#fff" strokeWidth={1.75} />
+              </div>
+              <div className="mb-creative-body">
+                <div className="mb-creative-name">{row.name}</div>
+                <div className="mb-creative-meta">{ad.format} · {adSetName}</div>
+                <div className="mb-creative-stats">
+                  <span><b>{row.t.impressions > 0 ? pct(ctr(row.t)) : '–'}</b> CTR</span>
+                  <span><b>{row.t.spend > 0 && row.t.revenue > 0 ? `${campaignRoas(row.t).toFixed(2)}x` : '–'}</b> ROAS</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mb-footnote">
+        Thumbnails are format placeholders, not real creative — this simulator doesn&apos;t model
+        an asset library. Stats per ad are live for whichever date range you&apos;ve selected above.
+      </p>
+    </>
+  );
+}
+
+function ReportingPanel({
+  groups, breakdown, onBreakdown,
+}: {
+  groups: { key: string; t: MetricTotals; reach: number }[];
+  breakdown: 'type' | 'delivery';
+  onBreakdown: (b: 'type' | 'delivery') => void;
+}) {
+  return (
+    <>
+      <div className="mb-toolbar">
+        <div className="mb-filters">
+          <button type="button" className={breakdown === 'type' ? 'mb-filter mb-filter-on' : 'mb-filter'} onClick={() => onBreakdown('type')}>By campaign type</button>
+          <button type="button" className={breakdown === 'delivery' ? 'mb-filter mb-filter-on' : 'mb-filter'} onClick={() => onBreakdown('delivery')}>By delivery status</button>
+        </div>
+      </div>
+      <div className="mb-table-wrap">
+        <table className="mb-table">
+          <thead>
+            <tr>
+              <th>{breakdown === 'type' ? 'Campaign type' : 'Delivery status'}</th>
+              <th className="num">Results</th>
+              <th className="num">Amount spent</th>
+              <th className="num">CPM</th>
+              <th className="num">CTR</th>
+              <th className="num">Cost / result</th>
+              <th className="num">Purchase ROAS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groups.map((g) => (
+              <tr key={g.key}>
+                <td><span className="mb-campaign-name" style={{ color: 'var(--m-ink)' }}>{g.key}</span></td>
+                <td className="num">{num(g.t.purchases)}</td>
+                <td className="num">{inr(g.t.spend)}</td>
+                <td className="num">{g.t.impressions > 0 ? inr(Math.round(cpm(g.t))) : '–'}</td>
+                <td className="num">{g.t.impressions > 0 ? pct(ctr(g.t)) : '–'}</td>
+                <td className="num">{g.t.purchases > 0 ? inr(Math.round(costPerResult(g.t))) : '–'}</td>
+                <td className="num">{g.t.spend > 0 && g.t.revenue > 0 ? `${campaignRoas(g.t).toFixed(2)}x` : '–'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mb-footnote">
+        A live breakdown of the account for whichever date range you&apos;ve selected above — this
+        simulator doesn&apos;t model saved/exported custom reports beyond that.
+      </p>
+    </>
   );
 }
 

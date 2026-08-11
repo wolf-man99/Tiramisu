@@ -351,6 +351,29 @@ export function scaleTotals(t: MetricTotals, share: number): MetricTotals {
   };
 }
 
+/** One audience per ad set (this account doesn't reuse an audience across ad sets),
+ *  so the Audiences tab can show each audience's own performance by joining back to
+ *  its ad set rather than needing a separate daily series of its own. */
+export interface DemoAudience {
+  id: string;
+  name: string;
+  type: 'Custom Audience' | 'Lookalike Audience' | 'Saved Audience' | 'Dynamic (Catalog)';
+  size: number;
+  adSetId: string;
+}
+
+export const DEMO_AUDIENCES: DemoAudience[] = [
+  { id: 'aud-1', name: 'Advantage+ audience — 18–34', type: 'Saved Audience', size: 4_200_000, adSetId: 'as-1' },
+  { id: 'aud-2', name: 'Advantage+ audience — 35–54', type: 'Saved Audience', size: 3_100_000, adSetId: 'as-2' },
+  { id: 'aud-3', name: 'Streetwear & sneakerhead interests', type: 'Saved Audience', size: 1_850_000, adSetId: 'as-3' },
+  { id: 'aud-4', name: 'Fashion lookalike 3%', type: 'Lookalike Audience', size: 640_000, adSetId: 'as-4' },
+  { id: 'aud-5', name: 'Cart abandoners — 7 day', type: 'Custom Audience', size: 18_400, adSetId: 'as-5' },
+  { id: 'aud-6', name: 'IG engagers — 30 day', type: 'Custom Audience', size: 92_000, adSetId: 'as-6' },
+  { id: 'aud-7', name: 'Video viewers 75%+ — 30 day', type: 'Custom Audience', size: 34_500, adSetId: 'as-7' },
+  { id: 'aud-8', name: 'Viewed or added to cart', type: 'Dynamic (Catalog)', size: 61_200, adSetId: 'as-8' },
+  { id: 'aud-9', name: 'Broad catalog audience', type: 'Dynamic (Catalog)', size: 410_000, adSetId: 'as-9' },
+];
+
 /**
  * Headline account figures. Spend/revenue/purchases are the campaign sums.
  *
