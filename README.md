@@ -1,7 +1,7 @@
 # GrowthSQL Academy
 
 **A multi-course platform for growth & performance marketers.** Interactive, gamified,
-hands-on courses — starting with **SQL for Marketers** (live now), with **Meta Ads**,
+hands-on courses, starting with **SQL for Marketers** (live now), with **Meta Ads**,
 **Google Ads**, and LinkedIn / Reddit / Snapchat Ads on the way.
 
 Learners sign up (email + password, or Google), and their XP, streaks, badges and
@@ -11,28 +11,28 @@ learn together and compete; an invite/share flow brings friends in.
 ## SQL for Marketers (the first course)
 
 **Zero to marketing analyst in 14 days.** Takes a Growth / Performance Marketer from no
-SQL to independently analysing marketing data in Google BigQuery — a real editor, a real
+SQL to independently analysing marketing data in Google BigQuery: a real editor, a real
 warehouse, an AI coach, and 300 graded exercises, all in one app.
 
 Not another SQL tutorial. Every lesson, example and exercise is built on realistic
 Growth / SaaS / e-commerce data: Google, Meta and LinkedIn ads, GA4, HubSpot,
 Salesforce, Stripe, orders, subscriptions and attribution. You learn SQL by answering
-the questions a growth team actually argues about — highest-ROAS campaign, lowest-CAC
+the questions a growth team actually argues about: highest-ROAS campaign, lowest-CAC
 channel, D7/D30 retention, MRR bridge, six attribution models side by side.
 
 ## What's inside
 
-- **14-day curriculum** across 12 modules — each day: theory, an interactive visual,
+- **14-day curriculum** across 12 modules. Each day: theory, an interactive visual,
   worked examples, a playground, graded practice, a quiz, a timed assessment, a
   challenge, reflection, and a daily project.
 - **300 graded exercises**, **10 projects**, **10 mock interviews** (Google → Zomato),
   **9 BigQuery labs**, a **100-question capstone**, **6 runnable cheatsheets**, a
   **~70-term glossary**, and **48 spaced-repetition flashcards**.
-- **A real SQL playground** — Monaco editor, a browsable 28-table warehouse, live
+- **A real SQL playground**: Monaco editor, a browsable 28-table warehouse, live
   execution, and a dry-run cost estimator that teaches BigQuery economics.
-- **An AI coach** that diagnoses mistakes and coaches with questions, never answers —
+- **An AI coach** that diagnoses mistakes and coaches with questions, never answers.
   deterministic by default, with an optional Anthropic-backed mentor.
-- **Gamification** — XP, levels, coins, a 44-badge catalogue, streaks with freezes,
+- **Gamification**: XP, levels, coins, a 44-badge catalogue, streaks with freezes,
   weak-area detection, AI recommendations, and a live leaderboard.
 
 ## How it works
@@ -69,7 +69,7 @@ demo@growthsql.academy  /  demopass123
 
 ### Accounts & auth
 
-Sign-in is email + password (scrypt-hashed) with HMAC-signed session cookies — no
+Sign-in is email + password (scrypt-hashed) with HMAC-signed session cookies. No
 external auth service, fully offline. Optional Google sign-in activates when
 `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are set (see `.env`). Set `AUTH_SECRET` to a
 long random value in production.
