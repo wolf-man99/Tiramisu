@@ -232,11 +232,23 @@ h1, h2, h3, h4 {
 @keyframes swap-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .animate-swap { animation: swap-in .28s cubic-bezier(.2,.7,.3,1) both; }
 
+/*
+  Subtle nudge for the course card matching what a user picked as their onboarding
+  interest — a slow breathing glow in the course's own accent colour, not a hard
+  gate on the other cards. --nudge-accent is set inline per-card by CourseCard.
+*/
+@keyframes nudge-glow {
+  0%, 100% { box-shadow: 4px 4px 0 var(--nudge-accent), 0 0 0 0 color-mix(in srgb, var(--nudge-accent) 35%, transparent); }
+  50% { box-shadow: 4px 4px 0 var(--nudge-accent), 0 0 0 7px color-mix(in srgb, var(--nudge-accent) 0%, transparent); }
+}
+.animate-nudge { animation: nudge-glow 2.4s ease-in-out infinite; }
+
 /* Honour a user's reduced-motion preference for every decorative animation. */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .is-building .slab,
   .animate-swap,
+  .animate-nudge,
   .shimmer::after { animation: none; }
   .card-hover:hover, .lift:hover { transform: none; }
 }

@@ -49,7 +49,7 @@ export default async function MetaAdsHome() {
       {/* Header */}
       <header className="sticky top-0 z-30 glass">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-5 md:px-8">
-          <Link href="/dashboard" className="flex items-center gap-1.5 text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> Platform</Link>
+          <Link href="/courses" className="flex items-center gap-1.5 text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> Platform</Link>
           <span className="flex items-center gap-1.5 rounded-full border-2 border-[var(--ink)] bg-[var(--blue)] px-3 py-1 text-[13px] font-bold text-white"><Zap size={13} /> {profile.xp} XP · Lvl {profile.level}</span>
         </div>
       </header>

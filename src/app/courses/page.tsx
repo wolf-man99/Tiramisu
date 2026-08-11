@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { COURSES } from '@/lib/courses/registry';
 import { STACK } from '@/lib/courses/stack';
-import { getProfileId } from '@/lib/auth/server';
+import { getCurrentProfile } from '@/lib/auth/server';
 import { CourseCard } from '@/components/app/CourseCard';
 import { StackCard } from '@/components/marketing/StackCard';
 import { SiteHeader, SiteFooter } from '@/components/marketing/SiteChrome';
@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Courses — Tiramisu' };
 
 export default async function CoursesPage() {
-  const authed = Boolean(await getProfileId());
+  const profile = await getCurrentProfile();
+  const authed = Boolean(profile);
   const live = COURSES.filter((c) => c.status === 'live');
 
   return (
@@ -43,7 +44,7 @@ export default async function CoursesPage() {
               {live.length === 1 ? 'One course is' : `${live.length} courses are`} live and fully playable right now.
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {live.map((c) => <CourseCard key={c.id} course={c} />)}
+              {live.map((c) => <CourseCard key={c.id} course={c} recommended={c.id === profile?.courseInterest} />)}
             </div>
           </section>
         )}

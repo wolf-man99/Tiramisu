@@ -27,7 +27,7 @@ export function SiteHeader({ authed }: { authed: boolean }) {
             Courses
           </Link>
           {authed ? (
-            <Link href="/dashboard"><Button size="sm">Go to dashboard <ArrowRight size={14} /></Button></Link>
+            <Link href="/courses"><Button size="sm">My courses <ArrowRight size={14} /></Button></Link>
           ) : (
             <>
               <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text)]">

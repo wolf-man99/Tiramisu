@@ -27,7 +27,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <span className="grid h-8 w-8 place-items-center rounded-lg border-2 border-[var(--ink)] bg-[var(--purple)] shadow-[3px_3px_0_var(--ink)]"><Sparkles size={17} className="text-white" /></span>
             <span className="font-display text-[17px] font-extrabold tracking-tight">Tiramisu</span>
           </Link>
-          {authed ? <Link href="/dashboard"><Button size="sm">Dashboard</Button></Link> : <Link href="/signup"><Button size="sm">Get started</Button></Link>}
+          {authed ? <Link href="/courses"><Button size="sm">My courses</Button></Link> : <Link href="/signup"><Button size="sm">Get started</Button></Link>}
         </div>
       </header>
 
