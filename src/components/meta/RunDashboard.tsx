@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { ChevronDown, Plus, SlidersHorizontal, X } from 'lucide-react';
 import {
-  DEMO_BRAND, DEMO_CAMPAIGNS, DEMO_TOTALS, DEMO_CAC, DEMO_ROAS, inr,
-  cpm, cpc, ctr, costPerResult, campaignRoas,
-  type DemoCampaign,
+  DEMO_BRAND, DEMO_CAMPAIGNS, DEMO_TOTALS, NEW_CUSTOMER_RATE, inr,
+  cpm, cpc, ctr, costPerResult, campaignRoas, estimateReach, funnelFor,
+  aggregateRange, rangeDayCount, DEMO_DAILY, LATEST_DATE, EARLIEST_DATE, isoDaysBefore,
+  type DemoCampaign, type MetricTotals, type FunnelCounts,
 } from '@/lib/simulator/demo-account';
 
 /**
@@ -15,13 +17,17 @@ import {
  * muscle memory for the tool they'll actually use, inside a page that never claims
  * to be the genuine Meta product (see the "Educational simulation" badge below).
  *
- * Every number renders from DEMO_CAMPAIGNS' raw counts via the cpm/cpc/ctr/... derivations
- * in demo-account.ts — nothing here is a separately-typed, driftable duplicate.
+ * Every number renders from demo-account.ts's raw counts and daily series — nothing
+ * here is a separately-typed, driftable duplicate. Date ranges resum from DEMO_DAILY,
+ * created campaigns and column choices persist to localStorage.
  */
 
 const NAV = ['Campaigns', 'Ad sets', 'Ads', 'Audiences', 'Creative', 'Reporting'] as const;
 const FILTERS = ['All', 'Prospecting', 'Retargeting', 'Catalog'] as const;
 type Filter = (typeof FILTERS)[number];
+
+const CAMPAIGNS_KEY = 'tiramisu:meta-run:campaigns:v1';
+const COLUMNS_KEY = 'tiramisu:meta-run:columns:v1';
 
 function pct(n: number, digits = 2): string {
   return `${n.toFixed(digits)}%`;
@@ -29,13 +35,199 @@ function pct(n: number, digits = 2): string {
 function num(n: number): string {
   return n.toLocaleString('en-IN');
 }
+function formatShort(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
+// ────────────────────────────────────────────────────────────── date ranges ──
+
+type RangeKey = 'today' | '7d' | '14d' | '30d' | '90d' | 'custom';
+const RANGE_PRESETS: { key: RangeKey; label: string; days: number }[] = [
+  { key: 'today', label: 'Today', days: 1 },
+  { key: '7d', label: 'Last 7 days', days: 7 },
+  { key: '14d', label: 'Last 14 days', days: 14 },
+  { key: '30d', label: 'Last 30 days', days: 30 },
+  { key: '90d', label: 'Last 90 days', days: 90 },
+  { key: 'custom', label: 'Custom', days: 0 },
+];
+
+/** A campaign's totals for [from, to]. Base campaigns resum their daily series;
+ *  campaigns created in-session only "exist" on LATEST_DATE (the account's frozen
+ *  "now"), so a range that doesn't include today correctly shows them at zero —
+ *  they hadn't launched yet. */
+function rangeTotals(c: DemoCampaign, from: string, to: string): MetricTotals {
+  if (DEMO_DAILY[c.name]) return aggregateRange(c.name, from, to);
+  if (from <= LATEST_DATE && LATEST_DATE <= to) {
+    return { spend: c.spend, revenue: c.revenue, purchases: c.purchases, impressions: c.impressions, linkClicks: c.linkClicks };
+  }
+  return { spend: 0, revenue: 0, purchases: 0, impressions: 0, linkClicks: 0 };
+}
+function rangeReach(c: DemoCampaign, from: string, to: string, t: MetricTotals, days: number): number {
+  if (DEMO_DAILY[c.name]) return t.impressions > 0 ? Math.round(estimateReach(c, t.impressions, days)) : 0;
+  if (from <= LATEST_DATE && LATEST_DATE <= to) return c.reach;
+  return 0;
+}
+
+// ──────────────────────────────────────────────────────────────── columns ──
+
+interface Row {
+  c: DemoCampaign;
+  t: MetricTotals;
+  reach: number;
+  funnel: FunnelCounts;
+}
+
+interface ColumnDef {
+  id: string;
+  label: string;
+  group: 'Performance' | 'Funnel';
+  defaultOn: boolean;
+  numeric: boolean;
+  render: (r: Row) => string;
+}
+
+const COLUMNS: ColumnDef[] = [
+  { id: 'delivery', label: 'Delivery', group: 'Performance', defaultOn: true, numeric: false, render: (r) => r.c.delivery },
+  { id: 'bidStrategy', label: 'Bid strategy', group: 'Performance', defaultOn: true, numeric: false, render: (r) => (r.c.bidStrategy === 'Cost per result goal' ? `Cost per result goal · ${inr(r.c.costPerResultGoal ?? 0)}` : r.c.bidStrategy) },
+  { id: 'budget', label: 'Budget', group: 'Performance', defaultOn: true, numeric: true, render: (r) => `Daily · ${inr(r.c.dailyBudget)}` },
+  { id: 'results', label: 'Results', group: 'Performance', defaultOn: true, numeric: true, render: (r) => num(r.t.purchases) },
+  { id: 'reach', label: 'Reach', group: 'Performance', defaultOn: true, numeric: true, render: (r) => num(r.reach) },
+  { id: 'impressions', label: 'Impressions', group: 'Performance', defaultOn: true, numeric: true, render: (r) => num(r.t.impressions) },
+  { id: 'frequency', label: 'Frequency', group: 'Performance', defaultOn: false, numeric: true, render: (r) => (r.reach > 0 ? (r.t.impressions / r.reach).toFixed(2) : '–') },
+  { id: 'cpm', label: 'CPM', group: 'Performance', defaultOn: true, numeric: true, render: (r) => (r.t.impressions > 0 ? inr(Math.round(cpm(r.t))) : '–') },
+  { id: 'cpc', label: 'CPC (link)', group: 'Performance', defaultOn: true, numeric: true, render: (r) => (r.t.linkClicks > 0 ? inr(Math.round(cpc(r.t))) : '–') },
+  { id: 'ctr', label: 'CTR (link)', group: 'Performance', defaultOn: true, numeric: true, render: (r) => (r.t.impressions > 0 ? pct(ctr(r.t)) : '–') },
+  { id: 'linkClicks', label: 'Link clicks', group: 'Performance', defaultOn: false, numeric: true, render: (r) => num(r.t.linkClicks) },
+  { id: 'costPerResult', label: 'Cost / result', group: 'Performance', defaultOn: true, numeric: true, render: (r) => (r.t.purchases > 0 ? inr(Math.round(costPerResult(r.t))) : '–') },
+  { id: 'amountSpent', label: 'Amount spent', group: 'Performance', defaultOn: true, numeric: true, render: (r) => inr(r.t.spend) },
+  { id: 'purchaseValue', label: 'Purchase value', group: 'Performance', defaultOn: false, numeric: true, render: (r) => inr(r.t.revenue) },
+  { id: 'roas', label: 'Purchase ROAS', group: 'Performance', defaultOn: true, numeric: true, render: (r) => (r.t.spend > 0 && r.t.revenue > 0 ? `${campaignRoas(r.t).toFixed(2)}x` : '–') },
+  { id: 'lpv', label: 'Landing page views', group: 'Funnel', defaultOn: false, numeric: true, render: (r) => num(r.funnel.landingPageViews) },
+  { id: 'costPerLpv', label: 'Cost / landing page view', group: 'Funnel', defaultOn: false, numeric: true, render: (r) => (r.funnel.landingPageViews > 0 ? inr(Math.round(r.t.spend / r.funnel.landingPageViews)) : '–') },
+  { id: 'atc', label: 'Adds to cart', group: 'Funnel', defaultOn: false, numeric: true, render: (r) => num(r.funnel.addToCart) },
+  { id: 'costPerAtc', label: 'Cost / add to cart', group: 'Funnel', defaultOn: false, numeric: true, render: (r) => (r.funnel.addToCart > 0 ? inr(Math.round(r.t.spend / r.funnel.addToCart)) : '–') },
+  { id: 'checkout', label: 'Checkouts initiated', group: 'Funnel', defaultOn: false, numeric: true, render: (r) => num(r.funnel.checkoutInitiated) },
+  { id: 'costPerCheckout', label: 'Cost / checkout', group: 'Funnel', defaultOn: false, numeric: true, render: (r) => (r.funnel.checkoutInitiated > 0 ? inr(Math.round(r.t.spend / r.funnel.checkoutInitiated)) : '–') },
+];
+const DEFAULT_COLUMNS = COLUMNS.filter((c) => c.defaultOn).map((c) => c.id);
+const FOOTER_SKIP = new Set(['delivery', 'bidStrategy', 'budget']);
+
+// ─────────────────────────────────────────────────────── create campaign ──
+
+interface CreateCampaignInput {
+  name: string;
+  type: DemoCampaign['type'];
+  bidStrategy: DemoCampaign['bidStrategy'];
+  costPerResultGoal?: number;
+  dailyBudget: number;
+}
+
+const ACCOUNT_AOV = DEMO_TOTALS.revenue / DEMO_TOTALS.purchases;
+const CTR_BAND: Record<DemoCampaign['type'], number> = { Prospecting: 1.15, Retargeting: 2.6, Catalog: 1.9 };
+
+/** A brand-new campaign's first-day numbers: small, noisy, and delivery still
+ *  "Learning" — that's realistic, not a placeholder. Randomised (not seeded) since
+ *  this is a live user action, not a fixed case-study figure. */
+function buildDayOneCampaign(input: CreateCampaignInput): DemoCampaign {
+  const spend = Math.round(input.dailyBudget * (0.25 + Math.random() * 0.45));
+  const cpmGuess = 90 + Math.random() * 55;
+  const impressions = Math.max(1, Math.round((spend / cpmGuess) * 1000));
+  const ctrGuess = CTR_BAND[input.type] * (0.8 + Math.random() * 0.4);
+  const linkClicks = Math.max(0, Math.round(impressions * (ctrGuess / 100)));
+  const purchases = spend > input.dailyBudget * 0.45 && Math.random() < 0.4 ? 1 : 0;
+  const revenue = purchases > 0 ? Math.round(ACCOUNT_AOV * (0.8 + Math.random() * 0.5)) : 0;
+  const reach = Math.max(1, Math.round(impressions / (1 + Math.random() * 0.15)));
+  return {
+    name: input.name, type: input.type,
+    spend, revenue, purchases, impressions, linkClicks, reach,
+    bidStrategy: input.bidStrategy,
+    costPerResultGoal: input.bidStrategy === 'Cost per result goal' ? input.costPerResultGoal : undefined,
+    dailyBudget: input.dailyBudget,
+    delivery: 'Learning',
+  };
+}
+
+// ──────────────────────────────────────────────────────────────── component ──
 
 export function RunDashboard() {
   const [filter, setFilter] = useState<Filter>('All');
-  const rows = DEMO_CAMPAIGNS.filter((c) => filter === 'All' || c.type === filter);
+
+  const [rangeKey, setRangeKey] = useState<RangeKey>('30d');
+  const [customFrom, setCustomFrom] = useState<string>(isoDaysBefore(LATEST_DATE, 29));
+  const [customTo, setCustomTo] = useState<string>(LATEST_DATE);
+  const [rangeOpen, setRangeOpen] = useState(false);
+
+  const [enabledColumns, setEnabledColumns] = useState<string[]>(DEFAULT_COLUMNS);
+  const [columnsOpen, setColumnsOpen] = useState(false);
+
+  const [customCampaigns, setCustomCampaigns] = useState<DemoCampaign[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const rawCols = localStorage.getItem(COLUMNS_KEY);
+      if (rawCols) setEnabledColumns(JSON.parse(rawCols));
+      const rawCamp = localStorage.getItem(CAMPAIGNS_KEY);
+      if (rawCamp) setCustomCampaigns(JSON.parse(rawCamp));
+    } catch {
+      // localStorage unavailable or corrupt — fall back to defaults, no need to surface an error
+    }
+    setHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (hydrated) localStorage.setItem(COLUMNS_KEY, JSON.stringify(enabledColumns));
+  }, [enabledColumns, hydrated]);
+  useEffect(() => {
+    if (hydrated) localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(customCampaigns));
+  }, [customCampaigns, hydrated]);
+
+  const { from, to } = useMemo(() => {
+    if (rangeKey === 'custom') return { from: customFrom, to: customTo };
+    const days = RANGE_PRESETS.find((p) => p.key === rangeKey)!.days;
+    return { from: isoDaysBefore(LATEST_DATE, days - 1), to: LATEST_DATE };
+  }, [rangeKey, customFrom, customTo]);
+  const rangeDays = rangeDayCount(from, to);
+  const rangeLabel = rangeKey === 'custom' ? `${formatShort(from)} – ${formatShort(to)}` : RANGE_PRESETS.find((p) => p.key === rangeKey)!.label;
+
+  const allRows: Row[] = useMemo(() => {
+    return [...DEMO_CAMPAIGNS, ...customCampaigns].map((c) => {
+      const t = rangeTotals(c, from, to);
+      const reach = rangeReach(c, from, to, t, rangeDays);
+      const funnel = funnelFor(c.type, t.purchases, t.linkClicks);
+      return { c, t, reach, funnel };
+    });
+  }, [customCampaigns, from, to, rangeDays]);
+  const rows = allRows.filter((r) => filter === 'All' || r.c.type === filter);
+  const visibleColumns = COLUMNS.filter((col) => enabledColumns.includes(col.id));
+
+  const kpiSpend = allRows.reduce((n, r) => n + r.t.spend, 0);
+  const kpiRevenue = allRows.reduce((n, r) => n + r.t.revenue, 0);
+  const kpiPurchases = allRows.reduce((n, r) => n + r.t.purchases, 0);
+  const kpiNewCustomers = Math.round(kpiPurchases * NEW_CUSTOMER_RATE);
+  const kpiCac = kpiNewCustomers > 0 ? Math.round(kpiSpend / kpiNewCustomers) : 0;
+  const kpiRoas = kpiSpend > 0 ? kpiRevenue / kpiSpend : 0;
+
+  const footerTotals = rows.reduce<MetricTotals>((a, r) => ({
+    spend: a.spend + r.t.spend, revenue: a.revenue + r.t.revenue, purchases: a.purchases + r.t.purchases,
+    impressions: a.impressions + r.t.impressions, linkClicks: a.linkClicks + r.t.linkClicks,
+  }), { spend: 0, revenue: 0, purchases: 0, impressions: 0, linkClicks: 0 });
+  const footerReach = rows.reduce((n, r) => n + r.reach, 0);
+  const footerFunnel = rows.reduce<FunnelCounts>((a, r) => ({
+    landingPageViews: a.landingPageViews + r.funnel.landingPageViews,
+    addToCart: a.addToCart + r.funnel.addToCart,
+    checkoutInitiated: a.checkoutInitiated + r.funnel.checkoutInitiated,
+  }), { landingPageViews: 0, addToCart: 0, checkoutInitiated: 0 });
+  const footerRow: Row = { c: rows[0]?.c ?? DEMO_CAMPAIGNS[0], t: footerTotals, reach: footerReach, funnel: footerFunnel };
+
+  function toggleColumn(id: string) {
+    setEnabledColumns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   return (
     <div className="mb-shell">
+      {(rangeOpen || columnsOpen) && <div className="mb-backdrop" onClick={() => { setRangeOpen(false); setColumnsOpen(false); }} />}
+
       <aside className="mb-side">
         <div className="mb-logo">
           <span className="mb-logo-mark" aria-hidden />
@@ -59,30 +251,91 @@ export function RunDashboard() {
           </div>
           <div className="mb-topbar-right">
             <span className="mb-sim-badge">Educational simulation</span>
-            <span className="mb-range">Last 30 days</span>
+            <div className="mb-range-wrap">
+              <button type="button" className="mb-range" onClick={() => { setColumnsOpen(false); setRangeOpen((o) => !o); }}>
+                {rangeLabel} <ChevronDown size={13} />
+              </button>
+              {rangeOpen && (
+                <div className="mb-range-panel">
+                  {RANGE_PRESETS.map((p) => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      className={rangeKey === p.key ? 'mb-range-opt mb-range-opt-on' : 'mb-range-opt'}
+                      onClick={() => { setRangeKey(p.key); if (p.key !== 'custom') setRangeOpen(false); }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {rangeKey === 'custom' && (
+                    <div className="mb-range-custom">
+                      <label>From
+                        <input type="date" value={customFrom} min={EARLIEST_DATE} max={customTo} onChange={(e) => setCustomFrom(e.target.value)} />
+                      </label>
+                      <label>To
+                        <input type="date" value={customTo} min={customFrom} max={LATEST_DATE} onChange={(e) => setCustomTo(e.target.value)} />
+                      </label>
+                      <button type="button" className="mb-btn-primary" onClick={() => setRangeOpen(false)}>Apply</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="mb-kpis">
-          <Kpi label="Amount spent" value={inr(DEMO_TOTALS.spend)} />
-          <Kpi label="Purchase value" value={inr(DEMO_TOTALS.revenue)} />
-          <Kpi label="Results" value={num(DEMO_TOTALS.purchases)} />
-          <Kpi label="Cost per result" value={inr(DEMO_CAC)} />
-          <Kpi label="Purchase ROAS" value={`${DEMO_ROAS.toFixed(2)}x`} />
+          <Kpi label="Amount spent" value={inr(kpiSpend)} />
+          <Kpi label="Purchase value" value={inr(kpiRevenue)} />
+          <Kpi label="Results" value={num(kpiPurchases)} />
+          <Kpi label="Cost per result" value={kpiNewCustomers > 0 ? inr(kpiCac) : '–'} />
+          <Kpi label="Purchase ROAS" value={kpiSpend > 0 ? `${kpiRoas.toFixed(2)}x` : '–'} />
         </div>
 
-        <div className="mb-filters">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              aria-pressed={filter === f}
-              onClick={() => setFilter(f)}
-              className={filter === f ? 'mb-filter mb-filter-on' : 'mb-filter'}
-            >
-              {f}
+        <div className="mb-toolbar">
+          <div className="mb-filters">
+            {FILTERS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                aria-pressed={filter === f}
+                onClick={() => setFilter(f)}
+                className={filter === f ? 'mb-filter mb-filter-on' : 'mb-filter'}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+          <div className="mb-actions">
+            <div className="mb-cols-wrap">
+              <button type="button" className="mb-toolbtn" onClick={() => { setRangeOpen(false); setColumnsOpen((o) => !o); }}>
+                <SlidersHorizontal size={13} /> Columns
+              </button>
+              {columnsOpen && (
+                <div className="mb-cols-panel">
+                  <div className="mb-cols-head">
+                    <span>Customize columns</span>
+                    <button type="button" className="mb-cols-reset" onClick={() => setEnabledColumns(DEFAULT_COLUMNS)}>Reset to default</button>
+                  </div>
+                  {(['Performance', 'Funnel'] as const).map((group) => (
+                    <div key={group} className="mb-cols-group">
+                      <div className="mb-cols-group-label">{group}</div>
+                      {COLUMNS.filter((c) => c.group === group).map((c) => (
+                        <label key={c.id} className="mb-cols-item">
+                          <input type="checkbox" checked={enabledColumns.includes(c.id)} onChange={() => toggleColumn(c.id)} />
+                          {c.label}
+                        </label>
+                      ))}
+                    </div>
+                  ))}
+                  <button type="button" className="mb-btn-primary mb-cols-done" onClick={() => setColumnsOpen(false)}>Done</button>
+                </div>
+              )}
+            </div>
+            <button type="button" className="mb-btn-primary" onClick={() => setCreateOpen(true)}>
+              <Plus size={14} /> Create
             </button>
-          ))}
+          </div>
         </div>
 
         <div className="mb-table-wrap">
@@ -91,39 +344,22 @@ export function RunDashboard() {
               <tr>
                 <th className="mb-col-toggle" aria-label="Delivery on/off" />
                 <th>Campaign</th>
-                <th>Delivery</th>
-                <th>Bid strategy</th>
-                <th className="num">Budget</th>
-                <th className="num">Results</th>
-                <th className="num">Reach</th>
-                <th className="num">Impressions</th>
-                <th className="num">CPM</th>
-                <th className="num">CPC</th>
-                <th className="num">CTR</th>
-                <th className="num">Cost / result</th>
-                <th className="num">Amount spent</th>
-                <th className="num">ROAS</th>
+                {visibleColumns.map((col) => (
+                  <th key={col.id} className={col.numeric ? 'num' : undefined}>{col.label}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((c) => <CampaignRow key={c.name} c={c} />)}
+              {rows.map((r) => <CampaignRow key={r.c.name} row={r} columns={visibleColumns} />)}
             </tbody>
             <tfoot>
               <tr>
                 <td colSpan={2}>{filter === 'All' ? 'All campaigns' : `${filter} campaigns`}</td>
-                <td colSpan={3} />
-                <td className="num">{num(rows.reduce((n, c) => n + c.purchases, 0))}</td>
-                <td className="num">{num(rows.reduce((n, c) => n + c.reach, 0))}</td>
-                <td className="num">{num(rows.reduce((n, c) => n + c.impressions, 0))}</td>
-                <td colSpan={2} />
-                <td className="num">
-                  {pct((rows.reduce((n, c) => n + c.linkClicks, 0) / rows.reduce((n, c) => n + c.impressions, 0)) * 100)}
-                </td>
-                <td className="num">{inr(Math.round(rows.reduce((n, c) => n + c.spend, 0) / rows.reduce((n, c) => n + c.purchases, 0)))}</td>
-                <td className="num">{inr(rows.reduce((n, c) => n + c.spend, 0))}</td>
-                <td className="num">
-                  {(rows.reduce((n, c) => n + c.revenue, 0) / rows.reduce((n, c) => n + c.spend, 0)).toFixed(2)}x
-                </td>
+                {visibleColumns.map((col) => (
+                  <td key={col.id} className={col.numeric ? 'num' : undefined}>
+                    {FOOTER_SKIP.has(col.id) ? '' : col.render(footerRow)}
+                  </td>
+                ))}
               </tr>
             </tfoot>
           </table>
@@ -131,11 +367,14 @@ export function RunDashboard() {
 
         <p className="mb-footnote">
           A fictional account built for teaching. These are not real Meta results and not
-          performance benchmarks. Cost per result above is spend ÷ purchases; the account-level
-          Cost per result KPI at the top is cost per <em>new customer</em> instead, which is why
-          the two numbers don&apos;t match — the same gap the SQL course teaches you to notice.
+          performance benchmarks. Cost per result in the table is spend ÷ purchases; the
+          account-level Cost per result KPI at the top is cost per <em>new customer</em> instead,
+          which is why the two numbers don&apos;t match — the same gap the SQL course teaches you
+          to notice, holding across whatever date range you pick above.
         </p>
       </div>
+
+      {createOpen && <CreateCampaignModal onClose={() => setCreateOpen(false)} onCreate={(input) => { setCustomCampaigns((prev) => [buildDayOneCampaign(input), ...prev]); setCreateOpen(false); }} />}
 
       <style>{`
         .mb-shell {
@@ -149,6 +388,7 @@ export function RunDashboard() {
           --m-blue-soft: #e7f0ff;
           --m-green: #31a24c;
           --m-amber: #f0a20d;
+          position: relative;
           background: var(--m-bg);
           color: var(--m-ink);
           font-family: "Segoe UI", -apple-system, Roboto, Helvetica, Arial, sans-serif;
@@ -160,6 +400,8 @@ export function RunDashboard() {
           overflow: hidden;
         }
         .mb-shell * { box-sizing: border-box; }
+
+        .mb-backdrop { position: fixed; inset: 0; z-index: 40; background: transparent; }
 
         .mb-side { background: var(--m-card); border-right: 1px solid var(--m-line); padding: 18px 12px; }
         .mb-logo { display: flex; align-items: center; gap: 9px; padding: 4px 8px 18px; font-weight: 700; font-size: 15px; }
@@ -173,7 +415,7 @@ export function RunDashboard() {
         .mb-nav-on { background: var(--m-blue-soft); color: var(--m-blue); font-weight: 700; }
         .mb-nav-on .mb-nav-dot { background: var(--m-blue); }
 
-        .mb-main { padding: 22px 26px 28px; min-width: 0; }
+        .mb-main { padding: 22px 26px 28px; min-width: 0; position: relative; }
         .mb-topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
         .mb-topbar h1 { font-size: 19px; font-weight: 700; margin: 0; }
         .mb-breadcrumb { font-size: 12.5px; color: var(--m-muted); margin: 2px 0 0; }
@@ -182,19 +424,66 @@ export function RunDashboard() {
           font-size: 11px; font-weight: 700; color: #7a5b00; background: #fff4d6;
           border: 1px solid #f0d98c; border-radius: 999px; padding: 5px 10px;
         }
-        .mb-range { font-size: 12.5px; color: var(--m-muted); border: 1px solid var(--m-line); background: var(--m-card); padding: 7px 13px; border-radius: 6px; }
+
+        .mb-range-wrap, .mb-cols-wrap { position: relative; }
+        .mb-range {
+          display: inline-flex; align-items: center; gap: 6px;
+          font: 500 12.5px/1 inherit; color: var(--m-muted);
+          border: 1px solid var(--m-line); background: var(--m-card); padding: 7px 13px; border-radius: 6px; cursor: pointer;
+        }
+        .mb-range-panel, .mb-cols-panel {
+          position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
+          background: var(--m-card); border: 1px solid var(--m-line); border-radius: 8px;
+          box-shadow: 0 8px 24px rgba(0,0,0,.12); padding: 8px; min-width: 200px;
+        }
+        .mb-range-opt {
+          display: block; width: 100%; text-align: left; font: 500 13px/1 inherit;
+          padding: 8px 10px; border-radius: 6px; border: none; background: none; color: var(--m-ink); cursor: pointer;
+        }
+        .mb-range-opt:hover { background: #f2f3f5; }
+        .mb-range-opt-on { background: var(--m-blue-soft); color: var(--m-blue); font-weight: 700; }
+        .mb-range-custom { padding: 8px 6px 4px; border-top: 1px solid var(--m-line); margin-top: 4px; display: flex; flex-direction: column; gap: 8px; }
+        .mb-range-custom label { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--m-muted); font-weight: 600; }
+        .mb-range-custom input[type="date"] { font: 500 12.5px inherit; padding: 6px 8px; border: 1px solid var(--m-line); border-radius: 6px; }
 
         .mb-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
         .mb-kpi { background: var(--m-card); border: 1px solid var(--m-line); border-radius: 8px; padding: 13px 14px; }
         .mb-kpi-l { font-size: 11.5px; color: var(--m-muted); font-weight: 500; }
         .mb-kpi-v { font-size: 19px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-        .mb-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .mb-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .mb-filters { display: flex; flex-wrap: wrap; gap: 6px; }
         .mb-filter {
           font: 500 12.5px/1 inherit; padding: 7px 13px; border-radius: 6px;
           border: 1px solid var(--m-line); background: var(--m-card); color: var(--m-muted); cursor: pointer;
         }
         .mb-filter-on { background: var(--m-blue-soft); border-color: var(--m-blue); color: var(--m-blue); font-weight: 700; }
+
+        .mb-actions { display: flex; align-items: center; gap: 8px; }
+        .mb-toolbtn {
+          display: inline-flex; align-items: center; gap: 6px;
+          font: 600 12.5px/1 inherit; padding: 7px 13px; border-radius: 6px;
+          border: 1px solid var(--m-line); background: var(--m-card); color: var(--m-muted); cursor: pointer;
+        }
+        .mb-toolbtn:hover { background: #f2f3f5; }
+        .mb-btn-primary {
+          display: inline-flex; align-items: center; gap: 6px;
+          font: 700 12.5px/1 inherit; padding: 8px 14px; border-radius: 6px;
+          border: 1px solid var(--m-blue); background: var(--m-blue); color: #fff; cursor: pointer;
+        }
+        .mb-btn-primary:hover { background: #166fe0; }
+        .mb-btn-secondary {
+          font: 600 12.5px/1 inherit; padding: 8px 14px; border-radius: 6px;
+          border: 1px solid var(--m-line); background: var(--m-card); color: var(--m-ink); cursor: pointer;
+        }
+
+        .mb-cols-panel { min-width: 240px; max-height: 380px; overflow-y: auto; }
+        .mb-cols-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 8px; font-size: 12.5px; font-weight: 700; border-bottom: 1px solid var(--m-line); margin-bottom: 4px; }
+        .mb-cols-reset { font: 600 11px/1 inherit; color: var(--m-blue); background: none; border: none; cursor: pointer; }
+        .mb-cols-group-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--m-faint); padding: 8px 8px 4px; }
+        .mb-cols-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+        .mb-cols-item:hover { background: #f2f3f5; }
+        .mb-cols-done { width: 100%; justify-content: center; margin-top: 6px; }
 
         .mb-table-wrap { overflow-x: auto; background: var(--m-card); border: 1px solid var(--m-line); border-radius: 8px; }
         .mb-table { width: 100%; min-width: 980px; border-collapse: collapse; }
@@ -207,6 +496,7 @@ export function RunDashboard() {
         .mb-table tbody tr:last-child td { border-bottom: 1px solid var(--m-line); }
         .mb-table th.num, .mb-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
         .mb-col-toggle { width: 44px; }
+        .mb-row-new td { background: #f4faf6; }
 
         .mb-campaign-name { color: var(--m-blue); font-weight: 500; }
         .mb-campaign-type { display: block; font-size: 11px; color: var(--m-faint); font-weight: 400; margin-top: 1px; }
@@ -222,10 +512,26 @@ export function RunDashboard() {
 
         .mb-footnote { margin-top: 14px; font-size: 12px; color: var(--m-faint); max-width: 74ch; }
 
+        .mb-modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .mb-modal { width: 100%; max-width: 420px; background: var(--m-card); border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
+        .mb-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--m-line); }
+        .mb-modal-head h2 { font-size: 16px; font-weight: 700; margin: 0; }
+        .mb-modal-close { border: none; background: none; color: var(--m-muted); cursor: pointer; padding: 4px; display: flex; }
+        .mb-modal-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+        .mb-field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--m-muted); }
+        .mb-field input, .mb-field select {
+          font: 500 13.5px inherit; color: var(--m-ink); padding: 9px 10px;
+          border: 1px solid var(--m-line); border-radius: 6px; background: var(--m-card);
+        }
+        .mb-modal-error { font-size: 12.5px; font-weight: 600; color: #d32f2f; margin: 0; }
+        .mb-modal-hint { font-size: 11.5px; color: var(--m-faint); margin: 0; line-height: 1.5; }
+        .mb-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
         @media (max-width: 760px) {
           .mb-shell { grid-template-columns: 1fr; }
           .mb-side { display: none; }
           .mb-kpis { grid-template-columns: repeat(2, 1fr); }
+          .mb-range-panel, .mb-cols-panel { right: auto; left: 0; }
         }
       `}</style>
     </div>
@@ -241,26 +547,96 @@ function Kpi({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CampaignRow({ c }: { c: DemoCampaign }) {
+function CampaignRow({ row, columns }: { row: Row; columns: ColumnDef[] }) {
   return (
-    <tr>
+    <tr className={row.c.delivery === 'Learning' ? 'mb-row-new' : undefined}>
       <td><span className="mb-toggle" role="img" aria-label="Delivery on" /></td>
       <td>
-        <span className="mb-campaign-name">{c.name}</span>
-        <span className="mb-campaign-type">{c.type}</span>
+        <span className="mb-campaign-name">{row.c.name}</span>
+        <span className="mb-campaign-type">{row.c.type}</span>
       </td>
-      <td><span className="mb-delivery">{c.delivery}</span></td>
-      <td>{c.bidStrategy === 'Cost per result goal' ? `Cost per result goal · ${inr(c.costPerResultGoal!)}` : c.bidStrategy}</td>
-      <td className="num">Daily · {inr(c.dailyBudget)}</td>
-      <td className="num">{num(c.purchases)}</td>
-      <td className="num">{num(c.reach)}</td>
-      <td className="num">{num(c.impressions)}</td>
-      <td className="num">{inr(Math.round(cpm(c)))}</td>
-      <td className="num">{inr(Math.round(cpc(c)))}</td>
-      <td className="num">{pct(ctr(c))}</td>
-      <td className="num">{inr(Math.round(costPerResult(c)))}</td>
-      <td className="num">{inr(c.spend)}</td>
-      <td className="num">{campaignRoas(c).toFixed(2)}x</td>
+      {columns.map((col) => (
+        <td key={col.id} className={col.numeric ? 'num' : undefined}>{col.render(row)}</td>
+      ))}
     </tr>
+  );
+}
+
+function CreateCampaignModal({ onClose, onCreate }: { onClose: () => void; onCreate: (input: CreateCampaignInput) => void }) {
+  const [name, setName] = useState('');
+  const [type, setType] = useState<DemoCampaign['type']>('Prospecting');
+  const [bidStrategy, setBidStrategy] = useState<DemoCampaign['bidStrategy']>('Highest volume');
+  const [costGoal, setCostGoal] = useState('850');
+  const [dailyBudget, setDailyBudget] = useState('2000');
+  const [error, setError] = useState('');
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const trimmed = name.trim();
+    const budget = Number(dailyBudget);
+    if (!trimmed) { setError('Campaign name is required.'); return; }
+    if (!Number.isFinite(budget) || budget < 100) { setError('Enter a daily budget of at least ₹100.'); return; }
+    onCreate({
+      name: trimmed, type, bidStrategy,
+      costPerResultGoal: bidStrategy === 'Cost per result goal' ? (Number(costGoal) || undefined) : undefined,
+      dailyBudget: Math.round(budget),
+    });
+  }
+
+  return (
+    <div className="mb-modal-backdrop" onClick={onClose}>
+      <div className="mb-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-modal-head">
+          <h2>Create new campaign</h2>
+          <button type="button" className="mb-modal-close" onClick={onClose} aria-label="Close"><X size={16} /></button>
+        </div>
+        <form onSubmit={submit} className="mb-modal-body">
+          <label className="mb-field">
+            <span>Campaign name</span>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Prospecting — Reels Broad" autoFocus />
+          </label>
+          <label className="mb-field">
+            <span>Objective</span>
+            <select defaultValue="Sales" disabled>
+              <option>Sales</option>
+            </select>
+          </label>
+          <label className="mb-field">
+            <span>Audience type</span>
+            <select value={type} onChange={(e) => setType(e.target.value as DemoCampaign['type'])}>
+              <option value="Prospecting">Prospecting (new audience)</option>
+              <option value="Retargeting">Retargeting (warm audience)</option>
+              <option value="Catalog">Catalog (dynamic ads)</option>
+            </select>
+          </label>
+          <label className="mb-field">
+            <span>Bid strategy</span>
+            <select value={bidStrategy} onChange={(e) => setBidStrategy(e.target.value as DemoCampaign['bidStrategy'])}>
+              <option value="Highest volume">Highest volume</option>
+              <option value="Cost per result goal">Cost per result goal</option>
+            </select>
+          </label>
+          {bidStrategy === 'Cost per result goal' && (
+            <label className="mb-field">
+              <span>Cost per result goal (₹)</span>
+              <input type="number" min={1} value={costGoal} onChange={(e) => setCostGoal(e.target.value)} />
+            </label>
+          )}
+          <label className="mb-field">
+            <span>Daily budget (₹)</span>
+            <input type="number" min={100} step={100} value={dailyBudget} onChange={(e) => setDailyBudget(e.target.value)} />
+          </label>
+          {error && <p className="mb-modal-error">{error}</p>}
+          <p className="mb-modal-hint">
+            New campaigns launch in the Learning phase — delivery is still stabilizing, so Day 1
+            numbers are small and noisy. That&apos;s expected, not a bug.
+          </p>
+          <div className="mb-modal-actions">
+            <button type="button" className="mb-btn-secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="mb-btn-primary">Publish campaign</button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

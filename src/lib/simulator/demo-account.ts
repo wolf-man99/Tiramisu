@@ -76,18 +76,216 @@ export const DEMO_CAMPAIGNS: DemoCampaign[] = [
   },
 ];
 
+/** The raw counts every derived metric below is computed from — shared by a full
+ *  DemoCampaign and by any date-range-aggregated total, so CPM/CPC/CTR/etc. work
+ *  identically whether they're describing the whole campaign or a filtered slice. */
+export interface MetricTotals {
+  spend: number;
+  revenue: number;
+  purchases: number;
+  impressions: number;
+  linkClicks: number;
+}
+
 /** CPM: cost per 1,000 impressions. */
-export const cpm = (c: DemoCampaign): number => (c.spend / c.impressions) * 1000;
+export const cpm = (c: MetricTotals): number => (c.spend / c.impressions) * 1000;
 /** CPC: cost per link click. */
-export const cpc = (c: DemoCampaign): number => c.spend / c.linkClicks;
+export const cpc = (c: MetricTotals): number => c.spend / c.linkClicks;
 /** CTR: link clicks ÷ impressions, as a percentage. */
-export const ctr = (c: DemoCampaign): number => (c.linkClicks / c.impressions) * 100;
-/** Frequency: average number of times a person saw this campaign. */
-export const frequency = (c: DemoCampaign): number => c.impressions / c.reach;
+export const ctr = (c: MetricTotals): number => (c.linkClicks / c.impressions) * 100;
 /** Cost per result — Meta's term for cost per purchase on a sales campaign. */
-export const costPerResult = (c: DemoCampaign): number => c.spend / c.purchases;
-/** Purchase ROAS for a single campaign. */
-export const campaignRoas = (c: DemoCampaign): number => c.revenue / c.spend;
+export const costPerResult = (c: MetricTotals): number => c.spend / c.purchases;
+/** Purchase ROAS. */
+export const campaignRoas = (c: MetricTotals): number => c.revenue / c.spend;
+/** Frequency: average number of times a person saw this campaign. Reach doesn't sum
+ *  linearly across days (the same person is reached repeatedly), so it takes the
+ *  campaign's baseline (30-day) frequency and range length rather than raw counts. */
+export const frequency = (c: DemoCampaign): number => c.impressions / c.reach;
+/** Estimated reach for an arbitrary-length range, extrapolated from the campaign's
+ *  known 30-day frequency. Frequency grows sub-linearly with a longer window (people
+ *  keep getting shown the ad, but reach grows slower than impressions do). */
+export function estimateReach(c: DemoCampaign, rangeImpressions: number, rangeDays: number): number {
+  const freq30 = frequency(c);
+  const freqRange = Math.max(1, freq30 * (rangeDays / 30) ** 0.4);
+  return rangeImpressions / freqRange;
+}
+
+/** Funnel conversion rates below Link Click, per campaign type — cold prospecting
+ *  traffic bounces more and adds-to-cart less than an audience that's already
+ *  shown intent, which is exactly the gap Retargeting vs Prospecting is meant to
+ *  teach. Applied to range-aggregated purchases (not per-day) to avoid the noise
+ *  of small daily counts. */
+const FUNNEL_RATES: Record<DemoCampaign['type'], { lpvOfClicks: number; cartOfLpv: number; checkoutOfCart: number; purchaseOfCheckout: number }> = {
+  Prospecting: { lpvOfClicks: 0.53, cartOfLpv: 0.22, checkoutOfCart: 0.50, purchaseOfCheckout: 0.55 },
+  Retargeting: { lpvOfClicks: 0.60, cartOfLpv: 0.35, checkoutOfCart: 0.65, purchaseOfCheckout: 0.70 },
+  Catalog: { lpvOfClicks: 0.58, cartOfLpv: 0.28, checkoutOfCart: 0.55, purchaseOfCheckout: 0.62 },
+};
+
+export interface FunnelCounts {
+  landingPageViews: number;
+  addToCart: number;
+  checkoutInitiated: number;
+}
+
+// ─────────────────────────────────────────────── daily series (date ranges) ──
+//
+// The account's "as of" date is fixed, not real-world today: this is a frozen
+// case-study snapshot (consistent with the "Educational simulation" labelling),
+// not a live feed, so it never drifts and never needs regenerating.
+const LATEST_DATE = '2026-08-11';
+const HISTORY_DAYS = 90;
+const RECENT_WINDOW = 30; // the window DEMO_CAMPAIGNS' totals above describe exactly
+
+export interface DailyPoint {
+  date: string; // ISO yyyy-mm-dd
+  spend: number;
+  impressions: number;
+  linkClicks: number;
+  purchases: number;
+  revenue: number;
+}
+
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function stringSeed(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+  return h;
+}
+export function isoDaysBefore(latest: string, daysAgo: number): string {
+  const d = new Date(`${latest}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - daysAgo);
+  return d.toISOString().slice(0, 10);
+}
+/** Sunday=0 .. Saturday=6. D2C streetwear skews weekend — people browse and buy
+ *  off the clock, not during a workday. */
+const WEEKDAY_WEIGHT = [1.15, 0.82, 0.85, 0.88, 0.92, 1.05, 1.28];
+
+/** Splits `total` across `weights` so the parts sum to EXACTLY `total` (largest-
+ *  remainder method for integers) — the recent-30-days window has to reconcile to
+ *  DEMO_CAMPAIGNS' published figures to the rupee, not "approximately". */
+function distributeExact(total: number, weights: number[], integer: boolean): number[] {
+  const weightSum = weights.reduce((a, b) => a + b, 0);
+  const raw = weights.map((w) => (w / weightSum) * total);
+  if (!integer) {
+    const out = raw.slice();
+    const drift = total - out.reduce((a, b) => a + b, 0);
+    out[out.length - 1] += drift;
+    return out;
+  }
+  const floors = raw.map(Math.floor);
+  let remainder = total - floors.reduce((a, b) => a + b, 0);
+  const order = raw
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  const out = floors.slice();
+  for (let k = 0; k < order.length && remainder > 0; k++, remainder--) out[order[k].i]++;
+  return out;
+}
+
+function dailyWeights(rng: () => number, days: number, offset: number): number[] {
+  return Array.from({ length: days }, (_, i) => {
+    const date = new Date(`${LATEST_DATE}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - (offset + (days - 1 - i)));
+    const wd = WEEKDAY_WEIGHT[date.getUTCDay()];
+    return wd * (0.82 + rng() * 0.36); // ±18% daily noise on top of the weekday shape
+  });
+}
+
+/** Full 90-day daily series for one campaign, oldest first. Days 61-90 (the recent
+ *  window) sum exactly to that campaign's published totals in DEMO_CAMPAIGNS; days
+ *  1-60 are independently generated ~15-25% lower, consistent with the account
+ *  having scaled up over the quarter rather than run flat. Deterministic: reruns of
+ *  this function always produce the same series for the same campaign. */
+function generateCampaignSeries(c: DemoCampaign): DailyPoint[] {
+  const rng = mulberry32(stringSeed(c.name));
+  const olderDays = HISTORY_DAYS - RECENT_WINDOW;
+
+  const recentWeights = dailyWeights(rng, RECENT_WINDOW, 0);
+  const spend = distributeExact(c.spend, recentWeights, false);
+  const impressions = distributeExact(c.impressions, recentWeights, true);
+  const linkClicks = distributeExact(c.linkClicks, recentWeights, true);
+  const purchases = distributeExact(c.purchases, recentWeights, true);
+  const revenue = distributeExact(c.revenue, recentWeights, false);
+
+  const olderScale = 0.78 + rng() * 0.07; // one draw per campaign, not per day
+  const olderWeights = dailyWeights(rng, olderDays, RECENT_WINDOW);
+  const olderTotal = {
+    spend: c.spend * (olderDays / RECENT_WINDOW) * olderScale,
+    impressions: Math.round(c.impressions * (olderDays / RECENT_WINDOW) * olderScale),
+    linkClicks: Math.round(c.linkClicks * (olderDays / RECENT_WINDOW) * olderScale),
+    purchases: Math.round(c.purchases * (olderDays / RECENT_WINDOW) * olderScale),
+    revenue: c.revenue * (olderDays / RECENT_WINDOW) * olderScale,
+  };
+  const oSpend = distributeExact(olderTotal.spend, olderWeights, false);
+  const oImpressions = distributeExact(olderTotal.impressions, olderWeights, true);
+  const oLinkClicks = distributeExact(olderTotal.linkClicks, olderWeights, true);
+  const oPurchases = distributeExact(olderTotal.purchases, olderWeights, true);
+  const oRevenue = distributeExact(olderTotal.revenue, olderWeights, false);
+
+  const points: DailyPoint[] = [];
+  for (let i = 0; i < olderDays; i++) {
+    points.push({
+      date: isoDaysBefore(LATEST_DATE, HISTORY_DAYS - 1 - i),
+      spend: Math.round(oSpend[i]), impressions: oImpressions[i], linkClicks: oLinkClicks[i],
+      purchases: oPurchases[i], revenue: Math.round(oRevenue[i]),
+    });
+  }
+  for (let i = 0; i < RECENT_WINDOW; i++) {
+    points.push({
+      date: isoDaysBefore(LATEST_DATE, RECENT_WINDOW - 1 - i),
+      spend: Math.round(spend[i]), impressions: impressions[i], linkClicks: linkClicks[i],
+      purchases: purchases[i], revenue: Math.round(revenue[i]),
+    });
+  }
+  return points;
+}
+
+/** Precomputed once at module load — pure function of fixed inputs, so there's no
+ *  reason to regenerate it per render. */
+export const DEMO_DAILY: Record<string, DailyPoint[]> = Object.fromEntries(
+  DEMO_CAMPAIGNS.map((c) => [c.name, generateCampaignSeries(c)]),
+);
+
+export const EARLIEST_DATE = isoDaysBefore(LATEST_DATE, HISTORY_DAYS - 1);
+export { LATEST_DATE };
+
+/** Sums a campaign's daily series within [from, to] inclusive (ISO date strings). */
+export function aggregateRange(campaignName: string, from: string, to: string): MetricTotals {
+  const points = DEMO_DAILY[campaignName] ?? [];
+  const totals = { spend: 0, revenue: 0, purchases: 0, impressions: 0, linkClicks: 0 };
+  for (const p of points) {
+    if (p.date < from || p.date > to) continue;
+    totals.spend += p.spend;
+    totals.revenue += p.revenue;
+    totals.purchases += p.purchases;
+    totals.impressions += p.impressions;
+    totals.linkClicks += p.linkClicks;
+  }
+  return totals;
+}
+
+/** Number of whole days between two ISO dates, inclusive. */
+export function rangeDayCount(from: string, to: string): number {
+  return Math.round((new Date(`${to}T00:00:00Z`).getTime() - new Date(`${from}T00:00:00Z`).getTime()) / 86_400_000) + 1;
+}
+
+/** Derives the funnel backward from purchases (the one number that must stay exact),
+ *  then sanity-clamps landing page views under link clicks — physically it can never
+ *  exceed them, and the backward derivation is an approximation, not a hard identity. */
+export function funnelFor(type: DemoCampaign['type'], purchases: number, linkClicks: number): FunnelCounts {
+  const r = FUNNEL_RATES[type];
+  const checkoutInitiated = Math.round(purchases / r.purchaseOfCheckout);
+  const addToCart = Math.round(checkoutInitiated / r.checkoutOfCart);
+  const landingPageViews = Math.min(Math.round(addToCart / r.cartOfLpv), Math.round(linkClicks * 0.95));
+  return { landingPageViews, addToCart, checkoutInitiated };
+}
 
 /**
  * Headline account figures. Spend/revenue/purchases are the campaign sums.
@@ -106,6 +304,9 @@ export const DEMO_TOTALS = {
 
 export const DEMO_CAC = 817;
 export const DEMO_ROAS = DEMO_TOTALS.revenue / DEMO_TOTALS.spend;
+/** Share of purchases that are first-time buyers, held constant so the CAC-vs-cost-
+ *  per-result gap the footnote teaches still holds at any date range, not just 30d. */
+export const NEW_CUSTOMER_RATE = DEMO_TOTALS.newCustomers / DEMO_TOTALS.purchases;
 
 /** Indian digit grouping (₹3,42,000) — matches the account's currency. */
 export function inr(n: number): string {
