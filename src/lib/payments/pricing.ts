@@ -25,3 +25,17 @@ export function toPaise(rupees: number): number {
 export function isProduct(value: unknown): value is Product {
   return value === 'learn' || value === 'run' || value === 'bundle';
 }
+
+/**
+ * Purchase eligibility, not content access — see gating.ts for what a purchase
+ * unlocks. Run is never a first purchase, only an upgrade once Learn is already
+ * owned (Learn is a hard prerequisite for Run's own progress gate anyway, so a
+ * standalone Run purchase would just strand the buyer at the free preview). Bundle
+ * is only useful before owning Learn — buying it afterward would just re-pay for
+ * Learn a second time.
+ */
+export function isProductPurchasable(product: Product, hasLearn: boolean): boolean {
+  if (product === 'run') return hasLearn;
+  if (product === 'bundle') return !hasLearn;
+  return true;
+}

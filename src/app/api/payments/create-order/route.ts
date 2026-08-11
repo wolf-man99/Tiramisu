@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db';
 import { getProfileId } from '@/lib/auth/server';
 import { ensureEnrollment } from '@/lib/progress/persist';
 import { createRazorpayOrder, isRazorpayConfigured } from '@/lib/payments/razorpay';
-import { META_ADS_PRICING, isProduct, toPaise } from '@/lib/payments/pricing';
+import { META_ADS_PRICING, isProduct, isProductPurchasable, toPaise } from '@/lib/payments/pricing';
 
 export const runtime = 'nodejs';
 
@@ -28,7 +28,13 @@ export async function POST(req: Request) {
   }
   const product = body.product;
 
-  await ensureEnrollment(profileId, 'meta-ads');
+  const { enrollment } = await ensureEnrollment(profileId, 'meta-ads');
+  const hasLearn = Boolean(enrollment.learnPurchasedAt);
+  if (!isProductPurchasable(product, hasLearn)) {
+    const reason = product === 'run' ? 'Buy Learn first — Run isn\'t sold on its own.' : 'You already own Learn — buy Run instead of the bundle.';
+    return Response.json({ error: reason }, { status: 400 });
+  }
+
   const amount = toPaise(META_ADS_PRICING[product]);
 
   let order;
