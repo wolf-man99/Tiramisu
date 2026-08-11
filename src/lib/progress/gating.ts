@@ -1,5 +1,6 @@
 import { prisma } from '../db';
-import { META_LESSONS, metaLessonItemId } from '../content/meta-ads';
+import { META_LESSONS, metaLessonItemId, metaModuleBySlug } from '../content/meta-ads';
+import { FREE_MODULE_COUNT } from '../payments/pricing';
 
 /**
  * The Learn -> Run gate. A course opts in by adding a checker here; courses with no
@@ -42,15 +43,20 @@ export function hasRunTier(courseId: string): boolean {
  * persisting the result so the fast path (`runUnlockedAt` already set) applies from
  * then on. Safe to call on every Run-page load; the live check only runs on the
  * still-locked path, and only for courses with a Run tier at all.
+ *
+ * Requires BOTH the progress gate (every Learn lesson passed) and the payment gate
+ * (`runPurchasedAt`, set by a verified 'run' or 'bundle' purchase) — finishing the
+ * lessons doesn't skip paying, and paying doesn't skip finishing the lessons.
  */
 export async function isRunUnlocked(profileId: string, courseId: string): Promise<boolean> {
   if (!hasRunTier(courseId)) return false;
 
   const enrollment = await prisma.enrollment.findUnique({
     where: { profileId_courseId: { profileId, courseId } },
-    select: { runUnlockedAt: true },
+    select: { runUnlockedAt: true, runPurchasedAt: true },
   });
-  if (enrollment?.runUnlockedAt) return true;
+  if (!enrollment?.runPurchasedAt) return false;
+  if (enrollment.runUnlockedAt) return true;
 
   const complete = await isLearnComplete(prisma, profileId, courseId);
   if (complete) {
@@ -60,4 +66,23 @@ export async function isRunUnlocked(profileId: string, courseId: string): Promis
     });
   }
   return complete;
+}
+
+/**
+ * The Learn paywall: modules 1..FREE_MODULE_COUNT are always playable; the rest need
+ * a verified 'learn' or 'bundle' purchase (`learnPurchasedAt`). The module is read
+ * straight off itemId's `{moduleSlug}/{slug}` shape (see metaLessonItemId), so this
+ * works from a raw attempt POST body without re-resolving the lesson object.
+ */
+export async function isMetaLessonUnlocked(profileId: string, itemId: string): Promise<boolean> {
+  const moduleSlug = itemId.split('/')[0];
+  const meta = metaModuleBySlug(moduleSlug);
+  if (!meta) return false;
+  if (meta.index <= FREE_MODULE_COUNT) return true;
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { profileId_courseId: { profileId, courseId: 'meta-ads' } },
+    select: { learnPurchasedAt: true },
+  });
+  return Boolean(enrollment?.learnPurchasedAt);
 }

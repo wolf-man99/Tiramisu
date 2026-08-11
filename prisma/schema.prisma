@@ -59,27 +59,54 @@ model Profile {
   cardReviews    CardReview[]
   dailyActivity  DailyActivity[]
   enrollments    Enrollment[]
+  payments       Payment[]
 }
 
-/// One row per (profile, course) a learner has started. Carries the access model so
-/// paid courses / bundles are a data change later, not a schema change.
+/// One row per (profile, course) a learner has started.
 model Enrollment {
   id            String    @id @default(cuid())
   profileId     String
   courseId      String
-  access        String    @default("free") // free | paid | bundle | trial
   startedAt     DateTime  @default(now())
   completedAt   DateTime?
   lastActive    DateTime  @default(now())
   // Set once, the moment every "Learn" lesson in this course is first passed — the
-  // gate that unlocks the course's "Run" tier. Deliberately separate from `access`,
-  // which represents payment tier: this is a progress unlock, not a purchase.
+  // progress half of the Run gate. Independent of payment: isRunUnlocked() requires
+  // this AND runPurchasedAt below, so finishing the lessons doesn't skip paying and
+  // paying doesn't skip finishing the lessons.
   runUnlockedAt DateTime?
+  // Payment entitlements. Set by a verified Razorpay payment (see the Payment model)
+  // for the 'learn'/'bundle' and 'run'/'bundle' products respectively — a bundle
+  // purchase sets both in the same transaction. Modules past the free preview check
+  // learnPurchasedAt; isRunUnlocked() checks runPurchasedAt alongside runUnlockedAt.
+  learnPurchasedAt DateTime?
+  runPurchasedAt   DateTime?
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@unique([profileId, courseId])
   @@index([courseId])
+}
+
+/// An auditable record of one Razorpay checkout attempt. Both the client-side verify
+/// call and the webhook write to the same row (keyed on razorpayOrderId/PaymentId),
+/// so a duplicate delivery from either path is a no-op rather than a double-grant.
+model Payment {
+  id                String    @id @default(cuid())
+  profileId         String
+  courseId          String // 'meta-ads' today; kept generic like Enrollment.courseId
+  product           String // learn | run | bundle
+  amount            Int // paise (₹499 = 49900) — Razorpay's unit
+  currency          String    @default("INR")
+  razorpayOrderId   String    @unique
+  razorpayPaymentId String?   @unique
+  status            String    @default("created") // created | paid | failed
+  createdAt         DateTime  @default(now())
+  paidAt            DateTime?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
 }
 
 /// One row per (day, section) — the ten beats of a day page.

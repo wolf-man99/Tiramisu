@@ -3,9 +3,11 @@
  * Marketers" is the first live course. Adding a course later — Meta Ads content, then
  * Google Ads, then the rest — is a data change here plus its content, not a rebuild.
  *
- * Payments are deliberately out of scope for now, but the shape is ready: `price`,
- * `bundleEligible` and the Enrollment.access field let paid courses and bundle offers
- * drop in without a schema change.
+ * `price`/`bundleEligible` here are display-only leftovers from before real payments
+ * existed — Meta Ads' actual per-tier pricing (Learn/Run/Bundle) lives in
+ * `src/lib/payments/pricing.ts` instead, since one course needs three prices, a
+ * shape this single `price` field can't hold. Entitlements live on `Enrollment`
+ * (`learnPurchasedAt`/`runPurchasedAt`), granted by a verified Razorpay payment.
  *
  * Each course's `accent` is one slot in Tiramisu's six-colour system (see the
  * comment atop globals.css): every course owns exactly one hue, and no two

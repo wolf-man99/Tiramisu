@@ -3,8 +3,10 @@ import { ArrowLeft, Lock, PartyPopper, Sparkles, Zap } from 'lucide-react';
 import { META_LESSONS } from '@/lib/content/meta-ads';
 import { prisma } from '@/lib/db';
 import { requireProfileId } from '@/lib/auth/server';
-import { isRunUnlocked } from '@/lib/progress/gating';
+import { isRunUnlocked, isLearnComplete } from '@/lib/progress/gating';
+import { META_ADS_PRICING } from '@/lib/payments/pricing';
 import { Card, Button, Progress } from '@/components/ui/primitives';
+import { CheckoutButton } from '@/components/payments/CheckoutButton';
 import { RunDashboard } from '@/components/meta/RunDashboard';
 
 export const runtime = 'nodejs';
@@ -20,14 +22,15 @@ export default async function MetaAdsRun() {
     // Parallel is safe: DATABASE_URL carries pgbouncer=true, so Prisma's engine never
     // relies on server-side prepared statements — see the fuller note in
     // courses/meta-ads/page.tsx.
-    const [profile, done] = await Promise.all([
+    const [profile, done, learnComplete] = await Promise.all([
       prisma.profile.findUniqueOrThrow({ where: { id: profileId } }),
       prisma.attempt.findMany({
         where: { profileId, courseId: 'meta-ads', itemType: 'lesson', passed: true },
         select: { itemId: true },
       }),
+      isLearnComplete(prisma, profileId, 'meta-ads'),
     ]);
-    return <LockedState completedCount={done.length} xp={profile.xp} level={profile.level} />;
+    return <LockedState completedCount={done.length} xp={profile.xp} level={profile.level} learnComplete={learnComplete} />;
   }
 
   return (
@@ -63,7 +66,7 @@ export default async function MetaAdsRun() {
   );
 }
 
-function LockedState({ completedCount, xp, level }: { completedCount: number; xp: number; level: number }) {
+function LockedState({ completedCount, xp, level, learnComplete }: { completedCount: number; xp: number; level: number; learnComplete: boolean }) {
   const total = META_LESSONS.length;
   const pct = total ? completedCount / total : 0;
   return (
@@ -83,22 +86,37 @@ function LockedState({ completedCount, xp, level }: { completedCount: number; xp
         <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border-2 border-[var(--ink)] bg-[var(--surface-3)] shadow-[3px_3px_0_var(--ink)]">
           <Lock size={26} className="text-[var(--text-muted)]" />
         </span>
-        <h1 className="mt-5 text-2xl font-extrabold tracking-tight">Run is locked</h1>
-        <p className="mt-2 text-[var(--text-muted)]">
-          Finish every lesson in Learn to unlock the account simulator — this is where the
-          decisions get real, so the theory needs to be solid first.
-        </p>
+        {learnComplete ? (
+          <>
+            <h1 className="mt-5 text-2xl font-extrabold tracking-tight">You finished Learn — Run is ₹{META_ADS_PRICING.run} to unlock</h1>
+            <p className="mt-2 text-[var(--text-muted)]">
+              The theory&apos;s solid. Pay to step into the account simulator, or grab the bundle if
+              you&apos;re about to start another course.
+            </p>
+            <div className="mt-6 flex flex-col items-center gap-2">
+              <CheckoutButton product="run" label={`Buy Run — ₹${META_ADS_PRICING.run}`} size="lg" />
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="mt-5 text-2xl font-extrabold tracking-tight">Run is locked</h1>
+            <p className="mt-2 text-[var(--text-muted)]">
+              Finish every lesson in Learn to unlock the account simulator — this is where the
+              decisions get real, so the theory needs to be solid first.
+            </p>
 
-        <Card className="mt-6 p-4 text-left">
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-bold">Learn progress</span>
-            <span className="font-bold tabular-nums text-[var(--text-muted)]">{completedCount} / {total} lessons</span>
-          </div>
-          <Progress value={pct} color="var(--blue)" />
-        </Card>
+            <Card className="mt-6 p-4 text-left">
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-bold">Learn progress</span>
+                <span className="font-bold tabular-nums text-[var(--text-muted)]">{completedCount} / {total} lessons</span>
+              </div>
+              <Progress value={pct} color="var(--blue)" />
+            </Card>
+          </>
+        )}
 
         <Link href="/courses/meta-ads" className="mt-6 inline-block">
-          <Button size="lg">Back to Learn</Button>
+          <Button size="lg" variant={learnComplete ? 'secondary' : 'primary'}>Back to Learn</Button>
         </Link>
       </div>
     </div>
