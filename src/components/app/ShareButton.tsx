@@ -32,7 +32,7 @@ export function ShareButton() {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch { /* ignore */ }
   };
 
-  const text = encodeURIComponent("I'm learning SQL for marketing on Tiramisu — come compete with me! 🚀");
+  const text = encodeURIComponent("I'm learning SQL for marketing on Tiramisu. Come compete with me! 🚀");
   const url = encodeURIComponent(link);
 
   return (
@@ -43,7 +43,7 @@ export function ShareButton() {
       {open && (
         <div className="absolute right-0 top-11 z-30 w-72 rounded-xl border border-[var(--border)] bg-[var(--elevated)] p-3 shadow-xl">
           <div className="text-sm font-medium">Learn together, compete together</div>
-          <p className="mt-0.5 text-xs text-[var(--text-muted)]">Share your invite link — friends who join show up on your leaderboard.</p>
+          <p className="mt-0.5 text-xs text-[var(--text-muted)]">Share your invite link. Friends who join show up on your leaderboard.</p>
           <div className="mt-3 flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] p-1.5">
             <span className="flex-1 truncate px-1 text-xs text-[var(--text-subtle)]">{link || '…'}</span>
             <button onClick={copy} className={cn('flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors', copied ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--accent-soft)] text-[var(--accent-text)] hover:bg-[var(--accent)] hover:text-white')}>

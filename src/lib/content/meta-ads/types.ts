@@ -2,7 +2,7 @@ import type { Block } from '../types';
 
 /**
  * Content model for the Meta Ads course. Unlike the SQL course (which grades real
- * queries), an ad course teaches judgement — so a lesson is a sequence of stepped
+ * queries), an ad course teaches judgement. So a lesson is a sequence of stepped
  * "cards": teaching cards interleaved with interactive checks. The learner answers to
  * advance, and finishes with XP. The same model will power Google/LinkedIn/etc.
  */

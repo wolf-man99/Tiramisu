@@ -1,4 +1,4 @@
-# Curriculum map — 14 days, 12 modules
+# Curriculum map: 14 days, 12 modules
 
 Every day follows the same ten-beat structure, because a predictable shape lets the
 learner spend their attention on SQL instead of on navigation:
@@ -10,7 +10,7 @@ learner spend their attention on SQL instead of on navigation:
 
 **Time budget per day:** 75–110 minutes.
 **Gate:** the day's assessment must score ≥ 70% to mark the day complete. Gating is
-advisory — the learner can always move on, but the roadmap shows the gap.
+advisory. The learner can always move on, but the roadmap shows the gap.
 
 | Day | Module | Theme | Exercises |
 |---|---|---|---|
@@ -32,7 +32,7 @@ advisory — the learner can always move on, but the roadmap shows the gap.
 
 ---
 
-## Day 1 — M1 · How data is actually stored
+## Day 1, M1 · How data is actually stored
 
 **Objective.** Explain, in the learner's own words, why the marketing data they see in
 Looker is stored across many narrow tables rather than one wide sheet.
@@ -51,7 +51,7 @@ with the learner able to state the grain of any table in the warehouse.
 **Daily project.** *Warehouse audit*: for 8 named tables, state the grain, the primary
 key, and one question the table can answer alone.
 
-## Day 2 — M2 · Reading data: SELECT
+## Day 2, M2 · Reading data: SELECT
 
 **Concepts.** `SELECT` · column projection · `AS` aliases · `SELECT *` and why it costs
 money in BigQuery · `LIMIT` · `DISTINCT` · `ORDER BY` (multi-key, `ASC`/`DESC`,
@@ -66,7 +66,7 @@ campaigns" if a name ever changed. Exercise 2.14 makes them find the one that di
 **Daily project.** *Campaign inventory*: a one-query catalogue of everything running,
 sorted for a Monday standup.
 
-## Day 3 — M3 · Filtering: WHERE
+## Day 3, M3 · Filtering: WHERE
 
 **Concepts.** `WHERE` · comparison operators · `AND`/`OR`/`NOT` and precedence ·
 parenthesisation · `LIKE` and wildcards · `IN` · `BETWEEN` (and its inclusive edges) ·
@@ -82,7 +82,7 @@ resolve, with a live row count from `orders`.
 **Daily project.** *Wasted-spend finder*: every campaign-day with spend and zero
 conversions, excluding brand and excluding the two-day conversion lag window.
 
-## Day 4 — M4a · Aggregation
+## Day 4, M4a · Aggregation
 
 **Concepts.** `COUNT(*)` vs `COUNT(col)` vs `COUNT(DISTINCT col)` · `SUM` · `AVG` and
 why it ignores NULLs · `MIN`/`MAX` · aggregates over filtered sets · `COUNTIF` ·
@@ -91,12 +91,12 @@ rate metrics as `SUM(a)/SUM(b)` not `AVG(rate)`.
 **The single most valuable idea in the course.** *Never average a rate.* Averaging
 per-row CTR gives a campaign-day with 12 impressions the same weight as one with
 40 000. Exercise 4.9 shows the two answers side by side: **0.96%** weighted versus
-**6.6%** averaged, from the same data — a factor of seven.
+**6.6%** averaged, from the same data, a factor of seven.
 
 **Daily project.** *Channel scorecard*: spend, clicks, CTR, CPC, conversions, CPA,
-ROAS — one row per channel, every rate correctly weighted.
+ROAS: one row per channel, every rate correctly weighted.
 
-## Day 5 — M4b · GROUP BY / HAVING
+## Day 5, M4b · GROUP BY / HAVING
 
 **Concepts.** `GROUP BY` · grouping by multiple keys · the "every non-aggregated column
 must be grouped" rule · `HAVING` vs `WHERE` (before/after aggregation) · ordering by an
@@ -109,7 +109,7 @@ the row count after each stage.
 **Daily project.** *Keyword efficiency report*: keywords with ≥ 100 clicks whose CPA is
 worse than their campaign's average.
 
-## Day 6 — M5a · JOINs: INNER and LEFT
+## Day 6, M5a · JOINs: INNER and LEFT
 
 **Concepts.** Join keys · `INNER JOIN` · `LEFT JOIN` · `ON` vs `WHERE` on an outer join
 (the classic bug that silently converts `LEFT` to `INNER`) · multi-table joins ·
@@ -121,7 +121,7 @@ into the result with unmatched rows fading to NULL-filled ghosts.
 **Daily project.** *Spend-to-revenue bridge*: join ad spend to orders and quantify how
 much revenue has no attributable campaign.
 
-## Day 7 — M5b · The rest of the JOIN family
+## Day 7, M5b · The rest of the JOIN family
 
 **Concepts.** `RIGHT JOIN` · `FULL OUTER JOIN` (and SQLite/BigQuery differences) ·
 `SELF JOIN` (previous-order lookup, manager chains) · `CROSS JOIN` and the date-spine
@@ -132,7 +132,7 @@ aggregate-then-join.
 **Daily project.** *Complete daily report with no missing days*, built on a
 `CROSS JOIN` date spine so zero-order days appear as zeros rather than vanishing.
 
-## Day 8 — M6 · CASE, dates, strings, math, NULLs
+## Day 8: M6 · CASE, dates, strings, math, NULLs
 
 **Concepts.** `CASE WHEN` (searched and simple) · `CASE` inside aggregates =
 conditional aggregation, i.e. pivoting · date parsing and formatting · `DATE_DIFF`,
@@ -144,7 +144,7 @@ and "unknown".
 **Daily project.** *Campaign-name parser*: decompose `GB_Search_NonBrand_UK_Exact` into
 five typed columns using only string functions, then report by each.
 
-## Day 9 — M7 · CTEs & subqueries
+## Day 9, M7 · CTEs & subqueries
 
 **Concepts.** `WITH` · chained CTEs · scalar subqueries · `IN` / `NOT IN` subqueries
 (and the `NOT IN` + NULL catastrophe) · `EXISTS` / `NOT EXISTS` · correlated subqueries
@@ -157,7 +157,7 @@ grading but the coach flags them for readability.
 
 **Daily project.** *Cohort table builder*, staged as `cohorts → activity → matrix`.
 
-## Day 10 — M8 · Window functions
+## Day 10, M8 · Window functions
 
 **Concepts.** `OVER()` · `PARTITION BY` · `ORDER BY` inside a window · `ROW_NUMBER` /
 `RANK` / `DENSE_RANK` and when the difference bites · `LAG` / `LEAD` for
@@ -171,7 +171,7 @@ highlight and the aggregate recompute, for each frame spec.
 
 **Daily project.** *Rolling 7-day ROAS with week-over-week delta*, per channel.
 
-## Day 11 — M9 · BigQuery in anger
+## Day 11, M9 · BigQuery in anger
 
 **Concepts.** Projects/datasets/tables · slots and the on-demand pricing model ·
 **bytes scanned is the only thing you pay for** · why `SELECT *` is the expensive
@@ -185,7 +185,7 @@ bytes-scanned figure and dollar cost.
 
 **Daily project.** *Cut a 4.2 TB query to under 40 GB* without changing its output.
 
-## Day 12 — M10 · The GA4 export schema
+## Day 12, M10 · The GA4 export schema
 
 **Concepts.** One row per event · `event_date` is a string · `event_timestamp` is
 microseconds · `user_pseudo_id` vs `user_id` · reconstructing a session from
@@ -198,7 +198,7 @@ will still disagree with the UI by 1–3%.
 **Daily project.** *Rebuild the GA4 "Traffic acquisition" report from raw events*, then
 reconcile it against `ga4_sessions` and explain every discrepancy.
 
-## Day 13 — M11 · Marketing analytics (the heart)
+## Day 13, M11 · Marketing analytics (the heart)
 
 This is the module the other twelve exist to enable. Every metric is derived from first
 principles, then implemented, then stress-tested against an edge case.
@@ -213,11 +213,11 @@ principles, then implemented, then stress-tested against an edge case.
 | LTV:CAC | By channel, with payback period in months |
 | Retention | Day-1/7/30, classic and rolling; the cohort matrix |
 | Churn | Logo vs revenue churn; gross vs net revenue retention |
-| MRR | New / expansion / contraction / churned / reactivation — the MRR bridge |
+| MRR | New / expansion / contraction / churned / reactivation, the MRR bridge |
 | Activation | Defining the aha-moment event and measuring time-to-activate |
 | Funnel | Step conversion, drop-off, and strict-order vs any-order funnels |
 | Cohorts | Acquisition cohorts, behavioural cohorts, cohort-over-cohort |
-| Attribution | First-touch, last-touch, last-non-direct, linear, time-decay, position-based — all six on one dataset, side by side |
+| Attribution | First-touch, last-touch, last-non-direct, linear, time-decay, position-based: all six on one dataset, side by side |
 | Customer journey | Path sequencing with `STRING_AGG` over ordered touchpoints |
 | Payback | Months to recover CAC by channel |
 | Incrementality | Why every model above is correlational, and what a holdout would cost |
@@ -225,7 +225,7 @@ principles, then implemented, then stress-tested against an edge case.
 **Daily project.** *The one-query executive summary*: 14 KPIs, current period vs prior
 period, with deltas.
 
-## Day 14 — M12 · Thinking like an analyst
+## Day 14, M12 · Thinking like an analyst
 
 **Concepts.** Choosing a grain before writing a line · sanity-checking a number three
 ways · the denominator conversation · Simpson's paradox in channel data · confidence in
@@ -233,7 +233,7 @@ small samples · when a metric is directionally useful but numerically wrong · 
 present a query result to a CMO · query readability as a professional obligation ·
 optimisation as a habit.
 
-**Deliverable.** Capstone kickoff — the learner becomes Growth Analyst at Northbeam and
+**Deliverable.** Capstone kickoff. The learner becomes Growth Analyst at Northbeam and
 takes 100 business questions across GA4, CRM, ads, revenue, products, subscriptions and
 support.
 

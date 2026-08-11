@@ -101,7 +101,7 @@ export function Sidebar() {
 
       <div className="border-t-2 border-[var(--ink)] p-3">
         <div className="rounded-[10px] border-2 border-[var(--ink)] bg-[var(--green)] p-3 text-xs font-semibold text-white">
-          <span className="font-extrabold">Zero to analyst</span> in 14 days — one query at a time.
+          <span className="font-extrabold">Zero to analyst</span> in 14 days, one query at a time.
         </div>
       </div>
     </aside>

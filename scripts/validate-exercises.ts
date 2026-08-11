@@ -1,7 +1,7 @@
 /**
  * Fast inner-loop validator for the exercise bank alone.
  *
- * `npm run validate:content` is the real gate — it covers projects, interviews, labs
+ * `npm run validate:content` is the real gate: it covers projects, interviews, labs
  * and the capstone too. This one exists because authoring 300 exercises needs a check
  * that runs in a second and reports every failure at once.
  *

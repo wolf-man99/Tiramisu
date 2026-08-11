@@ -3,7 +3,7 @@
  *
  * The entire warehouse comes out of one mulberry32 stream seeded with a constant, so
  * every install produces byte-identical data and reference solutions stay valid
- * forever. See docs/ARCHITECTURE.md §7 — the order of draws is load-bearing.
+ * forever. See docs/ARCHITECTURE.md §7. The order of draws is load-bearing.
  */
 
 export function mulberry32(seed: number): () => number {
@@ -67,7 +67,7 @@ export class Rng {
     return mean + sd * Math.max(-4, Math.min(4, z));
   }
 
-  /** Log-normal — the right shape for order values, session durations and LTV. */
+  /** Log-normal: the right shape for order values, session durations and LTV. */
   logNormal(mu: number, sigma: number): number {
     return Math.exp(this.normal(mu, sigma));
   }

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils';
 
 /**
- * One layer of the skill stack. `detailed` is the /courses treatment — every tool
+ * One layer of the skill stack. `detailed` is the /courses treatment, every tool
  * carries its own status pill. The homepage uses the compact form, which keeps the
  * cards visually clean and defers the detail to /courses.
  */

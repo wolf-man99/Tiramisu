@@ -89,7 +89,7 @@ export function QueryWorkspace({
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ sql, passed: res.passed, compare: res.compare, error: res.error, exerciseId: grade.exerciseId, taskPrompt: exercise?.prompt, concepts: exercise?.concepts, hintsUsed: revealed, wantMentor: true }),
       }).then((r) => r.json()).then((d) => setMentor(d.mentor ?? null)).catch(() => {});
-    } catch { setError({ message: 'Grading failed — try again.' }); }
+    } catch { setError({ message: 'Grading failed. Try again.' }); }
     setGrading(false);
   }, [sql, grade, revealed, exercise]);
 
@@ -173,7 +173,7 @@ export function QueryWorkspace({
             {passed !== null && (
               <div className={cn('flex items-center gap-3 px-5 py-2.5 text-sm', passed ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--danger-soft)] text-[var(--danger)]')}>
                 {passed ? <CircleCheck size={16} /> : <X size={16} />}
-                <span className="font-semibold">{passed ? 'Correct!' : 'Not quite — check the coach tab.'}</span>
+                <span className="font-semibold">{passed ? 'Correct!' : 'Not quite. Check the coach tab.'}</span>
                 {passed && award && award.xp > 0 && (
                   <span className="ml-auto flex items-center gap-3 text-xs">
                     <span className="flex items-center gap-1 text-[var(--accent-text)]"><Zap size={12} /> +{award.xp} XP</span>

@@ -25,7 +25,7 @@ export default async function MetaLessonPage({ params }: { params: Promise<{ les
         </span>
         <h1 className="mt-5 text-2xl font-extrabold tracking-tight">This lesson is locked</h1>
         <p className="mt-2 text-[var(--text-muted)]">
-          &quot;{lesson.title}&quot; is past the free preview — unlock the rest of Learn to keep going.
+          &quot;{lesson.title}&quot; is past the free preview, unlock the rest of Learn to keep going.
         </p>
         <Link href="/courses/meta-ads#pricing" className="mt-6 inline-block">
           <Button size="lg">See pricing</Button>

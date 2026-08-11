@@ -32,7 +32,7 @@ export default async function DashboardPage() {
             You&apos;re on <span className="gradient-text">Day {s.stats.currentDay}</span> of 14
           </h1>
           <p className="mt-2 max-w-xl text-sm text-[var(--text-muted)]">
-            {DAYS.find((d) => d.day === s.stats.currentDay)?.title ?? 'Keep going.'} — {p.title} · Level {p.level}
+            {DAYS.find((d) => d.day === s.stats.currentDay)?.title ?? 'Keep going.'}, {p.title} · Level {p.level}
           </p>
         </div>
         <Card className="flex items-center gap-5 p-5 glow-accent">

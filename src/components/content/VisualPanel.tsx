@@ -12,7 +12,7 @@ const ICON: Record<VisualKind, React.ComponentType<{ size?: number; className?: 
   'attribution-compare': Network,
 };
 
-/** A stylised visual placeholder — a labelled, animated concept panel. */
+/** A stylised visual placeholder: a labelled, animated concept panel. */
 export function VisualPanel({ kind, title, caption }: { kind: VisualKind; title: string; caption: string }) {
   const Icon = ICON[kind] ?? Layers;
   return (

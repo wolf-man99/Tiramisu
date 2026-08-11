@@ -2,7 +2,7 @@ import { prisma } from '../db';
 import type { Payment } from '@prisma/client';
 
 /**
- * Marks a Payment paid and grants the matching Enrollment entitlement. Idempotent —
+ * Marks a Payment paid and grants the matching Enrollment entitlement. Idempotent,
  * safe to call from both the client-side verify route and the webhook for the same
  * payment, since whichever arrives first wins the guarded update and the other is a
  * harmless no-op rather than a double-grant.

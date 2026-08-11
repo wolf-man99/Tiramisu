@@ -1,5 +1,5 @@
 // Learner state. The marketing warehouse the learner *queries* is a separate,
-// read-only database — see docs/DATA-MODEL.md.
+// read-only database. See docs/DATA-MODEL.md.
 //
 // v1 has a single local profile (`id = "local"`), but every table is keyed by
 // profileId so adding auth later is a drop-in change rather than a migration.
@@ -30,12 +30,12 @@ model Profile {
   avatarSeed     String   @default("northbeam")
   timezone       String   @default("UTC")
   referralCode   String?  @unique // for share-to-friends invites
-  // Onboarding — nullable in the DB (existing/seeded rows predate these), required
+  // Onboarding: nullable in the DB (existing/seeded rows predate these), required
   // by application-level signup validation for every new account going forward.
   phone          String?
   courseInterest String? // a Course.id from the registry
-  learningGoal   String? // why they're here — fixed set, see AuthForm's ONBOARDING_GOALS
-  heardFrom      String? // acquisition channel — fixed set, see AuthForm's ONBOARDING_SOURCES
+  learningGoal   String? // why they're here: fixed set, see AuthForm's ONBOARDING_GOALS
+  heardFrom      String? // acquisition channel: fixed set, see AuthForm's ONBOARDING_SOURCES
   // Platform-wide gamification
   xp             Int      @default(0)
   coins          Int      @default(0)
@@ -70,13 +70,13 @@ model Enrollment {
   startedAt     DateTime  @default(now())
   completedAt   DateTime?
   lastActive    DateTime  @default(now())
-  // Set once, the moment every "Learn" lesson in this course is first passed — the
+  // Set once, the moment every "Learn" lesson in this course is first passed, the
   // progress half of the Run gate. Independent of payment: isRunUnlocked() requires
   // this AND runPurchasedAt below, so finishing the lessons doesn't skip paying and
   // paying doesn't skip finishing the lessons.
   runUnlockedAt DateTime?
   // Payment entitlements. Set by a verified Razorpay payment (see the Payment model)
-  // for the 'learn'/'bundle' and 'run'/'bundle' products respectively — a bundle
+  // for the 'learn'/'bundle' and 'run'/'bundle' products respectively, a bundle
   // purchase sets both in the same transaction. Modules past the free preview check
   // learnPurchasedAt; isRunUnlocked() checks runPurchasedAt alongside runUnlockedAt.
   learnPurchasedAt DateTime?
@@ -96,7 +96,7 @@ model Payment {
   profileId         String
   courseId          String // 'meta-ads' today; kept generic like Enrollment.courseId
   product           String // learn | run | bundle
-  amount            Int // paise (₹499 = 49900) — Razorpay's unit
+  amount            Int // paise (₹499 = 49900), Razorpay's unit
   currency          String    @default("INR")
   razorpayOrderId   String    @unique
   razorpayPaymentId String?   @unique
@@ -109,7 +109,7 @@ model Payment {
   @@index([profileId])
 }
 
-/// One row per (day, section) — the ten beats of a day page.
+/// One row per (day, section). The ten beats of a day page.
 model LessonProgress {
   id          String    @id @default(cuid())
   profileId   String
@@ -151,7 +151,7 @@ model Attempt {
   @@index([profileId, createdAt])
 }
 
-/// Rolling mastery per concept — feeds weak-area detection and revision.
+/// Rolling mastery per concept, feeds weak-area detection and revision.
 model ConceptStat {
   id         String   @id @default(cuid())
   profileId  String

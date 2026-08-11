@@ -1,8 +1,8 @@
 /**
  * Generates the marketing warehouse to `.data/warehouse.db`.
  *
- * Run by `npm run setup` (and by predev/prebuild). Without it the app still works —
- * the engine falls back to building in memory on first query — but every Node process
+ * Run by `npm run setup` (and by predev/prebuild). Without it the app still works,
+ * the engine falls back to building in memory on first query, but every Node process
  * would pay the generation cost instead of opening a ready file.
  */
 
@@ -27,7 +27,7 @@ function isCurrent(): boolean {
 
 const force = process.argv.includes('--force');
 if (!force && isCurrent()) {
-  console.log(`warehouse v${WAREHOUSE_VERSION} already built — skipping (use --force to rebuild)`);
+  console.log(`warehouse v${WAREHOUSE_VERSION} already built, skipping (use --force to rebuild)`);
 } else {
   const { path, ms, rowCounts } = buildWarehouseFile();
   const total = Object.values(rowCounts).reduce((a, b) => a + b, 0);

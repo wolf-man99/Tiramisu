@@ -1,5 +1,5 @@
 /**
- * Engine smoke test — the Phase 1 gate from docs/ROADMAP.md.
+ * Engine smoke test, the Phase 1 gate from docs/ROADMAP.md.
  *
  * Builds the warehouse and runs a battery of BigQuery-dialect queries covering every
  * construct the curriculum teaches. Run with `npm run smoke`.

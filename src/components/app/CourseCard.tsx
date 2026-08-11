@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Lock, Check, Sparkle } from 'lucide-react';
 import { type Course, STATUS_LABEL } from '@/lib/courses/registry';
@@ -21,12 +21,51 @@ export function CourseCard({
   course: Course;
   recommended?: boolean;
   /** Set only for a course that has real pricing (Meta Ads today) and an authed
-   *  viewer — clicking opens a pricing dialog instead of navigating straight in. */
+   *  viewer, clicking opens a pricing dialog instead of navigating straight in. */
   pricing?: { hasLearn: boolean; hasRun: boolean };
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const live = course.status === 'live';
   const nudge = recommended && live;
+
+  /**
+   * The dialog carries `?pricing=<courseId>` so conversion tracking has a real
+   * URL to trigger on and the offer is directly linkable from an ad.
+   *
+   * History is driven from the handlers below rather than from an effect inside
+   * the dialog: under StrictMode an effect cleanup fires on the throwaway first
+   * mount, and a history call there races the push from the real one. Opening
+   * pushes an entry so browser back closes the dialog; closing rewrites in place
+   * rather than popping, which keeps a deep-linked visitor on the site.
+   */
+  const openModal = () => {
+    setModalOpen(true);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pricing') !== course.id) {
+      params.set('pricing', course.id);
+      window.history.pushState({ pricing: course.id }, '', `${window.location.pathname}?${params}`);
+    }
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pricing') === course.id) {
+      params.delete('pricing');
+      const q = params.toString();
+      window.history.replaceState(null, '', `${window.location.pathname}${q ? `?${q}` : ''}`);
+    }
+  };
+
+  // Deep link, plus browser back while the dialog is open. Both are just "does
+  // the URL still name this course", so one handler covers them.
+  useEffect(() => {
+    if (!pricing) return;
+    const sync = () => setModalOpen(new URLSearchParams(window.location.search).get('pricing') === course.id);
+    sync();
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, [pricing, course.id]);
   const inner = (
     <Card
       hover={live || course.status === 'in-progress'}
@@ -37,7 +76,7 @@ export function CourseCard({
       )}
       style={live ? { boxShadow: `4px 4px 0 ${course.accent}`, ...(nudge ? { '--nudge-accent': course.accent } as React.CSSProperties : {}) } : undefined}
     >
-      {/* A flat colour band along the top — no blur, just a block of colour. */}
+      {/* A flat colour band along the top: no blur, just a block of colour. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5" style={{ background: course.accent }} />
       <div className="relative flex items-start justify-between">
         <span className="grid h-12 w-12 place-items-center rounded-xl border-2 border-[var(--ink)]" style={{ background: `${course.accent}2e` }}>
@@ -79,9 +118,9 @@ export function CourseCard({
   if (pricing && !fullyPurchased) {
     return (
       <>
-        <button type="button" onClick={() => setModalOpen(true)} className="block h-full w-full text-left">{inner}</button>
+        <button type="button" onClick={openModal} className="block h-full w-full text-left">{inner}</button>
         {modalOpen && (
-          <CoursePricingModal course={course} hasLearn={pricing.hasLearn} hasRun={pricing.hasRun} onClose={() => setModalOpen(false)} />
+          <CoursePricingModal course={course} hasLearn={pricing.hasLearn} hasRun={pricing.hasRun} onClose={closeModal} />
         )}
       </>
     );

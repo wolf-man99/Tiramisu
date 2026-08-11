@@ -1,7 +1,7 @@
 import type { MetaLesson } from '../types';
 import { p, list, key } from '../types';
 
-/** Module 1 — Foundations: structure, the auction, objectives, and the metrics that matter. */
+/** Module 1: Foundations: structure, the auction, objectives, and the metrics that matter. */
 export const M1_LESSONS: MetaLesson[] = [
   // ─────────────────────────────────────────────────────────── Lesson 1.1 ──
   {
@@ -18,11 +18,11 @@ export const M1_LESSONS: MetaLesson[] = [
         blocks: [
           p('Every ad you run on Facebook and Instagram lives inside the same three-level structure. Learn it once and the whole platform stops feeling random.'),
           list([
-            '**Campaign** — you pick the *goal* (what a good outcome is).',
-            '**Ad Set** — you pick the *who, where, when and how much* (audience, placements, budget, schedule).',
-            '**Ad** — you pick the *creative* (the image, video, copy and link people actually see).',
+            '**Campaign**, you pick the *goal* (what a good outcome is).',
+            '**Ad Set**: you pick the *who, where, when and how much* (audience, placements, budget, schedule).',
+            '**Ad**: you pick the *creative* (the image, video, copy and link people actually see).',
           ]),
-          key('One campaign can hold many ad sets; one ad set can hold many ads. Decisions flow downward — the campaign goal shapes how the ad sets spend.'),
+          key('One campaign can hold many ad sets; one ad set can hold many ads. Decisions flow downward, the campaign goal shapes how the ad sets spend.'),
         ],
       },
       {
@@ -35,7 +35,7 @@ export const M1_LESSONS: MetaLesson[] = [
       {
         kind: 'teach', id: 'c2', title: 'Business Manager sits above it all',
         blocks: [
-          p('Before campaigns, there’s **Business Manager** (now "Meta Business Suite / Settings") — the container that owns your assets: the ad account that pays for ads, the Facebook Page and Instagram account the ads run from, the pixel that measures results, and the people who have access.'),
+          p('Before campaigns, there’s **Business Manager** (now "Meta Business Suite / Settings"): the container that owns your assets: the ad account that pays for ads, the Facebook Page and Instagram account the ads run from, the pixel that measures results, and the people who have access.'),
           p('Set this up once, cleanly, and you never fight permissions again. Skip it and you’ll lose access to your own pixel the day a freelancer leaves.'),
         ],
       },
@@ -53,15 +53,15 @@ export const M1_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q3',
         situation: 'A client says: "Just duplicate the winning ad but send it to a lookalike audience instead of retargeting." What do you duplicate?',
         options: [
-          { label: 'Duplicate the whole campaign', correct: false, feedback: 'Overkill — you’d copy the goal and every other ad set too, and split your budget.' },
+          { label: 'Duplicate the whole campaign', correct: false, feedback: 'Overkill: you’d copy the goal and every other ad set too, and split your budget.' },
           { label: 'Duplicate the ad set, then swap its audience', correct: true, feedback: 'Exactly. The audience lives on the ad set, so you copy that ad set (which carries the ad) and change only the audience.' },
-          { label: 'Duplicate just the ad', correct: false, feedback: 'An ad has no audience of its own — it inherits the ad set’s. You’d have nowhere to set the lookalike.' },
+          { label: 'Duplicate just the ad', correct: false, feedback: 'An ad has no audience of its own, it inherits the ad set’s. You’d have nowhere to set the lookalike.' },
         ],
       },
       {
         kind: 'teach', id: 'c3', title: 'You now own the map',
         blocks: [
-          key('Campaign = goal. Ad set = who/where/budget. Ad = creative. Every setting in Ads Manager belongs to exactly one of these three levels — and knowing which is half of running ads well.'),
+          key('Campaign = goal. Ad set = who/where/budget. Ad = creative. Every setting in Ads Manager belongs to exactly one of these three levels, and knowing which is half of running ads well.'),
         ],
       },
     ],
@@ -80,14 +80,14 @@ export const M1_LESSONS: MetaLesson[] = [
       {
         kind: 'teach', id: 'c1', title: 'Every impression is an auction', art: 'auction',
         blocks: [
-          p('When someone opens Instagram, Meta runs a lightning-fast auction for the ad slot on their screen. Thousands of advertisers "compete" — but the winner is almost never the one bidding the most money.'),
+          p('When someone opens Instagram, Meta runs a lightning-fast auction for the ad slot on their screen. Thousands of advertisers "compete", but the winner is almost never the one bidding the most money.'),
           p('Meta picks the ad with the highest **Total Value**, and Total Value has three parts:'),
           list([
-            '**Bid** — how much you’re willing to pay for the outcome.',
-            '**Estimated action rate** — how likely *this* person is to do the thing you want (click, buy, sign up).',
-            '**Ad quality** — signals of relevance and experience: engagement, feedback, how "adverty" and low-quality it feels.',
+            '**Bid**, how much you’re willing to pay for the outcome.',
+            '**Estimated action rate**: how likely *this* person is to do the thing you want (click, buy, sign up).',
+            '**Ad quality**: signals of relevance and experience: engagement, feedback, how "adverty" and low-quality it feels.',
           ]),
-          key('Total Value ≈ Bid × Estimated action rate + Ad quality. Great creative raises the last two — so it effectively lets you win the auction while bidding *less*.'),
+          key('Total Value ≈ Bid × Estimated action rate + Ad quality. Great creative raises the last two. So it effectively lets you win the auction while bidding *less*.'),
         ],
       },
       {
@@ -108,12 +108,12 @@ export const M1_LESSONS: MetaLesson[] = [
         prompt: 'Your CPMs (cost per 1,000 impressions) suddenly jump 40% with no change to bid or audience. What’s the most likely lever that slipped?',
         options: [
           'Meta raised its prices overnight',
-          'Ad quality / engagement dropped — likely creative fatigue',
+          'Ad quality / engagement dropped, likely creative fatigue',
           'You need to bid manually',
           'The pixel broke',
         ],
         answer: 1,
-        explain: 'When bid and audience are constant, rising CPMs usually mean your Total Value fell — most often because the creative got stale and engagement (ad quality / action rate) dropped.',
+        explain: 'When bid and audience are constant, rising CPMs usually mean your Total Value fell, most often because the creative got stale and engagement (ad quality / action rate) dropped.',
       },
       {
         kind: 'tip', id: 't1', title: 'Pro tip',
@@ -123,14 +123,14 @@ export const M1_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q3',
         situation: 'Two ad sets target the same audience. A bids $8, B bids $5. B is getting more of the impressions. Your teammate says "bump A’s bid." Better move?',
         options: [
-          { label: 'Yes — raise A’s bid to $12', correct: false, feedback: 'You can force volume by overpaying, but you’re treating the symptom. If B wins at $5, B has higher Total Value.' },
+          { label: 'Yes - raise A’s bid to $12', correct: false, feedback: 'You can force volume by overpaying, but you’re treating the symptom. If B wins at $5, B has higher Total Value.' },
           { label: 'Look at A’s creative and engagement first', correct: true, feedback: 'Right. B is likely winning on estimated action rate + ad quality. Fixing A’s creative wins auctions cheaply; raising the bid just pays more for a weak ad.' },
-          { label: 'Pause A entirely', correct: false, feedback: 'Premature — you haven’t diagnosed *why* A is losing. It may just need a better hook.' },
+          { label: 'Pause A entirely', correct: false, feedback: 'Premature, you haven’t diagnosed *why* A is losing. It may just need a better hook.' },
         ],
       },
       {
         kind: 'teach', id: 'c3',
-        blocks: [key('You don’t out-*spend* the auction, you out-*create* it. Bid buys you a seat; creative and relevance decide whether you win — and at what price.')],
+        blocks: [key('You don’t out-*spend* the auction, you out-*create* it. Bid buys you a seat; creative and relevance decide whether you win, and at what price.')],
       },
     ],
   },
@@ -151,26 +151,26 @@ export const M1_LESSONS: MetaLesson[] = [
           p('Your campaign objective tells Meta’s machine learning who to go find. Choose "Traffic" and it finds people who *click*. Choose "Sales" and it finds people who *buy*. These are very different people.'),
           p('The six current objectives (Outcome-Driven Ad Experiences) map to funnel stages:'),
           list([
-            '**Awareness** — reach the most people / maximise impressions cheaply.',
-            '**Traffic** — send clicks to a destination.',
-            '**Engagement** — messages, video views, post engagement.',
-            '**Leads** — form fills, sign-ups (on-platform or on your site).',
-            '**App promotion** — installs and in-app events.',
-            '**Sales** — purchases and high-intent conversions.',
+            '**Awareness**, reach the most people / maximise impressions cheaply.',
+            '**Traffic**. Send clicks to a destination.',
+            '**Engagement**: messages, video views, post engagement.',
+            '**Leads**: form fills, sign-ups (on-platform or on your site).',
+            '**App promotion**, installs and in-app events.',
+            '**Sales**, purchases and high-intent conversions.',
           ]),
         ],
       },
       {
         kind: 'mcq', id: 'q1',
-        prompt: 'You run an e-commerce store and want purchases. A friend says "use Traffic — it gets way more clicks for the money." Why is that usually bad advice?',
+        prompt: 'You run an e-commerce store and want purchases. A friend says "use Traffic. It gets way more clicks for the money." Why is that usually bad advice?',
         options: [
           'Traffic is more expensive',
-          'Meta will find cheap *clickers*, not *buyers* — cheap traffic, few sales',
+          'Meta will find cheap *clickers*, not *buyers*: cheap traffic, few sales',
           'Traffic objective disables the pixel',
           'It’s fine, always use Traffic',
         ],
         answer: 1,
-        explain: 'Optimising for Traffic tells Meta to find people likely to click, not buy. You’ll get a great CTR and a terrible conversion rate. Optimise for the *actual* outcome — Sales.',
+        explain: 'Optimising for Traffic tells Meta to find people likely to click, not buy. You’ll get a great CTR and a terrible conversion rate. Optimise for the *actual* outcome, Sales.',
       },
       {
         kind: 'tip', id: 't1', title: 'Pro tip',
@@ -182,7 +182,7 @@ export const M1_LESSONS: MetaLesson[] = [
         options: [
           { label: 'Optimise for Purchase anyway', correct: false, feedback: '10/week is far below the ~50 events an ad set needs. The algorithm stays stuck in the learning phase, spending erratically.' },
           { label: 'Optimise for a higher-funnel event like Add to Cart, for now', correct: true, feedback: 'Smart. A more frequent event gives the algorithm signal to learn on. As volume grows, move the optimisation down toward Purchase.' },
-          { label: 'Optimise for Reach to save money', correct: false, feedback: 'Reach finds eyeballs, not buyers — you’d get impressions and almost no sales.' },
+          { label: 'Optimise for Reach to save money', correct: false, feedback: 'Reach finds eyeballs, not buyers, you’d get impressions and almost no sales.' },
         ],
       },
       {
@@ -193,7 +193,7 @@ export const M1_LESSONS: MetaLesson[] = [
       },
       {
         kind: 'teach', id: 'c2',
-        blocks: [key('Meta optimises *literally* for what you ask. Ask for the real business outcome — and give the algorithm enough of that event to learn from.')],
+        blocks: [key('Meta optimises *literally* for what you ask. Ask for the real business outcome, and give the algorithm enough of that event to learn from.')],
       },
     ],
   },
@@ -203,7 +203,7 @@ export const M1_LESSONS: MetaLesson[] = [
     slug: 'the-funnel-and-metrics',
     moduleSlug: 'foundations',
     title: 'The funnel & the metrics that matter',
-    subtitle: 'CPM, CTR, CPA, ROAS — and how they connect',
+    subtitle: 'CPM, CTR, CPA, ROAS, and how they connect',
     minutes: 11,
     xp: 80,
     objective: 'Read the core metrics as a chain, and know which one to look at when.',
@@ -213,12 +213,12 @@ export const M1_LESSONS: MetaLesson[] = [
         blocks: [
           p('Money enters at the top as impressions and (hopefully) exits at the bottom as revenue. Each metric measures one link in that chain:'),
           list([
-            '**CPM** — cost per 1,000 impressions. What it costs to be seen.',
-            '**CTR** — click-through rate. How compelling the ad is.',
-            '**CPC** — cost per click. CPM ÷ CTR, roughly.',
-            '**CVR** — conversion rate. How well the landing page + offer close.',
-            '**CPA** — cost per acquisition. What one customer costs you.',
-            '**ROAS** — return on ad spend. Revenue ÷ spend. The whole chain in one number.',
+            '**CPM**, cost per 1,000 impressions. What it costs to be seen.',
+            '**CTR**. Click-through rate. How compelling the ad is.',
+            '**CPC**, cost per click. CPM ÷ CTR, roughly.',
+            '**CVR**, conversion rate. How well the landing page + offer close.',
+            '**CPA**, cost per acquisition. What one customer costs you.',
+            '**ROAS**, return on ad spend. Revenue ÷ spend. The whole chain in one number.',
           ]),
           key('A bad final number (high CPA, low ROAS) is always caused by a weak link *earlier* in the chain. Diagnose top-down: is it CPM, CTR, or CVR?'),
         ],
@@ -227,7 +227,7 @@ export const M1_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q1',
         situation: 'Your CPA is way too high. CPM is normal, CTR is healthy (2.1%), but people click and don’t buy. Where’s the broken link?',
         options: [
-          { label: 'The creative', correct: false, feedback: 'Creative is doing its job — CTR is healthy, people are clicking. The problem is *after* the click.' },
+          { label: 'The creative', correct: false, feedback: 'Creative is doing its job. CTR is healthy, people are clicking. The problem is *after* the click.' },
           { label: 'The landing page / offer (conversion rate)', correct: true, feedback: 'Exactly. Normal CPM + good CTR + poor result = the drop-off is at conversion. Fix the page, price, or offer, not the ad.' },
           { label: 'The audience is too small', correct: false, feedback: 'Nothing here points to reach. The click-to-buy step is where you’re leaking.' },
         ],
@@ -237,12 +237,12 @@ export const M1_LESSONS: MetaLesson[] = [
       {
         kind: 'teach', id: 'c2', title: 'ROAS alone can lie',
         blocks: [
-          p('A 3× ROAS sounds great — but if your product has a 40% margin, a 3× ROAS on the *revenue* might be losing money once you subtract cost of goods. The number you actually need to clear is your **break-even ROAS**.'),
+          p('A 3× ROAS sounds great: but if your product has a 40% margin, a 3× ROAS on the *revenue* might be losing money once you subtract cost of goods. The number you actually need to clear is your **break-even ROAS**.'),
           key('Break-even ROAS = 1 ÷ gross margin. At a 40% margin, break-even ROAS is 1 ÷ 0.40 = **2.5**. Below 2.5 you lose money; above it you profit.'),
         ],
       },
       {
-        kind: 'calc', id: 'calc2', variant: 'breakeven-roas', title: 'Find your break-even ROAS', blurb: 'Enter your margin. Everything below the line is unprofitable spend — even if the ROAS looks positive.' },
+        kind: 'calc', id: 'calc2', variant: 'breakeven-roas', title: 'Find your break-even ROAS', blurb: 'Enter your margin. Everything below the line is unprofitable spend, even if the ROAS looks positive.' },
       {
         kind: 'mcq', id: 'q2',
         prompt: 'Your product has a 50% gross margin. Which ROAS is your break-even point?',

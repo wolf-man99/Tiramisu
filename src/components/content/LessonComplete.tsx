@@ -6,7 +6,7 @@ import { CircleCheck, Loader } from 'lucide-react';
 import { SECTION_ORDER } from '@/lib/content/types';
 import { Button } from '@/components/ui/primitives';
 
-/** Marks every section of a day complete — the simple "I finished this day" control. */
+/** Marks every section of a day complete, the simple "I finished this day" control. */
 export function LessonComplete({ day, done }: { day: number; done: boolean }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);

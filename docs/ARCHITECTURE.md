@@ -5,7 +5,7 @@
 | Layer | Choice | Why |
 |---|---|---|
 | Framework | Next.js 16 (App Router, RSC) | Server components render curriculum without shipping it to the client |
-| Language | TypeScript (strict) | Content is typed data — the compiler validates 300 exercises |
+| Language | TypeScript (strict) | Content is typed data, the compiler validates 300 exercises |
 | Styling | Tailwind CSS v4 (CSS-first tokens) | No JS config; theme lives in `globals.css` as `@theme` |
 | Components | shadcn-style primitives over Radix | Owned in-repo, no black boxes |
 | Editor | Monaco + custom BigQuery language definition | Real IDE affordances: completion, hover docs, signature help |
@@ -127,10 +127,10 @@ aborting the iteration. This bounds pathological cross joins in practice.
 - The diff reports up to 5 missing and 5 extra rows, which is what the UI renders.
 
 Because the expected side is produced by *running* the reference solution at grade
-time, exercises cannot drift out of sync with the data — and any alternative correct
+time, exercises cannot drift out of sync with the data, and any alternative correct
 formulation passes.
 
-## 5. BigQuery emulation — what is and isn't faithful
+## 5. BigQuery emulation. What is and isn't faithful
 
 **Faithful (implemented):**
 - `SAFE_DIVIDE`, `SAFE_CAST`, `IFNULL`, `NULLIF`, `COALESCE`, `SAFE_MULTIPLY` family
@@ -145,9 +145,9 @@ formulation passes.
 - Window functions: native SQLite (identical semantics for `ROW_NUMBER`, `RANK`,
   `DENSE_RANK`, `LAG`, `LEAD`, `FIRST_VALUE`, `LAST_VALUE`, `NTILE`, `SUM OVER`,
   frames incl. `ROWS BETWEEN … PRECEDING AND …`)
-- `QUALIFY` — rewritten into a wrapping subquery with a `WHERE`
+- `QUALIFY`, rewritten into a wrapping subquery with a `WHERE`
 - Backtick-quoted identifiers, `project.dataset.table` three-part names
-- `UNNEST(array)` in `FROM`/`CROSS JOIN` — rewritten to `json_each(...)`, including
+- `UNNEST(array)` in `FROM`/`CROSS JOIN`: rewritten to `json_each(...)`, including
   `WITH OFFSET`
 - `STRUCT` field access `x.y` on JSON-backed struct columns → `->> '$.y'`
 - `EXCEPT DISTINCT` / `SELECT * EXCEPT(col)`
@@ -179,7 +179,7 @@ relies on emulated behaviour, so the learner is never taught a falsehood.
 ## 7. Determinism
 
 `lib/warehouse/generate.ts` uses a **mulberry32** PRNG seeded with a constant. Every
-random draw — impression counts, conversion coin-flips, name selection — comes from
+random draw, impression counts, conversion coin-flips, name selection, comes from
 that single stream, in a fixed order. Consequences:
 
 - Every install produces byte-identical warehouse data.
@@ -201,7 +201,7 @@ Measured on the reference container (Node 22.22, 241 452 rows):
 
 The open connection is cached on `globalThis`, surviving Next dev-server hot reloads.
 
-The one query that flirts with its budget is a full-table `UNNEST(event_params)` —
+The one query that flirts with its budget is a full-table `UNNEST(event_params)`,
 56 k events × ~7 params = ~390 k synthetic rows. That is genuinely expensive in real
 BigQuery too, and day 12 uses the cost as a teaching moment rather than hiding it.
 Date UDFs are memoised on their arguments, which is what took that query from 2.3 s to

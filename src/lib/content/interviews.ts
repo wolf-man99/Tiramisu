@@ -3,7 +3,7 @@ import type { InterviewSet, InterviewQuestion, Difficulty } from './types';
 /**
  * Ten company-styled SQL interview sets.
  *
- * Each set is calibrated to what that company's data round actually optimises for —
+ * Each set is calibrated to what that company's data round actually optimises for,
  * Google wants scale and edge cases, Amazon wants the metric definition, Airbnb wants
  * marketplace two-sidedness, Razorpay wants transaction integrity. Questions strictly
  * increase in difficulty, and every one carries an `interviewerNote`: what a strong
@@ -60,7 +60,7 @@ GROUP BY c.campaign_name
 HAVING SUM(d.conversions) >= 100
 ORDER BY cpa, c.campaign_name`,
         ['The volume threshold is on an aggregate, so HAVING.',
-          'conversions is fractional — do not cast it.'],
+          'conversions is fractional. Do not cast it.'],
         'Mention that conversions are fractional in Google Ads and that casting to INT loses ~8%. That single sentence separates candidates.',
         { orderMatters: true }),
 
@@ -82,7 +82,7 @@ ORDER BY channel_type, rank_in_channel, campaign_name`,
         { orderMatters: true, followUp: 'What changes if two campaigns tie on spend?' }),
 
       q('g5', 'expert', 900,
-        'Return `campaign_name`, `spend`, `conversions`, `cpa` and `cpa_vs_channel` — each campaign\'s CPA divided by its own channel type\'s CPA. Campaigns with at least 50 conversions only. Order by cpa_vs_channel descending, top 15.',
+        'Return `campaign_name`, `spend`, `conversions`, `cpa` and `cpa_vs_channel`, each campaign\'s CPA divided by its own channel type\'s CPA. Campaigns with at least 50 conversions only. Order by cpa_vs_channel descending, top 15.',
         `WITH camp AS (
   SELECT c.channel_type, c.campaign_name,
          SUM(d.cost) AS spend, SUM(d.conversions) AS conversions
@@ -171,7 +171,7 @@ SELECT month, revenue,
                    LAG(revenue) OVER (ORDER BY month)) AS mom_growth
 FROM m ORDER BY month`,
         ['Aggregate to month first so LAG steps one month, not one row.',
-          'The first month has no previous value — that NULL is correct.'],
+          'The first month has no previous value. That NULL is correct.'],
         'Aggregate before you window. Applying LAG to raw order rows is the most common wrong answer to this question.',
         { orderMatters: true }),
 
@@ -217,7 +217,7 @@ FROM matrix ORDER BY cohort_month, month_number LIMIT 40`,
         { orderMatters: true }),
 
       q('m2', 'medium', 420,
-        'Return `sessions`, `carts` and `purchases` — distinct sessions reaching each step.',
+        'Return `sessions`, `carts` and `purchases`, distinct sessions reaching each step.',
         `WITH s AS (
   SELECT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING)) AS k,
          MAX(CASE WHEN event_name = 'session_start' THEN 1 ELSE 0 END) a,
@@ -231,7 +231,7 @@ SELECT SUM(a) AS sessions, SUM(b) AS carts, SUM(c) AS purchases FROM s`,
         'Say "this is an any-order funnel" before you write it. If they wanted strict order they will tell you, and you will have shown you know the difference.'),
 
       q('m3', 'medium', 480,
-        'Return `device_category` and `cvr` — purchase rate per session by device. Order by cvr descending.',
+        'Return `device_category` and `cvr`, purchase rate per session by device. Order by cvr descending.',
         `WITH s AS (
   SELECT CONCAT(e.user_pseudo_id, '-', CAST(e.ga_session_id AS STRING)) AS k,
          MAX(e.device.category) AS device_category,
@@ -240,7 +240,7 @@ SELECT SUM(a) AS sessions, SUM(b) AS carts, SUM(c) AS purchases FROM s`,
 )
 SELECT device_category, SAFE_DIVIDE(SUM(purchased), COUNT(*)) AS cvr
 FROM s GROUP BY device_category ORDER BY cvr DESC, device_category`,
-        ['device is a STRUCT — reach in with a dot, no UNNEST.',
+        ['device is a STRUCT: reach in with a dot, no UNNEST.',
           'MAX carries the constant device value through the grouping.'],
         'Knowing that STRUCT needs a dot and ARRAY needs UNNEST is the single most useful GA4 fact in an interview.',
         { orderMatters: true }),
@@ -256,7 +256,7 @@ ORDER BY sessions DESC, user_pseudo_id
 LIMIT 20`,
         ['Two COUNT DISTINCTs over different columns.',
           'Within one user_pseudo_id, ga_session_id is already unique.'],
-        'Note out loud that ga_session_id is only unique *within* a user — here you have partitioned by user already, so a plain COUNT DISTINCT is safe.',
+        'Note out loud that ga_session_id is only unique *within* a user. Here you have partitioned by user already, so a plain COUNT DISTINCT is safe.',
         { orderMatters: true }),
 
       q('m5', 'hard', 720,
@@ -272,7 +272,7 @@ SELECT event_date, daily_users,
 FROM d ORDER BY event_date`,
         ['Aggregate per day first so the ROWS frame counts days.',
           'A 7-day frame is 6 PRECEDING plus the current row.'],
-        'Flag that this rolling sum double-counts users active on several days — a true rolling-7-day-unique needs a self join. Interviewers love that catch.',
+        'Flag that this rolling sum double-counts users active on several days. A true rolling-7-day-unique needs a self join. Interviewers love that catch.',
         { orderMatters: true }),
 
       q('m6', 'expert', 900,
@@ -319,7 +319,7 @@ FROM s GROUP BY channel ORDER BY sessions DESC, channel`,
         'Return `lifecycle_stage` and `contacts` from `hubspot_contacts`, ordered by contacts descending.',
         'SELECT lifecycle_stage, COUNT(*) AS contacts FROM hubspot_contacts GROUP BY lifecycle_stage ORDER BY contacts DESC, lifecycle_stage',
         ['Simple group and count.'],
-        'Note that lifecycle_stage is where the contact is *now* — it undercounts every earlier stage they passed through.',
+        'Note that lifecycle_stage is where the contact is *now*, it undercounts every earlier stage they passed through.',
         { orderMatters: true }),
 
       q('h2', 'medium', 420,
@@ -347,12 +347,12 @@ ORDER BY mql_rate DESC, original_source`,
         { orderMatters: true }),
 
       q('h4', 'hard', 600,
-        'Return `stage`, `deals`, `total_amount` and `win_rate` from `hubspot_deals` — where win rate counts only closed deals in the denominator. Order by deals descending.',
+        'Return `stage`, `deals`, `total_amount` and `win_rate` from `hubspot_deals`, where win rate counts only closed deals in the denominator. Order by deals descending.',
         `SELECT stage, COUNT(*) AS deals, SUM(amount) AS total_amount,
        SAFE_DIVIDE(COUNTIF(is_won = 1), COUNTIF(is_won IS NOT NULL)) AS win_rate
 FROM hubspot_deals
 GROUP BY stage ORDER BY deals DESC, stage`,
-        ['`is_won` is NULL for open deals — neither won nor lost.',
+        ['`is_won` is NULL for open deals, neither won nor lost.',
           'The denominator must exclude the open ones.'],
         'If you write COUNT(*) as the win-rate denominator, every open deal counts as a loss and your win rate is wrong by the size of your pipeline.',
         { orderMatters: true, followUp: 'What is the win rate if you include open deals as losses, and when would that be the right choice?' }),
@@ -367,7 +367,7 @@ GROUP BY original_source
 ORDER BY avg_days_to_customer, original_source`,
         ['DATE_DIFF takes the later date first.',
           'AVG skips NULLs, so contacts that never reached the stage drop out of that column automatically.'],
-        'Point out that the two averages have different denominators — each excludes a different set of NULLs. That is fine, but it must be said.',
+        'Point out that the two averages have different denominators, each excludes a different set of NULLs. That is fine, but it must be said.',
         { orderMatters: true }),
     ],
   },
@@ -390,14 +390,14 @@ ORDER BY avg_days_to_customer, original_source`,
         { orderMatters: true }),
 
       q('at2', 'medium', 420,
-        'Return `activated_users` and `activation_rate` — activated users over all subscription customers.',
+        'Return `activated_users` and `activation_rate`, activated users over all subscription customers.',
         `SELECT COUNT(DISTINCT p.user_id) AS activated_users,
        SAFE_DIVIDE(COUNT(DISTINCT p.user_id), (SELECT COUNT(DISTINCT customer_id) FROM subscriptions)) AS activation_rate
 FROM product_events p
 WHERE p.event_name = 'activated'`,
         ['The denominator is a scalar subquery over subscriptions.',
           'COUNT DISTINCT on the numerator so a user activating twice counts once.'],
-        'Ask what the denominator should be — signups, subscriptions, or trials. There is no default and the interviewer knows it.'),
+        'Ask what the denominator should be: signups, subscriptions, or trials. There is no default and the interviewer knows it.'),
 
       q('at3', 'medium', 540,
         'Return `platform`, `users`, `events` and `events_per_user`. Order by users descending.',
@@ -428,7 +428,7 @@ GROUP BY p.tier ORDER BY activation_rate DESC, p.tier`,
         { orderMatters: true }),
 
       q('at5', 'hard', 780,
-        'Return `days_to_activate` and `users` — a distribution of how long activation took, for the first 30 days. Chronological.',
+        'Return `days_to_activate` and `users`: a distribution of how long activation took, for the first 30 days. Chronological.',
         `WITH act AS (
   SELECT user_id, MIN(DATE(event_time)) AS activated_on
   FROM product_events WHERE event_name = 'activated' GROUP BY user_id
@@ -495,7 +495,7 @@ SELECT date, spend,
        SUM(spend) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS rolling_7d_spend
 FROM d WHERE date BETWEEN '2024-10-01' AND '2024-10-31' ORDER BY date`,
         ['Aggregate to one row per day before the frame.',
-          'Filter after the window or the first days lose their history — here the CTE covers the full year, so the window is complete.'],
+          'Filter after the window or the first days lose their history: here the CTE covers the full year, so the window is complete.'],
         'Say why you filter after windowing: filtering first truncates the frame at the range boundary and the first six days come out wrong.',
         { orderMatters: true }),
 
@@ -508,7 +508,7 @@ WHERE date BETWEEN '2024-10-01' AND '2024-10-07'
 GROUP BY platform, date
 ORDER BY date, platform`,
         ['A window over the grouped sums gives the daily total.',
-          'SUM(SUM(x)) OVER (...) is legal — the window runs after GROUP BY.'],
+          'SUM(SUM(x)) OVER (...) is legal. The window runs after GROUP BY.'],
         'The double SUM surprises people. Explain the order of operations as you write it.',
         { orderMatters: true }),
 
@@ -659,7 +659,7 @@ LIMIT 40`,
        SUM(refunded_amount) AS refunded,
        SUM(CASE WHEN status IN ('succeeded','refunded') THEN amount ELSE 0 END) - SUM(refunded_amount) AS net_collected
 FROM stripe_charges`,
-        ['Failed charges never collected money — exclude them from gross.',
+        ['Failed charges never collected money, exclude them from gross.',
           'refunded_amount is its own column.'],
         'Say which statuses are in the numerator. "Net collected" is meaningless without it.'),
 
@@ -690,7 +690,7 @@ ORDER BY failure_rate DESC, card_brand`,
         { orderMatters: true }),
 
       q('r5', 'hard', 780,
-        'Return `month`, `collected`, `failed` and `recovery_opportunity` — the failed amount as a share of what was collected. Chronological.',
+        'Return `month`, `collected`, `failed` and `recovery_opportunity`. The failed amount as a share of what was collected. Chronological.',
         `SELECT DATE_TRUNC(DATE(created_at), MONTH) AS month,
        SUM(CASE WHEN status = 'succeeded' THEN amount ELSE 0 END) AS collected,
        SUM(CASE WHEN status = 'failed' THEN amount ELSE 0 END) AS failed,
@@ -698,7 +698,7 @@ ORDER BY failure_rate DESC, card_brand`,
                    SUM(CASE WHEN status = 'succeeded' THEN amount ELSE 0 END)) AS recovery_opportunity
 FROM stripe_charges
 GROUP BY month ORDER BY month`,
-        ['created_at is a timestamp — wrap it in DATE() before truncating to month.',
+        ['created_at is a timestamp, wrap it in DATE() before truncating to month.',
           'Conditional aggregation gives both amounts in one pass.'],
         'Expressing the opportunity as a share of collected revenue is what turns a dunning project into a funded one.',
         { orderMatters: true }),
@@ -734,7 +734,7 @@ GROUP BY coupon_code ORDER BY orders DESC, coupon_code`,
         { orderMatters: true }),
 
       q('s3', 'medium', 540,
-        'Return `orders_per_customer` and `customers` — the distribution of order counts. Order by orders_per_customer.',
+        'Return `orders_per_customer` and `customers`. The distribution of order counts. Order by orders_per_customer.',
         `WITH pc AS (
   SELECT customer_id, COUNT(*) AS n FROM orders WHERE status = 'completed' GROUP BY customer_id
 )
@@ -753,7 +753,7 @@ FROM pc GROUP BY n ORDER BY orders_per_customer`,
 FROM orders WHERE status = 'completed'
 GROUP BY used_coupon ORDER BY used_coupon`,
         ['CASE on NULL to split the two groups.'],
-        'This is a selection-effect trap. Coupon users may have bought anyway — the comparison is correlational and you should say so.',
+        'This is a selection-effect trap. Coupon users may have bought anyway. The comparison is correlational and you should say so.',
         { orderMatters: true, followUp: 'How would you design a test to find out whether the discount was incremental?' }),
 
       q('s5', 'hard', 720,
@@ -790,7 +790,7 @@ LIMIT 20`,
         'Return `channel` and `touches` from `attribution_touchpoints`, ordered by touches descending.',
         'SELECT channel, COUNT(*) AS touches FROM attribution_touchpoints GROUP BY channel ORDER BY touches DESC, channel',
         ['One row per touch.'],
-        'Note that touches are not conversions — this table has both converted and unconverted journeys in it.',
+        'Note that touches are not conversions. This table has both converted and unconverted journeys in it.',
         { orderMatters: true }),
 
       q('z2', 'medium', 480,
@@ -814,7 +814,7 @@ GROUP BY channel ORDER BY first_touch_value DESC, channel`,
              ELSE SAFE_DIVIDE(conversion_value * 0.2, journey_length - 2) END) AS position_based
 FROM attribution_touchpoints WHERE converted = 1
 GROUP BY channel ORDER BY linear DESC, channel`,
-        ['Position-based is 40/20/40 — the middle 20% shared among the middle touches.',
+        ['Position-based is 40/20/40, the middle 20% shared among the middle touches.',
           'A single-touch journey must be special-cased or it loses value entirely.'],
         'The journey_length = 1 branch is the whole question. Without it you divide by zero and silently lose the single-touch conversions, which are the majority.',
         { orderMatters: true }),
@@ -850,7 +850,7 @@ FROM spend s LEFT JOIN credit c USING (channel)
 ORDER BY linear_roas, s.channel`,
         ['Two CTEs at channel grain, then a LEFT JOIN from spend.',
           'Only channels with spend can have a ROAS.'],
-        'They will ask which channel to cut. The correct answer names the channel *and* says that no attribution model can establish incrementality — only a holdout can. Candidates who give a number without that caveat do not get the offer.',
+        'They will ask which channel to cut. The correct answer names the channel *and* says that no attribution model can establish incrementality. Only a holdout can. Candidates who give a number without that caveat do not get the offer.',
         { orderMatters: true,
           followUp: 'The CFO wants to cut 20% of budget. Which channel, and what would you need to be confident?' }),
     ],

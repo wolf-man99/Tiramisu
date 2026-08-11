@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 2 — Reading data: SELECT, aliases, LIMIT, DISTINCT, ORDER BY.
+ * Module 2: Reading data: SELECT, aliases, LIMIT, DISTINCT, ORDER BY.
  *
  * 20 exercises. Every one returns something a marketer would actually paste into
  * Slack, so the syntax arrives already attached to a use.
@@ -22,7 +22,7 @@ export const M02 = [
     'SELECT campaign_name AS "Campaign", daily_budget AS "Daily Budget (USD)" FROM google_ads_campaigns',
     ['`AS` renames a column in the output.',
       'An alias containing spaces or brackets must be wrapped in double quotes.'],
-    { explanation: 'Aliases change only the output. The underlying column keeps its name, which is why you cannot then filter on `WHERE "Campaign" = ...` in the same query — WHERE runs before SELECT.' }),
+    { explanation: 'Aliases change only the output. The underlying column keeps its name, which is why you cannot then filter on `WHERE "Campaign" = ...` in the same query, WHERE runs before SELECT.' }),
 
   ex('2.3', 2, 'easy',
     'Ten most expensive campaign-days',
@@ -33,7 +33,7 @@ export const M02 = [
       '`LIMIT 10` keeps only the first ten rows after sorting.',
       'Add a tie-break column to ORDER BY so the result is stable when two rows share a cost.'],
     { orderMatters: true,
-      explanation: 'LIMIT applies *after* ORDER BY — the database sorts everything, then slices. Without the tie-break, two rows with identical cost could come back in either order on different runs, which makes "the top 10" quietly non-reproducible.' }),
+      explanation: 'LIMIT applies *after* ORDER BY: the database sorts everything, then slices. Without the tie-break, two rows with identical cost could come back in either order on different runs, which makes "the top 10" quietly non-reproducible.' }),
 
   ex('2.4', 2, 'easy',
     'Which creative formats do we run?',
@@ -48,7 +48,7 @@ export const M02 = [
     'Return `keyword_text` and `match_type` from `google_ads_keywords`, sorted by keyword text, limited to the first 15.',
     ['google_ads_keywords'], ['order-by', 'limit'],
     'SELECT keyword_text, match_type FROM google_ads_keywords ORDER BY keyword_text, match_type, keyword_id LIMIT 15',
-    ['Sort ascending is the default — no DESC needed.',
+    ['Sort ascending is the default, no DESC needed.',
       'Add tie-break columns so ties resolve the same way every run.'],
     { orderMatters: true }),
 
@@ -60,7 +60,7 @@ export const M02 = [
     ['ORDER BY takes a comma-separated list.',
       'DESC attaches to a single column, not to the whole ORDER BY.'],
     { orderMatters: true,
-      explanation: '`ORDER BY country, daily_budget DESC` sorts country ascending and budget descending. Each column carries its own direction — a detail that bites everyone once.' }),
+      explanation: '`ORDER BY country, daily_budget DESC` sorts country ascending and budget descending. Each column carries its own direction, a detail that bites everyone once.' }),
 
   ex('2.7', 2, 'easy',
     'Compute CTR inline',
@@ -96,7 +96,7 @@ export const M02 = [
 
   ex('2.10', 2, 'medium',
     'Margin percentage',
-    'Return `product_name`, `list_price` and `margin_pct` — the unit margin as a percentage of list price, rounded to 1 decimal place. Sort by margin_pct descending.',
+    'Return `product_name`, `list_price` and `margin_pct`: the unit margin as a percentage of list price, rounded to 1 decimal place. Sort by margin_pct descending.',
     ['products'], ['select', 'alias', 'math-functions', 'order-by'],
     `SELECT product_name,
        list_price,
@@ -105,7 +105,7 @@ FROM products
 ORDER BY margin_pct DESC, product_name`,
     ['Margin percentage is (price − cost) / price, times 100.',
       '`ROUND(x, 1)` keeps one decimal place.',
-      'Wrap the division in SAFE_DIVIDE out of habit — it costs nothing.'],
+      'Wrap the division in SAFE_DIVIDE out of habit. It costs nothing.'],
     { orderMatters: true }),
 
   ex('2.11', 2, 'medium',
@@ -134,7 +134,7 @@ ORDER BY margin_pct DESC, product_name`,
     ['Smallest first is the default direction, but write ASC to be explicit.',
       'Refunds are stored as negative revenue, so they sort below every sale.'],
     { orderMatters: true,
-      explanation: 'Every one of them is negative. Refunds in this warehouse are stored as negative `gross_revenue` rather than as a separate table — so `SUM(gross_revenue)` already nets refunds out, and `SUM(gross_revenue) WHERE status = \'completed\'` deliberately does not. Knowing which one your stakeholder means is the job.',
+      explanation: 'Every one of them is negative. Refunds in this warehouse are stored as negative `gross_revenue` rather than as a separate table: so `SUM(gross_revenue)` already nets refunds out, and `SUM(gross_revenue) WHERE status = \'completed\'` deliberately does not. Knowing which one your stakeholder means is the job.',
       trap: 'Reporting "total revenue" without deciding whether refunds are in or out.' }),
 
   ex('2.14', 2, 'hard',
@@ -147,7 +147,7 @@ WHERE campaign_id IS NOT NULL
 ORDER BY campaign_id, campaign`,
     ['DISTINCT on two columns gives distinct pairs.',
       'You only care about sessions that actually have a campaign, so exclude NULL campaign_ids.',
-      '`IS NOT NULL` is the filter — `!= NULL` never matches anything.'],
+      '`IS NOT NULL` is the filter, `!= NULL` never matches anything.'],
     { orderMatters: true,
       explanation: 'A campaign\'s *name* is an attribute that can change; its *id* is the identity that cannot. Group your reporting by name and a mid-quarter rename splits one campaign into two rows that each look like they halved in performance.',
       trap: 'Treating `SELECT DISTINCT campaign_id, campaign_name` as a count of campaigns.' }),
@@ -166,23 +166,23 @@ LIMIT 15`,
       'Filter first with WHERE, then sort, then limit.',
       'You can ORDER BY an alias you defined in SELECT.'],
     { orderMatters: true,
-      explanation: 'ORDER BY is the one clause that *can* see SELECT aliases, because it runs after SELECT. WHERE cannot — which is why the impressions filter has to repeat the raw column.' }),
+      explanation: 'ORDER BY is the one clause that *can* see SELECT aliases, because it runs after SELECT. WHERE cannot, which is why the impressions filter has to repeat the raw column.' }),
 
   ex('2.16', 2, 'hard',
     'Deduplicate the orders table',
-    'The `orders` table contains 26 exact duplicate rows. Return `order_id` and `gross_revenue` for every *distinct* order, sorted by order_id, limited to 20 rows — so that a downstream SUM would not double-count.',
+    'The `orders` table contains 26 exact duplicate rows. Return `order_id` and `gross_revenue` for every *distinct* order, sorted by order_id, limited to 20 rows, so that a downstream SUM would not double-count.',
     ['orders'], ['distinct', 'dedup', 'order-by'],
     'SELECT DISTINCT order_id, gross_revenue FROM orders ORDER BY order_id LIMIT 20',
     ['The duplicates are exact copies, so DISTINCT over the selected columns removes them.',
       'Be careful: DISTINCT deduplicates the columns you selected, not the underlying rows.',
       'Sort and limit after the DISTINCT.'],
     { orderMatters: true,
-      explanation: 'DISTINCT works here only because the duplicates are *exact*. If the replayed rows differed in even one column — a timestamp, say — DISTINCT would keep both, and you would need ROW_NUMBER() (day 10) to pick one per order_id. Knowing which situation you are in is the difference between a fix and a false sense of security.',
-      trap: 'Believing DISTINCT is a general-purpose deduplicator. It is not — it is exact-row-match only.' }),
+      explanation: 'DISTINCT works here only because the duplicates are *exact*. If the replayed rows differed in even one column, a timestamp, say, DISTINCT would keep both, and you would need ROW_NUMBER() (day 10) to pick one per order_id. Knowing which situation you are in is the difference between a fix and a false sense of security.',
+      trap: 'Believing DISTINCT is a general-purpose deduplicator. It is not. It is exact-row-match only.' }),
 
   ex('2.17', 2, 'medium',
     'Format money for a report',
-    'Return `campaign_name` and `budget_display` — the daily budget rendered as a string like `$250.00`. Sort by daily_budget descending.',
+    'Return `campaign_name` and `budget_display`, the daily budget rendered as a string like `$250.00`. Sort by daily_budget descending.',
     ['google_ads_campaigns'], ['string-functions', 'alias'],
     `SELECT campaign_name,
        CONCAT('$', FORMAT('%.2f', daily_budget)) AS budget_display
@@ -200,12 +200,12 @@ ORDER BY daily_budget DESC, campaign_name`,
     ['ga4_sessions'], ['distinct', 'string-functions'],
     'SELECT DISTINCT channel_group, UPPER(channel_group) AS channel_upper FROM ga4_sessions ORDER BY channel_group',
     ['UPPER() converts a string to uppercase.',
-      'DISTINCT still applies to the whole select list — but both columns derive from the same source, so the pairs stay 1:1.'],
+      'DISTINCT still applies to the whole select list: but both columns derive from the same source, so the pairs stay 1:1.'],
     { orderMatters: true }),
 
   ex('2.19', 2, 'hard',
     'Rank by profit, not revenue',
-    'Return `product_name`, `list_price`, `unit_cost` and `unit_margin`, for the 8 products with the best unit margin — but exclude anything not currently sold (`is_active = 0`).',
+    'Return `product_name`, `list_price`, `unit_cost` and `unit_margin`, for the 8 products with the best unit margin, but exclude anything not currently sold (`is_active = 0`).',
     ['products'], ['select', 'where', 'order-by', 'limit'],
     `SELECT product_name, list_price, unit_cost, list_price - unit_cost AS unit_margin
 FROM products
@@ -216,7 +216,7 @@ LIMIT 8`,
       '`is_active = 1` keeps the active ones.',
       'You may sort by the alias `unit_margin`.'],
     { orderMatters: true,
-      explanation: 'Revenue rankings and margin rankings disagree constantly. The GPS Watch Pro tops revenue and the Merino Socks top margin percentage — which one you promote depends on whether you are buying growth or buying profit.' }),
+      explanation: 'Revenue rankings and margin rankings disagree constantly. The GPS Watch Pro tops revenue and the Merino Socks top margin percentage, which one you promote depends on whether you are buying growth or buying profit.' }),
 
   ex('2.20', 2, 'hard',
     'A clean campaign catalogue for Monday standup',

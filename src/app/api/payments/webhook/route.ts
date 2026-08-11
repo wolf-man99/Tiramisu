@@ -5,7 +5,7 @@ import { grantEntitlement } from '@/lib/payments/entitle';
 export const runtime = 'nodejs';
 
 /**
- * Razorpay's server-to-server callback — the durable source of truth for a payment,
+ * Razorpay's server-to-server callback, the durable source of truth for a payment,
  * since the client-side verify call can fail to fire even when the payment went
  * through. No session cookie here; authenticated purely by the HMAC signature over
  * the raw body, using a separate secret from the API key (configured against this

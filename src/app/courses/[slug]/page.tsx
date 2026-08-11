@@ -77,7 +77,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               {[
                 'The account structure: Business Manager, ad accounts, the pixel & CAPI',
                 'Campaign objectives and how Meta’s auction actually works',
-                'Audiences: core, custom, lookalikes — and Advantage+ targeting',
+                'Audiences: core, custom, lookalikes, and Advantage+ targeting',
                 'Campaign Budget Optimization (CBO) vs ad-set budgets',
                 'Creative that stops the thumb: hooks, formats, UGC frameworks',
                 'The testing method: isolating variables without starving learning',
@@ -91,7 +91,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               ))}
             </ol>
             <p className="mt-4 text-sm text-[var(--text-subtle)]">
-              Every lesson is interactive and gamified — simulated campaign decisions, budget calculators, metric quizzes, and instant feedback. Built to keep you engaged, not bored.
+              Every lesson is interactive and gamified: simulated campaign decisions, budget calculators, metric quizzes, and instant feedback. Built to keep you engaged, not bored.
             </p>
           </Card>
         )}

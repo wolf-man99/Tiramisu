@@ -4,7 +4,7 @@
 
 ```
 /                       Dashboard
-/learn                  Roadmap — 14 days as a track
+/learn                  Roadmap, 14 days as a track
   /learn/[day]          Day page: 10 sections in a stepper
 /playground             Full-screen SQL IDE (schema | editor | results)
 /practice               Mode picker
@@ -81,7 +81,7 @@ term, or run a saved query.
 │ │ null-handling    38% ▓░░░ │ │ ① 4 of your last 6 misses involved      │ │
 │ │ join-fanout      44% ▓▓░░ │ │   LEFT JOIN + WHERE. Do drill 6.11.     │ │
 │ │ having           51% ▓▓░░ │ │ ② You haven't revised `distinct` in     │ │
-│ │ date-diff        58% ▓▓▓░ │ │   9 days — 6 cards are due.             │ │
+│ │ date-diff        58% ▓▓▓░ │ │   9 days. 6 cards are due.             │ │
 │ └───────────────────────────┘ └─────────────────────────────────────────┘ │
 │                                                                            │
 │ ┌─ ACCURACY OVER TIME ──────────────────┐ ┌─ BADGES ──┐ ┌─ LEADERBOARD ─┐ │
@@ -116,7 +116,7 @@ holds notes + the day's concepts.
 ## 5. Playground / exercise workspace
 
 The same three-pane component serves the playground, every exercise, projects,
-interviews and the capstone — only the header and the right pane's tabs change.
+interviews and the capstone, only the header and the right pane's tabs change.
 
 ```
 ┌─ 3.14 · Wasted spend ─── Medium ─── ⚡80 ─── ⏱ 02:41 ── [Hint] [Reveal] [Run ⌘⏎]┐
@@ -163,7 +163,7 @@ best, and a coloured difficulty band. Interview / Timed / Blind cards carry a ru
 ```
 
 Completed tasks render their chart in a live dashboard preview built from the learner's
-own query output — the project *is* the dashboard.
+own query output, the project *is* the dashboard.
 
 ## 8. Interview
 

@@ -1,11 +1,11 @@
 import { ex } from './helpers';
 
 /**
- * Module 11 — Marketing analytics (day 13). The heart of the platform.
+ * Module 11, Marketing analytics (day 13). The heart of the platform.
  *
  * 30 exercises. Every other module exists to make this one possible. Each metric is
  * derived from first principles, implemented, and then stress-tested against the edge
- * case that breaks the naive version — because the difference between a marketer who
+ * case that breaks the naive version, because the difference between a marketer who
  * "knows SQL" and one who can be trusted with a number is entirely in the edge cases.
  */
 export const M11 = [
@@ -30,7 +30,7 @@ ORDER BY spend DESC`,
 
   ex('11.2', 13, 'medium',
     'Blended CAC',
-    'Return `total_spend`, `new_customers` and `blended_cac` — total paid spend divided by all customers acquired in 2024.',
+    'Return `total_spend`, `new_customers` and `blended_cac`, total paid spend divided by all customers acquired in 2024.',
     ['ad_spend_daily', 'customers'], ['cac', 'safe-divide'],
     `SELECT (SELECT SUM(spend) FROM ad_spend_daily) AS total_spend,
        (SELECT COUNT(*) FROM customers) AS new_customers,
@@ -40,7 +40,7 @@ ORDER BY spend DESC`,
       'Two scalar subqueries and their ratio.'],
     {
       explanation:
-        'Blended CAC is the honest headline number and a terrible optimisation target. It charges paid media for the customers organic and direct brought in for free, so it always looks worse than any channel-level CAC — and it is the number your CFO will quote back at you.',
+        'Blended CAC is the honest headline number and a terrible optimisation target. It charges paid media for the customers organic and direct brought in for free, so it always looks worse than any channel-level CAC, and it is the number your CFO will quote back at you.',
     }),
 
   ex('11.3', 13, 'hard',
@@ -74,7 +74,7 @@ FROM spend s
 LEFT JOIN acquired a USING (channel)
 ORDER BY cac, s.channel`,
     ['Two CTEs at channel grain, then a join.',
-      'Only channels with spend can have a CAC — organic has no cost to divide.'],
+      'Only channels with spend can have a CAC. Organic has no cost to divide.'],
     { orderMatters: true }),
 
   ex('11.5', 13, 'medium',
@@ -110,12 +110,12 @@ ORDER BY platform_roas DESC`,
       'The ratio between them is the size of the disagreement.'],
     {
       explanation:
-        'Platforms overclaim, structurally and by design: Meta counts a 7-day-click/1-day-view purchase, Google counts last-click, and they both count the same order. The warehouse number is lower and is the one to plan with. The gap is not a bug to fix — it is a fact to explain to whoever asks why the dashboard disagrees with Ads Manager.',
+        'Platforms overclaim, structurally and by design: Meta counts a 7-day-click/1-day-view purchase, Google counts last-click, and they both count the same order. The warehouse number is lower and is the one to plan with. The gap is not a bug to fix. It is a fact to explain to whoever asks why the dashboard disagrees with Ads Manager.',
     }),
 
   ex('11.7', 13, 'medium',
     'AOV, mean and median',
-    'Return `mean_aov` and `median_aov` for completed orders — and notice the difference.',
+    'Return `mean_aov` and `median_aov` for completed orders, and notice the difference.',
     ['orders'], ['aov', 'avg'],
     `SELECT AVG(gross_revenue) AS mean_aov,
        PERCENTILE_CONT(gross_revenue, 0.5) AS median_aov
@@ -136,7 +136,7 @@ WHERE status = 'completed'
 GROUP BY channel
 ORDER BY aov DESC, channel`,
     ['AOV is revenue over order count, per group.',
-      'SUM(gross_revenue) / COUNT(*) — sums first, then divide.'],
+      'SUM(gross_revenue) / COUNT(*): sums first, then divide.'],
     { orderMatters: true }),
 
   // ── LTV ──
@@ -163,7 +163,7 @@ FROM customer_ltv
 GROUP BY first_touch_channel
 ORDER BY avg_ltv DESC, first_touch_channel`,
     ['Group the view by the acquisition channel.',
-      'Report both the average and the total — they rank channels differently.'],
+      'Report both the average and the total, they rank channels differently.'],
     { orderMatters: true,
       explanation: 'A channel with high average LTV and few customers is a niche worth expanding; high total and low average is a volume channel. Reporting only one of the two hides half the decision.' }),
 
@@ -188,13 +188,13 @@ FROM spend s
 JOIN value v USING (channel)
 ORDER BY ltv_cac_ratio DESC, s.channel`,
     ['CAC per channel, average LTV per channel, then divide.',
-      'The conventional healthy threshold is 3:1 — below that you are buying revenue you cannot afford.'],
+      'The conventional healthy threshold is 3:1. Below that you are buying revenue you cannot afford.'],
     { orderMatters: true,
-      explanation: 'This ratio uses *historical* LTV, so it understates every channel — customers acquired in December have had one month to spend. Comparing channels is fair only when their cohorts are the same age, which is why serious LTV work is always cohort-based.' }),
+      explanation: 'This ratio uses *historical* LTV, so it understates every channel. Customers acquired in December have had one month to spend. Comparing channels is fair only when their cohorts are the same age, which is why serious LTV work is always cohort-based.' }),
 
   ex('11.12', 13, 'expert',
     'Cohort LTV at a fixed age',
-    'Fix the age problem. Return `cohort_month`, `customers` and `ltv_90d` — average revenue per customer within 90 days of their first order, for cohorts old enough to have 90 days. Chronological.',
+    'Fix the age problem. Return `cohort_month`, `customers` and `ltv_90d`: average revenue per customer within 90 days of their first order, for cohorts old enough to have 90 days. Chronological.',
     ['orders'], ['ltv', 'cohort', 'chained-cte', 'date-diff'],
     `WITH first_order AS (
   SELECT customer_id, MIN(order_date) AS first_date
@@ -217,10 +217,10 @@ WHERE cohort_month <= '2024-09-01'
 GROUP BY cohort_month
 ORDER BY cohort_month`,
     ['Anchor every customer to their own first order date, then measure a fixed window from it.',
-      'Exclude cohorts too young to have completed the window — otherwise they look terrible.',
+      'Exclude cohorts too young to have completed the window, otherwise they look terrible.',
       'The CASE inside SUM restricts to the 90-day window without dropping the customer.'],
     { orderMatters: true,
-      explanation: 'Fixed-window cohort LTV is the only fair way to compare acquisition months. Truncating the young cohorts is not cheating — including them is, because a 30-day-old cohort cannot have 90-day revenue.' }),
+      explanation: 'Fixed-window cohort LTV is the only fair way to compare acquisition months. Truncating the young cohorts is not cheating: including them is, because a 30-day-old cohort cannot have 90-day revenue.' }),
 
   ex('11.13', 13, 'hard',
     'Payback period',
@@ -250,7 +250,7 @@ ORDER BY payback_months, s.channel`,
   // ── retention & churn ──
   ex('11.14', 13, 'hard',
     'Day-1, day-7 and day-30 retention',
-    'From `product_events`, return `d1`, `d7` and `d30` — the share of activated users who returned within 1, 7 and 30 days of activating.',
+    'From `product_events`, return `d1`, `d7` and `d30`. The share of activated users who returned within 1, 7 and 30 days of activating.',
     ['product_events'], ['retention', 'chained-cte', 'date-diff'],
     `WITH activation AS (
   SELECT user_id, MIN(DATE(event_time)) AS activated_on
@@ -272,7 +272,7 @@ SELECT SAFE_DIVIDE(SUM(r1), COUNT(*)) AS d1,
        SAFE_DIVIDE(SUM(r30), COUNT(*)) AS d30
 FROM returns`,
     ['Anchor on each user\'s activation date.',
-      'A "return" is any event on a later day — so the day-offset range starts at 1, not 0.',
+      'A "return" is any event on a later day. So the day-offset range starts at 1, not 0.',
       'MAX over a flag answers "did they ever return in this window?".'],
     { explanation: 'Starting the window at day 1 rather than day 0 is the whole definition. Include day 0 and every user "retains", because activating is itself an event.' }),
 
@@ -303,7 +303,7 @@ LEFT JOIN churned c USING (month)
 ORDER BY a.month`,
     ['A subscription is active at the start of a month if it started before it and had not cancelled by then.',
       'Churn rate is cancellations that month over the population at the start of the month.',
-      'Using end-of-month as the denominator understates churn — the churned ones are already gone.'],
+      'Using end-of-month as the denominator understates churn. The churned ones are already gone.'],
     { orderMatters: true,
       trap: 'Dividing churned by the *end*-of-period count. The denominator must be the population that had the opportunity to churn.' }),
 
@@ -346,11 +346,11 @@ FROM months m
 LEFT JOIN new_mrr n USING (month)
 LEFT JOIN churn_mrr c USING (month)
 ORDER BY m.month`,
-    ['New and churned MRR are different events on different dates — aggregate them separately.',
+    ['New and churned MRR are different events on different dates, aggregate them separately.',
       'A month spine guarantees months with no churn still appear.',
       'Net new is simply new minus churned.'],
     { orderMatters: true,
-      explanation: 'A full MRR bridge also splits expansion, contraction and reactivation. This warehouse has no plan-change history, so those three are out of reach — and saying so is better than inventing them.' }),
+      explanation: 'A full MRR bridge also splits expansion, contraction and reactivation. This warehouse has no plan-change history, so those three are out of reach, and saying so is better than inventing them.' }),
 
   ex('11.18', 13, 'hard',
     'Net revenue retention',
@@ -370,7 +370,7 @@ SELECT SUM(mrr) AS starting_mrr,
        ) AS nrr
 FROM cohort`,
     ['Fix a cohort at a point in time, then measure what is left of it later.',
-      'NRR above 100% requires expansion revenue, which this dataset does not model — so expect a number below 1.'],
+      'NRR above 100% requires expansion revenue, which this dataset does not model, so expect a number below 1.'],
     { explanation: 'Real NRR includes upgrades, which is how SaaS companies report figures above 100%. Without plan-change history the honest ceiling here is 1.0, and claiming otherwise would be fiction.' }),
 
   // ── funnel & activation ──
@@ -436,7 +436,7 @@ WHERE source != 'internal-qa'
 GROUP BY landing_page
 HAVING COUNT(*) >= 150
 ORDER BY cvr DESC, landing_page`,
-    ['Revenue per session is the metric that ranks pages honestly — it combines rate and value.',
+    ['Revenue per session is the metric that ranks pages honestly, it combines rate and value.',
       'Group by landing_page, then HAVING COUNT(*) >= 150 before sorting by cvr.'],
     { orderMatters: true,
       explanation: 'A page with a 6% conversion rate on £20 orders loses to one with 3% on £90 orders. Ranking landing pages by CVR alone systematically favours the cheap ones.' }),
@@ -481,7 +481,7 @@ ORDER BY linear DESC, channel`,
       'Position-based gives 40% to first, 40% to last and shares 20% among the middle.',
       'A one-touch journey has to be special-cased or it loses value.'],
     { orderMatters: true,
-      explanation: 'All four columns sum to roughly the same total — they redistribute the same revenue, they do not create it. Choosing a model is choosing whose contribution to believe, and it is a business decision dressed up as a technical one.' }),
+      explanation: 'All four columns sum to roughly the same total: they redistribute the same revenue, they do not create it. Choosing a model is choosing whose contribution to believe, and it is a business decision dressed up as a technical one.' }),
 
   ex('11.25', 13, 'expert',
     'Time-decay attribution',
@@ -501,13 +501,13 @@ FROM weighted
 GROUP BY channel
 ORDER BY time_decay_value DESC, channel`,
     ['Each touch gets a weight proportional to its position, so later touches get more.',
-      'The denominator is the sum of positions within the journey — a window function.',
+      'The denominator is the sum of positions within the journey, a window function.',
       'A window function cannot be nested inside an aggregate, so compute the per-touch credit in a CTE first, then SUM it.'],
     { orderMatters: true }),
 
   ex('11.26', 13, 'hard',
     'Customer journey paths',
-    'Return `path` and `conversions` — the 15 most common channel sequences among converted journeys.',
+    'Return `path` and `conversions`, the 15 most common channel sequences among converted journeys.',
     ['attribution_touchpoints'], ['attribution', 'string-functions'],
     `WITH journeys AS (
   SELECT user_pseudo_id,
@@ -524,7 +524,7 @@ LIMIT 15`,
     ['Build one path string per journey, then count identical paths.',
       'The ORDER BY inside STRING_AGG is mandatory or the paths are meaningless.'],
     { orderMatters: true,
-      explanation: 'Path analysis degrades fast: with 8 channels and journeys up to 7 touches, the long tail is enormous and the top paths are almost all single-touch. That is itself the finding — most conversions are simpler than the multi-touch narrative suggests.' }),
+      explanation: 'Path analysis degrades fast: with 8 channels and journeys up to 7 touches, the long tail is enormous and the top paths are almost all single-touch. That is itself the finding. Most conversions are simpler than the multi-touch narrative suggests.' }),
 
   // ── segmentation & profitability ──
   ex('11.27', 13, 'hard',
@@ -568,9 +568,9 @@ GROUP BY segment
 ORDER BY customers DESC, segment`,
     ['NTILE(4) over each dimension gives a 1–4 score.',
       'Higher recency quartile means more recent, because the order is ascending on the date.',
-      'Exclude customers who never ordered — they have no R, F or M.'],
+      'Exclude customers who never ordered. They have no R, F or M.'],
     { orderMatters: true,
-      explanation: '"At risk" — high frequency, low recency — is the most valuable segment in this table. They proved they like you and then stopped, which is the cheapest churn there is to reverse.' }),
+      explanation: '"At risk" (high frequency, low recency) is the most valuable segment in this table. They proved they like you and then stopped, which is the cheapest churn there is to reverse.' }),
 
   ex('11.29', 13, 'expert',
     'Which keyword generated the highest revenue',
@@ -588,7 +588,7 @@ GROUP BY k.keyword_text, k.match_type
 HAVING SUM(kd.clicks) >= 30
 ORDER BY conversion_value DESC, k.keyword_text
 LIMIT 15`,
-    ['Group by the keyword text and match type, not the id — the same text runs on several ids.',
+    ['Group by the keyword text and match type, not the id. The same text runs on several ids.',
       'The minimum-click filter keeps the ROAS meaningful.'],
     { orderMatters: true,
       explanation: 'Grouping by keyword_id would split the same keyword across ad groups and understate every one of them. Grouping by text and match type is what a stakeholder means when they say "which keyword".' }),
@@ -617,7 +617,7 @@ LIMIT 15`,
   (SELECT SAFE_DIVIDE(SUM(converted), COUNT(*)) FROM ga4_sessions WHERE source != 'internal-qa') AS site_cvr`,
     ['Fourteen scalar subqueries in one SELECT.',
       'Each one is a query you have already written in this module.',
-      'Consistency of filters across the KPIs matters more than elegance — every revenue figure must use the same status filter.'],
+      'Consistency of filters across the KPIs matters more than elegance. Every revenue figure must use the same status filter.'],
     {
       explanation:
         'This is the query that gets scheduled and emailed every Monday. Its real difficulty is not SQL: it is making sure "revenue" means the same thing in the numerator of ROAS as it does in the AOV, so nobody can reconcile two of your own numbers against each other and find a gap.',

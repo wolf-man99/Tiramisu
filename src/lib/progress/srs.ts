@@ -28,7 +28,7 @@ function addDays(iso: string, days: number): string {
  * Apply a review grade (0–5) on `today`, returning the next scheduling state.
  *
  * A lapse (grade < 3) resets the interval and reps but only nudges ease down, so a
- * card you keep failing comes back fast and often — which is the point.
+ * card you keep failing comes back fast and often, which is the point.
  */
 export function review(state: SrsState, grade: number, today: string): SrsResult {
   const g = Math.max(0, Math.min(5, Math.round(grade)));

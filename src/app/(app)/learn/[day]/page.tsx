@@ -79,7 +79,7 @@ export default async function DayPage({ params }: { params: Promise<{ day: strin
       {/* Playground */}
       <Section icon={<PlayCircle size={16} />} title="Try it yourself">
         <p className="mb-2 text-sm text-[var(--text-muted)]">{day.playground.prompt}</p>
-        <RunnableSnippet code={day.playground.starter} caption="Starter — edit and run in the playground" />
+        <RunnableSnippet code={day.playground.starter} caption="Starter. Edit and run in the playground" />
         <Link href="/playground" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-[var(--accent-text)] hover:underline">
           Open the full playground <ArrowRight size={14} />
         </Link>

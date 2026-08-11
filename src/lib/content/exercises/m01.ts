@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 1 — How data is actually stored.
+ * Module 1. How data is actually stored.
  *
  * Day 1 exercises are deliberately gentle on syntax and hard on *reading* a warehouse:
  * every one of them answers a structural question (what is the grain? is this key
@@ -21,12 +21,12 @@ export const M01 = [
     ],
     {
       explanation:
-        '24 campaigns. `COUNT(*)` counts rows, and because this table\'s grain is one row per campaign, counting rows and counting campaigns are the same thing. That equivalence is exactly what "grain" means — and it stops being true the moment you point COUNT(*) at a table with a different grain.',
+        '24 campaigns. `COUNT(*)` counts rows, and because this table\'s grain is one row per campaign, counting rows and counting campaigns are the same thing. That equivalence is exactly what "grain" means, and it stops being true the moment you point COUNT(*) at a table with a different grain.',
     }),
 
   ex('1.2', 1, 'easy',
     'Prove the grain of a daily table',
-    '`google_ads_daily` claims to have one row per date per ad group. Prove it. Return `row_count` and `distinct_combinations` — the number of distinct date + ad_group_id pairs. If the table\'s grain is what it claims, the two numbers are equal.',
+    '`google_ads_daily` claims to have one row per date per ad group. Prove it. Return `row_count` and `distinct_combinations`, the number of distinct date + ad_group_id pairs. If the table\'s grain is what it claims, the two numbers are equal.',
     ['google_ads_daily'], ['grain', 'count', 'distinct'],
     `SELECT COUNT(*) AS row_count,
        COUNT(DISTINCT date || '|' || ad_group_id) AS distinct_combinations
@@ -38,7 +38,7 @@ FROM google_ads_daily`,
     ],
     {
       explanation:
-        'The two numbers match, so the grain is confirmed: date × ad_group is unique. This is the first thing to do with any unfamiliar table. The separator in `date || \'|\' || ad_group_id` is not decoration — without it, ("2024-01-1", "23") and ("2024-01-12", "3") would collide.',
+        'The two numbers match, so the grain is confirmed: date × ad_group is unique. This is the first thing to do with any unfamiliar table. The separator in `date || \'|\' || ad_group_id` is not decoration: without it, ("2024-01-1", "23") and ("2024-01-12", "3") would collide.',
       trap: 'COUNT(DISTINCT date), COUNT(DISTINCT ad_group_id) does not prove uniqueness of the pair.',
     }),
 
@@ -53,7 +53,7 @@ FROM google_ads_daily`,
     ],
     {
       explanation:
-        '6,610 rows but only 6,584 distinct order_ids — 26 orders appear twice, from a webhook that replayed. Every revenue number you compute from this table without deduplicating is overstated. This is not a contrived teaching example; it is the single most common data defect in commerce warehouses.',
+        '6,610 rows but only 6,584 distinct order_ids: 26 orders appear twice, from a webhook that replayed. Every revenue number you compute from this table without deduplicating is overstated. This is not a contrived teaching example; it is the single most common data defect in commerce warehouses.',
       trap: 'Assuming a column named *_id is unique because it is named *_id.',
     }),
 
@@ -64,11 +64,11 @@ FROM google_ads_daily`,
     'SELECT product_id, product_name, category, unit_cost, list_price FROM products',
     [
       'List the columns you want after SELECT, separated by commas.',
-      'No filter is needed — you want every product.',
+      'No filter is needed. You want every product.',
     ],
     {
       explanation:
-        'Dimensions are small, wide and slow-changing. Facts (like `orders` or `google_ads_daily`) are tall, narrow and append-only. Almost every analytical query joins one to the other — a fact for the numbers, a dimension for the labels.',
+        'Dimensions are small, wide and slow-changing. Facts (like `orders` or `google_ads_daily`) are tall, narrow and append-only. Almost every analytical query joins one to the other: a fact for the numbers, a dimension for the labels.',
     }),
 
   ex('1.5', 1, 'easy',
@@ -104,12 +104,12 @@ FROM google_ads_daily`,
     ['google_ads_ad_groups'], ['distinct', 'order-by', 'grain'],
     'SELECT DISTINCT campaign_id FROM google_ads_ad_groups ORDER BY campaign_id',
     [
-      'You only need one table here — the foreign key column lives inside it.',
+      'You only need one table here, the foreign key column lives inside it.',
       'DISTINCT, because a campaign has several ad groups.',
     ],
     { orderMatters: true,
       explanation:
-        'A foreign key is just a column holding values that exist as keys in another table. There is no magic and — in most warehouses, including BigQuery — no enforcement. Nothing stops a fact row from referencing a dimension row that does not exist, which is why this warehouse contains orders pointing at campaigns that were deleted.' }),
+        'A foreign key is just a column holding values that exist as keys in another table. There is no magic and, in most warehouses, including BigQuery, no enforcement. Nothing stops a fact row from referencing a dimension row that does not exist, which is why this warehouse contains orders pointing at campaigns that were deleted.' }),
 
   ex('1.8', 1, 'medium',
     'The same entity at three grains',
@@ -119,13 +119,13 @@ FROM google_ads_daily`,
        (SELECT COUNT(*) FROM orders)       AS order_rows,
        (SELECT COUNT(*) FROM order_items)  AS order_item_rows`,
     [
-      'Three different tables, one row of output — so you cannot use a single FROM.',
+      'Three different tables, one row of output, so you cannot use a single FROM.',
       'A query in parentheses that returns exactly one value can be used anywhere a value can.',
       'Put each `(SELECT COUNT(*) FROM …)` directly in the SELECT list.',
     ],
     {
       explanation:
-        '5,200 customers → 6,610 orders → 10,834 line items. Each step down is a finer grain, and each step multiplies rows. Every fan-out bug in this course comes from summing a number at the wrong level of that ladder — and on day 7 you will inflate revenue by 1.8× doing exactly that.',
+        '5,200 customers → 6,610 orders → 10,834 line items. Each step down is a finer grain, and each step multiplies rows. Every fan-out bug in this course comes from summing a number at the wrong level of that ladder, and on day 7 you will inflate revenue by 1.8× doing exactly that.',
       trap: 'Trying to FROM three tables at once and getting a cross join of 5,200 × 6,610 × 10,834 rows.',
     }),
 ];

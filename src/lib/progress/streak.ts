@@ -1,6 +1,6 @@
 /**
  * Streak arithmetic. Pure functions over ISO date strings (YYYY-MM-DD) so they are
- * trivial to test and free of timezone surprises — the caller resolves "today" in the
+ * trivial to test and free of timezone surprises, the caller resolves "today" in the
  * profile's timezone and passes the string in.
  */
 
@@ -50,7 +50,7 @@ export function applyActivity(input: StreakInput): StreakResult {
   const gap = daysBetween(lastActiveDate, today);
 
   if (gap <= 0) {
-    // Same day (or clock skew) — activity already counted.
+    // Same day (or clock skew), activity already counted.
     return { currentStreak, longestStreak, streakFreezes, extended: false, freezeUsed: false };
   }
 
@@ -75,7 +75,7 @@ export function applyActivity(input: StreakInput): StreakResult {
   return { currentStreak, longestStreak, streakFreezes, extended: true, freezeUsed: false };
 }
 
-/** Is the streak in danger — active yesterday, nothing today yet? */
+/** Is the streak in danger: active yesterday, nothing today yet? */
 export function streakAtRisk(lastActiveDate: string | null, today: string): boolean {
   if (!lastActiveDate) return false;
   return daysBetween(lastActiveDate, today) === 1;

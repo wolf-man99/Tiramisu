@@ -29,7 +29,7 @@ const DAY_MS = 86_400_000;
 /**
  * Rank a learner's weakest concepts. Concepts with real attempts and a low pass rate
  * come first (struggling), then concepts learned but not practised recently (rusty),
- * then concepts never attempted at all (untouched) — but only ones the curriculum has
+ * then concepts never attempted at all (untouched), but only ones the curriculum has
  * already introduced, which the caller signals via `unlockedConcepts`.
  */
 export function weakAreas(
@@ -105,9 +105,9 @@ export function recommendExercises(
   for (const w of weak) {
     if (out.length >= limit) break;
     const reason = w.reason === 'struggling'
-      ? `You've been missing ${label(w.concept)} — here's a focused rep.`
+      ? `You've been missing ${label(w.concept)}, here's a focused rep.`
       : w.reason === 'rusty'
-        ? `You haven't touched ${label(w.concept)} in a while — keep it sharp.`
+        ? `You haven't touched ${label(w.concept)} in a while. Keep it sharp.`
         : `Time to start ${label(w.concept)}.`;
     pushFor(w.concept, reason);
   }

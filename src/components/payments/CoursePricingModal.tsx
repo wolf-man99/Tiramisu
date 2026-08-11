@@ -7,16 +7,26 @@ import { type Course } from '@/lib/courses/registry';
 import { Card, Button } from '@/components/ui/primitives';
 import { CourseLogo } from '@/components/app/CourseLogo';
 import { PricingSection } from '@/components/payments/PricingSection';
+import { track } from '@/lib/analytics/events';
 
 /**
- * Shown when a signed-in user clicks a course card that has real pricing (Meta Ads
- * today) — surfaces the same PricingSection used on the course page itself, up
- * front, before committing to the click-through. "Try free" still lets anyone
- * skip straight to the existing free 2-module preview.
+ * Shown when a signed-in user clicks a course card that has real pricing (Meta
+ * Ads today). Surfaces the same PricingSection used on the course page itself,
+ * up front, rather than making people scroll to find it. "Try free" still lets
+ * anyone skip into the existing free 2-module preview.
+ *
+ * The `?pricing=<courseId>` URL that accompanies this dialog is owned by
+ * CourseCard, not here: it is set from the click handler rather than an effect,
+ * because effect cleanups run twice under StrictMode and a history call in one
+ * races the push from the other.
  */
 export function CoursePricingModal({
   course, hasLearn, hasRun, onClose,
 }: { course: Course; hasLearn: boolean; hasRun: boolean; onClose: () => void }) {
+  useEffect(() => {
+    track('pricing_viewed', { courseId: course.id, hasLearn, hasRun });
+  }, [course.id, hasLearn, hasRun]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -30,12 +40,12 @@ export function CoursePricingModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] p-4 py-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[color-mix(in_srgb,var(--ink)_55%,transparent)] p-4 py-6 sm:items-center sm:py-8"
       onClick={onClose}
       role="presentation"
     >
       <Card
-        className="w-full max-w-xl p-6"
+        className="w-full max-w-xl p-5 sm:p-6 md:max-w-3xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -61,11 +71,11 @@ export function CoursePricingModal({
         {!(hasLearn && hasRun) && (
           <>
             <div className="my-4 flex items-center gap-3 text-xs text-[var(--text-faint)]">
-              <div className="h-px flex-1 bg-[var(--border)]" /> or <div className="h-px flex-1 bg-[var(--border)]" />
+              <div className="h-px flex-1 bg-[var(--border-soft)]" /> or <div className="h-px flex-1 bg-[var(--border-soft)]" />
             </div>
             <Link href={course.href} onClick={onClose} className="block">
               <Button variant="secondary" size="lg" className="w-full justify-center gap-2">
-                {hasLearn ? 'Go to course — decide on Run later' : 'Try 2 modules free — decide later'} <ArrowRight size={15} />
+                {hasLearn ? 'Go to the course, decide on Run later' : 'Try 2 modules free, decide later'} <ArrowRight size={15} />
               </Button>
             </Link>
           </>

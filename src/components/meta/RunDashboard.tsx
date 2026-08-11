@@ -13,11 +13,11 @@ import {
  * The Run dashboard: a deliberate, literal recreation of Meta Ads Manager's own
  * chrome (grey ground, hairline borders, Meta blue, dense small-type table) rather
  * than Tiramisu's neo-brutalist system used everywhere else in the app. That break
- * is intentional — see the Phase 2 design review — so the learner builds real
+ * is intentional, see the Phase 2 design review, so the learner builds real
  * muscle memory for the tool they'll actually use, inside a page that never claims
  * to be the genuine Meta product (see the "Educational simulation" badge below).
  *
- * Reused on the marketing homepage as the "try it before you sign up" preview —
+ * Reused on the marketing homepage as the "try it before you sign up" preview,
  * `storageScope` namespaces localStorage so a visitor's play-around campaigns/
  * columns there never bleed into their real signed-in Run dashboard state.
  */
@@ -53,7 +53,7 @@ function compactNum(n: number): string {
 
 const EMPTY_TOTALS: MetricTotals = { spend: 0, revenue: 0, purchases: 0, impressions: 0, linkClicks: 0 };
 
-/** Groups already range-aggregated rows into buckets — used by the Reporting tab's
+/** Groups already range-aggregated rows into buckets, used by the Reporting tab's
  *  breakdown selector. Reuses each row's own totals rather than recomputing, so a
  *  breakdown always matches the account totals for the active date range exactly. */
 function groupRows(rows: DisplayRow[], keyFn: (r: DisplayRow) => string): { key: string; t: MetricTotals; reach: number }[] {
@@ -98,7 +98,7 @@ const RANGE_PRESETS: { key: RangeKey; label: string; days: number }[] = [
 
 /** A campaign's totals for [from, to]. Base campaigns resum their daily series;
  *  campaigns created in-session only "exist" on LATEST_DATE (the account's frozen
- *  "now"), so a range that doesn't include today correctly shows them at zero —
+ *  "now"), so a range that doesn't include today correctly shows them at zero,
  *  they hadn't launched yet. */
 function rangeTotals(c: DemoCampaign, from: string, to: string): MetricTotals {
   if (DEMO_DAILY[c.name]) return aggregateRange(c.name, from, to);
@@ -123,7 +123,7 @@ interface Row {
   funnel: FunnelCounts;
 }
 
-/** A table row at whichever level is on screen (Campaign / Ad set / Ad) — the
+/** A table row at whichever level is on screen (Campaign / Ad set / Ad), the
  *  campaign-only fields (delivery, bid strategy, budget) are pre-rendered to text
  *  here so the same column renderers work at every level. */
 interface DisplayRow {
@@ -200,7 +200,7 @@ const ACCOUNT_AOV = DEMO_TOTALS.revenue / DEMO_TOTALS.purchases;
 const CTR_BAND: Record<DemoCampaign['type'], number> = { Prospecting: 1.15, Retargeting: 2.6, Catalog: 1.9 };
 
 /** A brand-new campaign's first-day numbers: small, noisy, and delivery still
- *  "Learning" — that's realistic, not a placeholder. Randomised (not seeded) since
+ *  "Learning". That's realistic, not a placeholder. Randomised (not seeded) since
  *  this is a live user action, not a fixed case-study figure. */
 function buildDayOneCampaign(input: CreateCampaignInput): DemoCampaign {
   const spend = Math.round(input.dailyBudget * (0.25 + Math.random() * 0.45));
@@ -250,7 +250,7 @@ export function RunDashboard({ storageScope = 'run' }: { storageScope?: string }
       const rawCamp = localStorage.getItem(campaignsKey);
       if (rawCamp) setCustomCampaigns(JSON.parse(rawCamp));
     } catch {
-      // localStorage unavailable or corrupt — fall back to defaults, no need to surface an error
+      // localStorage unavailable or corrupt: fall back to defaults, no need to surface an error
     }
     setHydrated(true);
     // storageScope is fixed for the lifetime of a given mount (campaigns vs. marketing preview)
@@ -515,7 +515,7 @@ export function RunDashboard({ storageScope = 'run' }: { storageScope?: string }
               A fictional account built for teaching. These are not real Meta results and not
               performance benchmarks. Cost per result in the table is spend ÷ purchases; the
               account-level Cost per result KPI at the top is cost per <em>new customer</em> instead,
-              which is why the two numbers don&apos;t match — the same gap the SQL course teaches you
+              which is why the two numbers don&apos;t match, the same gap the SQL course teaches you
               to notice, holding across whatever date range or level (campaign, ad set, ad) you view.
             </p>
           </>
@@ -800,7 +800,7 @@ function CreativePanel({ cards }: { cards: { ad: DemoAd; row: DisplayRow; adSetN
         })}
       </div>
       <p className="mb-footnote">
-        Thumbnails are format placeholders, not real creative — this simulator doesn&apos;t model
+        Thumbnails are format placeholders, not real creative, this simulator doesn&apos;t model
         an asset library. Stats per ad are live for whichever date range you&apos;ve selected above.
       </p>
     </>
@@ -851,7 +851,7 @@ function ReportingPanel({
         </table>
       </div>
       <p className="mb-footnote">
-        A live breakdown of the account for whichever date range you&apos;ve selected above — this
+        A live breakdown of the account for whichever date range you&apos;ve selected above, this
         simulator doesn&apos;t model saved/exported custom reports beyond that.
       </p>
     </>
@@ -889,7 +889,7 @@ function CreateCampaignModal({ onClose, onCreate }: { onClose: () => void; onCre
         <form onSubmit={submit} className="mb-modal-body">
           <label className="mb-field">
             <span>Campaign name</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Prospecting — Reels Broad" autoFocus />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Prospecting - Reels Broad" autoFocus />
           </label>
           <label className="mb-field">
             <span>Objective</span>
@@ -924,7 +924,7 @@ function CreateCampaignModal({ onClose, onCreate }: { onClose: () => void; onCre
           </label>
           {error && <p className="mb-modal-error">{error}</p>}
           <p className="mb-modal-hint">
-            New campaigns launch in the Learning phase — delivery is still stabilizing, so Day 1
+            New campaigns launch in the Learning phase. Delivery is still stabilizing, so Day 1
             numbers are small and noisy. That&apos;s expected, not a bug.
           </p>
           <div className="mb-modal-actions">

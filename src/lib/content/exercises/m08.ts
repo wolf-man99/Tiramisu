@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 8 — Window functions (day 10).
+ * Module 8, Window functions (day 10).
  *
  * 26 exercises. Window functions do two things nothing else can: compare a row to its
  * group without collapsing the rows, and look at neighbouring rows. Almost every
@@ -11,7 +11,7 @@ import { ex } from './helpers';
 export const M08 = [
   ex('8.1', 10, 'easy',
     'Your first window',
-    'Return `campaign_id`, `date`, `cost` and `campaign_total` — the campaign\'s total cost repeated on every row — for the first 20 rows of google_ads_daily by campaign_id then date.',
+    'Return `campaign_id`, `date`, `cost` and `campaign_total`, the campaign\'s total cost repeated on every row, for the first 20 rows of google_ads_daily by campaign_id then date.',
     ['google_ads_daily'], ['percent-of-total'],
     `SELECT campaign_id, date, cost,
        SUM(cost) OVER (PARTITION BY campaign_id) AS campaign_total
@@ -40,7 +40,7 @@ ORDER BY spend DESC, campaign_id`,
 
   ex('8.3', 10, 'easy',
     'ROW_NUMBER',
-    'Return `campaign_id`, `date`, `cost` and `rn` — the row number within each campaign ordered by date — for the first 20 rows.',
+    'Return `campaign_id`, `date`, `cost` and `rn`, the row number within each campaign ordered by date, for the first 20 rows.',
     ['google_ads_daily'], ['row-number'],
     `SELECT campaign_id, date, cost,
        ROW_NUMBER() OVER (PARTITION BY campaign_id ORDER BY date, ad_group_id) AS rn
@@ -64,7 +64,7 @@ ORDER BY category, list_price DESC, product_id`,
     ['All three take the same OVER clause.',
       'They differ only in how they treat ties.'],
     { orderMatters: true,
-      explanation: 'ROW_NUMBER never ties — it picks arbitrarily unless you add a tie-break. RANK ties then skips (1, 1, 3). DENSE_RANK ties then continues (1, 1, 2). Use ROW_NUMBER to *pick one*, RANK to *report a placing*.' }),
+      explanation: 'ROW_NUMBER never ties. It picks arbitrarily unless you add a tie-break. RANK ties then skips (1, 1, 3). DENSE_RANK ties then continues (1, 1, 2). Use ROW_NUMBER to *pick one*, RANK to *report a placing*.' }),
 
   ex('8.5', 10, 'medium',
     'Top N per group',
@@ -78,7 +78,7 @@ FROM (
 )
 WHERE rn <= 2
 ORDER BY category, list_price DESC`,
-    ['You cannot filter on a window function in WHERE — it has not been computed yet.',
+    ['You cannot filter on a window function in WHERE. It has not been computed yet.',
       'Wrap the query in a subquery and filter outside it.',
       'BigQuery\'s QUALIFY does this in one step.'],
     { orderMatters: true,
@@ -94,7 +94,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY list_price DESC, produ
 ORDER BY category, list_price DESC`,
     ['QUALIFY is to window functions what HAVING is to aggregates.',
       'It runs after SELECT, so the window function is available.',
-      'It is a BigQuery extension — most other engines need the subquery form.'],
+      'It is a BigQuery extension. Most other engines need the subquery form.'],
     { orderMatters: true }),
 
   ex('8.7', 10, 'medium',
@@ -116,7 +116,7 @@ ORDER BY month`,
 
   ex('8.8', 10, 'medium',
     'Month-over-month percentage',
-    'Extend the previous query with `mom_pct` — the percentage change. Chronological.',
+    'Extend the previous query with `mom_pct`, the percentage change. Chronological.',
     ['orders'], ['lag-lead', 'safe-divide'],
     `WITH monthly AS (
   SELECT DATE_TRUNC(order_date, MONTH) AS month, SUM(gross_revenue) AS revenue
@@ -149,7 +149,7 @@ ORDER BY month`,
 
   ex('8.10', 10, 'medium',
     'LAG with an offset and default',
-    'Return `month`, `revenue` and `revenue_3mo_ago` — using LAG with an offset of 3 and a default of 0. Chronological.',
+    'Return `month`, `revenue` and `revenue_3mo_ago`, using LAG with an offset of 3 and a default of 0. Chronological.',
     ['orders'], ['lag-lead'],
     `WITH monthly AS (
   SELECT DATE_TRUNC(order_date, MONTH) AS month, SUM(gross_revenue) AS revenue
@@ -158,7 +158,7 @@ ORDER BY month`,
 SELECT month, revenue, LAG(revenue, 3, 0) OVER (ORDER BY month) AS revenue_3mo_ago
 FROM monthly
 ORDER BY month`,
-    ['`LAG(col, offset, default)` — the second argument is how far back.',
+    ['`LAG(col, offset, default)`. The second argument is how far back.',
       'The third argument replaces the NULL at the start of the window.'],
     { orderMatters: true }),
 
@@ -176,7 +176,7 @@ FROM monthly
 ORDER BY month`,
     ['Adding ORDER BY to a window turns the aggregate into a running one.',
       'The explicit frame says "everything from the start up to this row".',
-      'Without a frame, `ORDER BY` defaults to exactly that — but writing it is clearer.'],
+      'Without a frame, `ORDER BY` defaults to exactly that, but writing it is clearer.'],
     { orderMatters: true }),
 
   ex('8.12', 10, 'hard',
@@ -196,7 +196,7 @@ ORDER BY date`,
     ['`ROWS BETWEEN 6 PRECEDING AND CURRENT ROW` is a 7-row window including today.',
       'Aggregate to one row per date first, or the frame counts rows rather than days.'],
     { orderMatters: true,
-      trap: 'Applying a ROWS frame to un-aggregated data counts *rows*, not days — and a day with three campaigns then contributes three rows to the window.' }),
+      trap: 'Applying a ROWS frame to un-aggregated data counts *rows*, not days, and a day with three campaigns then contributes three rows to the window.' }),
 
   ex('8.13', 10, 'hard',
     'Rolling average smooths the noise',
@@ -217,7 +217,7 @@ ORDER BY date`,
 
   ex('8.14', 10, 'medium',
     'FIRST_VALUE',
-    'Return `campaign_id`, `date`, `cost` and `first_day_cost` — the campaign\'s cost on its earliest recorded day. First 20 rows by campaign_id then date.',
+    'Return `campaign_id`, `date`, `cost` and `first_day_cost`, the campaign\'s cost on its earliest recorded day. First 20 rows by campaign_id then date.',
     ['google_ads_daily'], ['first-last-value'],
     `SELECT campaign_id, date, cost,
        FIRST_VALUE(cost) OVER (PARTITION BY campaign_id ORDER BY date, ad_group_id) AS first_day_cost
@@ -284,7 +284,7 @@ FROM numbered
 WHERE rn = 1 AND status = 'completed'`,
     ['Number the rows within each order_id, then keep only rn = 1.',
       'Unlike DISTINCT, this works even when the duplicates differ in some column.'],
-    { explanation: 'ROW_NUMBER dedup is the general solution. The ORDER BY inside the window is where you express *which* copy to keep — the newest, the one with the most fields populated, whatever the business rule is.' }),
+    { explanation: 'ROW_NUMBER dedup is the general solution. The ORDER BY inside the window is where you express *which* copy to keep: the newest, the one with the most fields populated, whatever the business rule is.' }),
 
   ex('8.18', 10, 'hard',
     'Rank campaigns within their channel',
@@ -307,7 +307,7 @@ ORDER BY channel_type, rank_in_channel, campaign_name`,
 
   ex('8.19', 10, 'hard',
     'Share within a partition',
-    'Return `channel_type`, `campaign_name`, `spend` and `pct_of_channel` — each campaign\'s share of its own channel\'s spend. Order by channel_type then pct_of_channel descending.',
+    'Return `channel_type`, `campaign_name`, `spend` and `pct_of_channel`, each campaign\'s share of its own channel\'s spend. Order by channel_type then pct_of_channel descending.',
     ['google_ads_daily', 'google_ads_campaigns'], ['percent-of-total'],
     `WITH spend AS (
   SELECT c.channel_type, c.campaign_name, SUM(d.cost) AS spend
@@ -337,7 +337,7 @@ WHERE status = 'completed'
 ORDER BY customer_id, order_date, order_id
 LIMIT 30`,
     ['Partition by customer so LAG never crosses between customers.',
-      'The first order of each customer has no previous one — NULL is correct there.'],
+      'The first order of each customer has no previous one. NULL is correct there.'],
     { orderMatters: true,
       explanation: 'Median days-between-orders is the single most useful input to a lifecycle email programme: it tells you when someone is *late*, which is when a win-back email actually works.' }),
 
@@ -359,7 +359,7 @@ LIMIT 20`,
 
   ex('8.22', 10, 'hard',
     'Cumulative share (Pareto)',
-    'Return `campaign_id`, `spend`, `pct_of_total` and `cumulative_pct` for Google campaigns ordered by spend descending — the classic 80/20 curve.',
+    'Return `campaign_id`, `spend`, `pct_of_total` and `cumulative_pct` for Google campaigns ordered by spend descending, the classic 80/20 curve.',
     ['google_ads_daily'], ['running-total', 'percent-of-total'],
     `WITH spend AS (
   SELECT campaign_id, SUM(cost) AS spend
@@ -376,7 +376,7 @@ ORDER BY spend DESC, campaign_id`,
     ['Two windows: one over everything for the denominator, one running for the numerator.',
       'Both can appear in the same SELECT.'],
     { orderMatters: true,
-      explanation: 'Read down `cumulative_pct` to find where it crosses 0.8. That is how many campaigns carry 80% of the budget — and it is almost always far fewer than the team thinks.' }),
+      explanation: 'Read down `cumulative_pct` to find where it crosses 0.8. That is how many campaigns carry 80% of the budget, and it is almost always far fewer than the team thinks.' }),
 
   ex('8.23', 10, 'hard',
     'Best day per campaign',
@@ -392,7 +392,7 @@ FROM daily
 QUALIFY ROW_NUMBER() OVER (PARTITION BY campaign_id ORDER BY cost DESC, date) = 1
 ORDER BY cost DESC, campaign_id
 LIMIT 15`,
-    ['Aggregate to campaign-day first — the raw table is campaign-ad-group-day.',
+    ['Aggregate to campaign-day first. The raw table is campaign-ad-group-day.',
       'ROW_NUMBER = 1 picks the top row per partition.'],
     { orderMatters: true }),
 
@@ -428,7 +428,7 @@ WHERE date BETWEEN '2024-11-01' AND '2024-11-30'
 ORDER BY channel, date`,
     ['Build one row per channel-date first, so the ROWS frame counts days.',
       'Partition the rolling window by channel so it never bleeds across channels.',
-      'Rolling ROAS is rolling revenue over rolling spend — not an average of daily ROAS.'],
+      'Rolling ROAS is rolling revenue over rolling spend, not an average of daily ROAS.'],
     { orderMatters: true }),
 
   ex('8.25', 10, 'expert',
@@ -452,7 +452,7 @@ FROM ranked
 ORDER BY week_start, rank_this_week, campaign_id
 LIMIT 40`,
     ['Rank within each week first.',
-      'Then LAG that rank, partitioned by *campaign* and ordered by week — a different partition from the ranking.',
+      'Then LAG that rank, partitioned by *campaign* and ordered by week, a different partition from the ranking.',
       'Two window functions with different partitions, in two steps.'],
     { orderMatters: true,
       explanation: 'Changing the partition between the two steps is the key move. Ranking partitions by week; the week-over-week comparison partitions by campaign. Trying to do both in one step is the usual dead end.' }),
@@ -482,7 +482,7 @@ SELECT cohort_month, month_number, customers,
 FROM matrix
 ORDER BY cohort_month, month_number
 LIMIT 40`,
-    ['The cohort size is the month_number = 0 value — which is the FIRST_VALUE in the partition.',
+    ['The cohort size is the month_number = 0 value, which is the FIRST_VALUE in the partition.',
       'That removes the extra CTE and the join the day-9 version needed.'],
     { orderMatters: true,
       explanation: 'Compare this to exercise 7.16. Same answer, one fewer CTE and no join. Window functions replace an entire class of self-joins, and the readability gain compounds in queries anyone else has to maintain.' }),

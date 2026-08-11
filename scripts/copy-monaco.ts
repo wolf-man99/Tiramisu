@@ -6,7 +6,7 @@
  * networks, CI) and pins a different version than the `monaco-editor` package we
  * actually depend on. Serving it ourselves keeps the whole app self-contained.
  *
- * The copy is generated, not committed — `npm run setup` regenerates it.
+ * The copy is generated, not committed, `npm run setup` regenerates it.
  */
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -20,7 +20,7 @@ const src = join(dirname(require.resolve('monaco-editor/package.json')), 'min', 
 const dest = join(root, 'public', 'monaco', 'vs');
 
 if (!existsSync(src)) {
-  console.error(`monaco assets not found at ${src} — is monaco-editor installed?`);
+  console.error(`monaco assets not found at ${src}, is monaco-editor installed?`);
   process.exit(1);
 }
 

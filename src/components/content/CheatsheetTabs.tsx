@@ -6,7 +6,7 @@ import { RunnableSnippet } from './RunnableSnippet';
 import { Chip } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils';
 
-/** Tabbed cheatsheet browser — one sheet visible at a time, each idiom runnable. */
+/** Tabbed cheatsheet browser: one sheet visible at a time, each idiom runnable. */
 export function CheatsheetTabs({ sheets }: { sheets: Cheatsheet[] }) {
   const [active, setActive] = useState(0);
   const sheet = sheets[active];

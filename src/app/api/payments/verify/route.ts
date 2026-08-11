@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 
 /**
  * Called by the client right after Checkout.js reports success. This is the fast
- * path to unlocking content — the webhook (/api/payments/webhook) is the durable
+ * path to unlocking content, the webhook (/api/payments/webhook) is the durable
  * backstop for when this call never fires (closed tab, dropped network).
  */
 export async function POST(req: Request) {

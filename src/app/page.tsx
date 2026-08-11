@@ -158,7 +158,7 @@ export default async function LandingPage() {
           <h2 className="text-3xl font-extrabold tracking-tight">A virtual Meta Ads account</h2>
           <p className="mt-1 max-w-2xl text-[var(--text-muted)]">
             You are handed a brand, a budget and a target. Everything below is the actual
-            simulator, live — try the date range, the columns, even create a campaign.
+            simulator, live. Try the date range, the columns, even create a campaign.
             It&apos;s invented data, not real Meta results, but the tool itself is the real one.
           </p>
         </div>

@@ -18,7 +18,7 @@ RootLayout                                                                   S
 │   └── Toaster                                                              C
 ```
 
-## Shared primitives — `components/ui/*`
+## Shared primitives, `components/ui/*`
 
 `button` `card` `badge` `tabs` `dialog` `sheet` `dropdown-menu` `popover` `tooltip`
 `progress` `separator` `scroll-area` `switch` `input` `textarea` `label` `skeleton`
@@ -27,7 +27,7 @@ RootLayout                                                                   S
 All are Radix-backed, `cva`-variant, `forwardRef`, and accept `className` merged through
 `cn()`. No component reaches outside its props for state.
 
-## The workspace — the platform's load-bearing component
+## The workspace, the platform's load-bearing component
 
 ```
 QueryWorkspace                                    C   ← used by 6 route families
@@ -72,7 +72,7 @@ DayPage                                                                      S
 ├── SectionStepper                                                           C
 ├── SectionRenderer                                                          S
 │   ├── TheorySection                                                        S
-│   │   ├── Prose (typed content nodes, not MDX — no runtime parse)          S
+│   │   ├── Prose (typed content nodes, not MDX, no runtime parse)          S
 │   │   ├── Callout  info | warn | trap | engine-note | money                S
 │   │   ├── SqlBlock (read-only Monaco-lite, copy + "open in playground")    I
 │   │   └── KeyIdea                                                          S
@@ -114,7 +114,7 @@ DashboardPage                                                                S
 └── LeaderboardPreview  top 5 + your rank                                    S
 ```
 
-## Visualisation layer — `components/viz/*`
+## Visualisation layer, `components/viz/*`
 
 | Component | Library | Used by |
 |---|---|---|
@@ -128,7 +128,7 @@ DashboardPage                                                                S
 | `AccuracyTrend` `ConceptRadar` `TimeDistribution` | Recharts | Analytics |
 | `ResultChart` | Recharts | Results pane auto-viz |
 
-## Library layer — `lib/*`
+## Library layer, `lib/*`
 
 ```
 warehouse/  ddl · generate · engine · catalog        (server-only)

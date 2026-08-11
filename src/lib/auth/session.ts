@@ -1,7 +1,7 @@
 import { scryptSync, randomBytes, timingSafeEqual, createHmac } from 'node:crypto';
 
 /**
- * Auth primitives built on Node's standard crypto — no bcrypt, no jose, no external
+ * Auth primitives built on Node's standard crypto: no bcrypt, no jose, no external
  * auth service. Passwords are scrypt-hashed; sessions are HMAC-signed stateless tokens
  * carried in an httpOnly cookie. Fully offline, in the spirit of the rest of the app.
  */
@@ -12,7 +12,7 @@ import { SESSION_MAX_AGE } from './constants';
 const SECRET = process.env.AUTH_SECRET ?? 'tiramisu-dev-secret-change-me-in-production';
 
 if (!process.env.AUTH_SECRET && process.env.NODE_ENV === 'production') {
-  console.warn('[auth] AUTH_SECRET is not set — using an insecure development default.');
+  console.warn('[auth] AUTH_SECRET is not set, using an insecure development default.');
 }
 
 // ── Passwords ────────────────────────────────────────────────────────────────

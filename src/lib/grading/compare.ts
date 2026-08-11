@@ -2,7 +2,7 @@
  * Result-set comparison.
  *
  * Grading runs the reference solution at submit time and compares result sets, so any
- * correct query passes — including formulations the author never considered. Column
+ * correct query passes, including formulations the author never considered. Column
  * *names* are ignored (a learner's alias should never fail them); column *count* and
  * *values* are what matter.
  */
@@ -118,7 +118,7 @@ export function compareResults(
       passed: false,
       code: 'no-rows',
       summary:
-        `Your query returned no rows — ${expected.rows.length} were expected. ` +
+        `Your query returned no rows, ${expected.rows.length} were expected. ` +
         'A filter is usually too strict, or a JOIN found no matches.',
     };
   }
@@ -136,14 +136,14 @@ export function compareResults(
           extraRows: actual.rows.slice(i, i + sample),
           summary:
             `Row ${i + 1} does not match. This question depends on order, so check your ` +
-            'ORDER BY — including the tie-break and the direction.',
+            'ORDER BY, including the tie-break and the direction.',
         };
       }
     }
     if (actual.rows.length !== expected.rows.length) {
       return rowCountFailure(base, actual, expected, sample, tolerance);
     }
-    return { ...base, passed: true, summary: `Correct — ${actual.rows.length} ${plural(actual.rows.length, 'row')} in the right order.` };
+    return { ...base, passed: true, summary: `Correct: ${actual.rows.length} ${plural(actual.rows.length, 'row')} in the right order.` };
   }
 
   // Unordered: diff the two rows as multisets so duplicates are handled correctly.
@@ -178,7 +178,7 @@ export function compareResults(
     return {
       ...base,
       passed: true,
-      summary: `Correct — ${actual.rows.length} ${plural(actual.rows.length, 'row')} match.`,
+      summary: `Correct: ${actual.rows.length} ${plural(actual.rows.length, 'row')} match.`,
     };
   }
 
@@ -190,7 +190,7 @@ export function compareResults(
       code: 'wrong-values',
       summary:
         `The right number of rows (${actual.rows.length}), but some values differ. ` +
-        'Compare the diff below — a rounding, a denominator, or a filter is usually the cause.',
+        'Compare the diff below: a rounding, a denominator, or a filter is usually the cause.',
     };
   }
   if (extra.length && !missing.length) {

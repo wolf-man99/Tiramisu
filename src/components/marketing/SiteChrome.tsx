@@ -47,7 +47,7 @@ export function SiteFooter() {
     <footer className="border-t-2 border-[var(--ink)] bg-[var(--bg-subtle)] py-8">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 md:px-8">
         <span className="text-sm font-semibold text-[var(--text-subtle)]">
-          © {new Date().getFullYear()} Tiramisu — learn the layers, master the whole.
+          © {new Date().getFullYear()} Tiramisu. Learn the layers, master the whole.
         </span>
         <Link href="/courses" className="text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text)]">
           Courses

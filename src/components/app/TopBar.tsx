@@ -35,11 +35,11 @@ export function TopBar() {
         <span className="font-display text-[17px] font-extrabold text-[var(--text)] md:hidden">Tiramisu</span>
       </div>
       <div className="flex items-center gap-2">
-        <Metric icon={<Flame size={15} />} value={p ? String(p.currentStreak) : '—'} label="day streak" tone="var(--amber)" pulse={p?.streakAtRisk} />
-        <Metric icon={<Coins size={15} />} value={p ? compactNumber(p.coins) : '—'} label="coins" tone="var(--amber)" />
-        <Metric icon={<Zap size={15} />} value={p ? compactNumber(p.xp) : '—'} label="XP" tone="var(--blue)" />
+        <Metric icon={<Flame size={15} />} value={p ? String(p.currentStreak) : '-'} label="day streak" tone="var(--amber)" pulse={p?.streakAtRisk} />
+        <Metric icon={<Coins size={15} />} value={p ? compactNumber(p.coins) : '-'} label="coins" tone="var(--amber)" />
+        <Metric icon={<Zap size={15} />} value={p ? compactNumber(p.xp) : '-'} label="XP" tone="var(--blue)" />
         <span className="hidden items-center rounded-full border-2 border-[var(--ink)] bg-[var(--purple)] px-2.5 py-1 text-[12px] font-bold text-white sm:flex" title={p?.title ?? ''}>
-          Lvl {p?.level ?? '—'}
+          Lvl {p?.level ?? '-'}
         </span>
         <ShareButton />
         <UserMenu />

@@ -16,7 +16,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ slug
   return (
     <div className="mx-auto max-w-4xl px-5 py-8 md:px-8">
       <Link href="/interviews" className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text)]"><ArrowLeft size={15} /> Mock interviews</Link>
-      <PageHeader title={`${s.company} — ${s.role}`} subtitle={s.blurb}>
+      <PageHeader title={`${s.company} - ${s.role}`} subtitle={s.blurb}>
         <DifficultyPill difficulty={s.difficulty} />
       </PageHeader>
 

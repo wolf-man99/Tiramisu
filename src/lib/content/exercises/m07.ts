@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 7 — CTEs and subqueries (day 9).
+ * Module 7, CTEs and subqueries (day 9).
  *
  * 22 exercises. From here on the craft standard changes: multi-step answers are
  * written as named CTEs that read top to bottom like a paragraph. Nested subqueries
@@ -25,7 +25,7 @@ LIMIT 10`,
     ['`WITH name AS ( … )` defines a named result you can then select from.',
       'The main query comes after the closing bracket.'],
     { orderMatters: true,
-      explanation: 'A CTE is a named intermediate result. It does not make the query faster — it makes it readable, which is the reason that actually matters.' }),
+      explanation: 'A CTE is a named intermediate result. It does not make the query faster. It makes it readable, which is the reason that actually matters.' }),
 
   ex('7.2', 9, 'easy',
     'Two CTEs',
@@ -107,7 +107,7 @@ ORDER BY campaign_name`,
 
   ex('7.6', 9, 'hard',
     'The NOT IN catastrophe',
-    'Return `with_null_guard` and `without_null_guard` — counts of Google campaigns not appearing in `orders.campaign_id`, computed with and without excluding NULLs from the subquery.',
+    'Return `with_null_guard` and `without_null_guard`: counts of Google campaigns not appearing in `orders.campaign_id`, computed with and without excluding NULLs from the subquery.',
     ['google_ads_campaigns', 'orders'], ['subquery', 'in', 'null-handling'],
     `SELECT
   (SELECT COUNT(*) FROM google_ads_campaigns
@@ -115,11 +115,11 @@ ORDER BY campaign_name`,
   (SELECT COUNT(*) FROM google_ads_campaigns
    WHERE campaign_id NOT IN (SELECT campaign_id FROM orders)) AS without_null_guard`,
     ['The second subquery includes NULLs in its list.',
-      '`x NOT IN (1, 2, NULL)` is never TRUE — it is UNKNOWN, because x might equal the NULL.',
+      '`x NOT IN (1, 2, NULL)` is never TRUE. It is UNKNOWN, because x might equal the NULL.',
       'So the unguarded version returns zero rows every time.'],
     {
       explanation:
-        '`NOT IN` against a list containing even one NULL returns nothing, always, silently. This is the most vicious NULL behaviour in SQL: the query runs, returns 0, and looks like a legitimate finding. Use `NOT EXISTS` or add `WHERE col IS NOT NULL` to the subquery — and prefer NOT EXISTS, because it cannot be broken this way.',
+        '`NOT IN` against a list containing even one NULL returns nothing, always, silently. This is the most vicious NULL behaviour in SQL: the query runs, returns 0, and looks like a legitimate finding. Use `NOT EXISTS` or add `WHERE col IS NOT NULL` to the subquery: and prefer NOT EXISTS, because it cannot be broken this way.',
       trap: 'NOT IN + NULL = no rows, with no warning.',
     }),
 
@@ -135,7 +135,7 @@ WHERE EXISTS (
 )
 ORDER BY customer_id
 LIMIT 20`,
-    ['EXISTS asks "does the subquery return any row?" — the columns it selects are irrelevant.',
+    ['EXISTS asks "does the subquery return any row?". The columns it selects are irrelevant.',
       'The subquery references the outer table, which makes it correlated.',
       '`SELECT 1` is the convention: nobody cares what it returns.'],
     { orderMatters: true }),
@@ -152,13 +152,13 @@ WHERE NOT EXISTS (
 )
 ORDER BY customer_id
 LIMIT 20`,
-    ['NOT EXISTS is the safe form of NOT IN — NULLs cannot break it.',
+    ['NOT EXISTS is the safe form of NOT IN. NULLs cannot break it.',
       'It is also usually the clearest way to write an anti-join.'],
     { orderMatters: true }),
 
   ex('7.9', 9, 'hard',
     'Correlated subquery in SELECT',
-    'Return `campaign_id`, `campaign_name` and `order_count` — the number of completed orders per campaign, computed with a correlated subquery. Order by order_count descending, top 15.',
+    'Return `campaign_id`, `campaign_name` and `order_count`: the number of completed orders per campaign, computed with a correlated subquery. Order by order_count descending, top 15.',
     ['google_ads_campaigns', 'orders'], ['correlated-subquery'],
     `SELECT c.campaign_id, c.campaign_name,
        (SELECT COUNT(*) FROM orders o
@@ -169,7 +169,7 @@ LIMIT 15`,
     ['The subquery runs once per outer row and references it.',
       'It naturally returns 0 rather than NULL for campaigns with no orders, because COUNT of nothing is 0.'],
     { orderMatters: true,
-      explanation: 'Correlated subqueries are readable and slow — they run once per outer row. At 24 campaigns nobody notices; at 24 million rows this is the query that gets you a call from the data team. The LEFT JOIN + GROUP BY version does the same job in one pass.' }),
+      explanation: 'Correlated subqueries are readable and slow. They run once per outer row. At 24 campaigns nobody notices; at 24 million rows this is the query that gets you a call from the data team. The LEFT JOIN + GROUP BY version does the same job in one pass.' }),
 
   ex('7.10', 9, 'medium',
     'Derived table',
@@ -186,7 +186,7 @@ FROM (
 )
 GROUP BY band
 ORDER BY campaigns DESC, band`,
-    ['A subquery in FROM is a derived table — an unnamed CTE, effectively.',
+    ['A subquery in FROM is a derived table: an unnamed CTE, effectively.',
       'You cannot reference a SELECT alias in the same SELECT, so the bucketing needs its own level.'],
     { orderMatters: true }),
 
@@ -239,14 +239,14 @@ WHERE kw.clicks >= 100
 ORDER BY keyword_cpa DESC, kw.keyword_id
 LIMIT 20`,
     ['Build keyword totals first, then roll those same totals up to campaign level.',
-      'The second CTE reads from the first — that is the whole point of chaining.',
+      'The second CTE reads from the first. That is the whole point of chaining.',
       'Compare the two CPAs in the final WHERE.'],
     { orderMatters: true,
       explanation: 'Comparing a row to its own group\'s aggregate is one of the two things window functions were invented for. Day 10 rewrites this in half the lines.' }),
 
   ex('7.13', 9, 'medium',
     'CTE feeding a second aggregation',
-    'Return `orders_per_customer` and `customers` — a distribution of how many completed orders customers place. Order by orders_per_customer.',
+    'Return `orders_per_customer` and `customers`, a distribution of how many completed orders customers place. Order by orders_per_customer.',
     ['orders'], ['cte', 'group-by'],
     `WITH per_customer AS (
   SELECT customer_id, COUNT(*) AS order_count
@@ -259,12 +259,12 @@ FROM per_customer
 GROUP BY order_count
 ORDER BY orders_per_customer`,
     ['Aggregate once to get a number per customer, then aggregate again to count customers.',
-      'This "group the groups" pattern needs two levels — you cannot do it in one.'],
+      'This "group the groups" pattern needs two levels. You cannot do it in one.'],
     { orderMatters: true }),
 
   ex('7.14', 9, 'hard',
     'Cohort sizes',
-    'Return `cohort_month` and `customers` — the number of customers whose first completed order fell in that month. Chronological.',
+    'Return `cohort_month` and `customers`, the number of customers whose first completed order fell in that month. Chronological.',
     ['orders'], ['cte', 'cohort', 'date-trunc'],
     `WITH first_order AS (
   SELECT customer_id, MIN(order_date) AS first_date
@@ -307,11 +307,11 @@ LIMIT 40`,
       'DATE_DIFF on two truncated months gives the offset.',
       'COUNT DISTINCT because a customer can order twice in the same month.'],
     { orderMatters: true,
-      explanation: 'This is the shape every retention chart is built from. Naming the steps `cohort` and `activity` is not decoration — it is what lets you debug the middle of it when the numbers look wrong.' }),
+      explanation: 'This is the shape every retention chart is built from. Naming the steps `cohort` and `activity` is not decoration. It is what lets you debug the middle of it when the numbers look wrong.' }),
 
   ex('7.16', 9, 'hard',
     'Retention rate from the matrix',
-    'Extend the cohort matrix with `retention_rate` — customers in that month divided by the cohort\'s month-0 size. Order by cohort_month then month_number, limit 40.',
+    'Extend the cohort matrix with `retention_rate`, customers in that month divided by the cohort\'s month-0 size. Order by cohort_month then month_number, limit 40.',
     ['orders'], ['chained-cte', 'cohort', 'retention'],
     `WITH cohort AS (
   SELECT customer_id, DATE_TRUNC(MIN(order_date), MONTH) AS cohort_month
@@ -345,7 +345,7 @@ LIMIT 40`,
 
   ex('7.17', 9, 'hard',
     'Customers who bought in both halves',
-    'Return `customers` — the count of customers with a completed order in both H1 and H2 of 2024 — using two CTEs and an inner join.',
+    'Return `customers`, the count of customers with a completed order in both H1 and H2 of 2024, using two CTEs and an inner join.',
     ['orders'], ['cte', 'inner-join', 'distinct'],
     `WITH h1 AS (
   SELECT DISTINCT customer_id FROM orders
@@ -404,14 +404,14 @@ FROM months m
 LEFT JOIN starts s USING (month)
 LEFT JOIN churn c USING (month)
 ORDER BY m.month`,
-    ['Aggregate starts and cancellations separately — they are different events.',
+    ['Aggregate starts and cancellations separately. They are different events.',
       'Use a month spine so every month appears even with no churn.',
       'LEFT JOIN both onto the spine and COALESCE the gaps.'],
     { orderMatters: true }),
 
   ex('7.20', 9, 'expert',
     'Funnel with CTEs',
-    'Build the GA4 funnel as one row: `sessions`, `viewed_item`, `added_to_cart`, `checked_out`, `purchased` — counting distinct sessions reaching each step. Use a CTE per step or conditional aggregation.',
+    'Build the GA4 funnel as one row: `sessions`, `viewed_item`, `added_to_cart`, `checked_out`, `purchased`, counting distinct sessions reaching each step. Use a CTE per step or conditional aggregation.',
     ['ga4_events'], ['cte', 'funnel', 'countif', 'distinct'],
     `WITH steps AS (
   SELECT ga_session_id,

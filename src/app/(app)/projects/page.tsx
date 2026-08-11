@@ -4,12 +4,12 @@ import { PROJECTS } from '@/lib/content/projects';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, DifficultyPill } from '@/components/ui/primitives';
 
-export const metadata = { title: 'Projects — Tiramisu' };
+export const metadata = { title: 'Projects - Tiramisu' };
 
 export default function ProjectsPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
-      <PageHeader title="Projects" subtitle="Ten end-to-end analyses on the Northbeam warehouse — the portfolio you talk about in interviews." icon={<FolderKanban size={20} />} />
+      <PageHeader title="Projects" subtitle="Ten end-to-end analyses on the Northbeam warehouse, the portfolio you talk about in interviews." icon={<FolderKanban size={20} />} />
       <div className="grid gap-3 md:grid-cols-2">
         {PROJECTS.map((p) => (
           <Link key={p.slug} href={`/projects/${p.slug}`}>

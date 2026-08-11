@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 10 — The GA4 export schema (day 12).
+ * Module 10, The GA4 export schema (day 12).
  *
  * 14 exercises. The GA4 BigQuery export is where most marketers meet real SQL, and
  * where most of them give up: one row per event, dates as strings, timestamps in
@@ -11,7 +11,7 @@ import { ex } from './helpers';
 export const M10 = [
   ex('10.1', 12, 'easy',
     'One row per event',
-    'Return `event_name` and `events` — the event volume by name. Order by events descending.',
+    'Return `event_name` and `events`, the event volume by name. Order by events descending.',
     ['ga4_events'], ['ga4-schema'],
     `SELECT event_name, COUNT(*) AS events
 FROM ga4_events
@@ -20,7 +20,7 @@ ORDER BY events DESC, event_name`,
     ['The export\'s grain is one row per event, so COUNT(*) is an event count.',
       'GROUP BY event_name and sort the counts descending.'],
     { orderMatters: true,
-      explanation: 'page_view dominates every GA4 export. Any "events" number you quote is meaningless without saying which events — a fact that makes the GA4 UI\'s headline event count almost useless.' }),
+      explanation: 'page_view dominates every GA4 export. Any "events" number you quote is meaningless without saying which events. A fact that makes the GA4 UI\'s headline event count almost useless.' }),
 
   ex('10.2', 12, 'easy',
     'Users, three ways',
@@ -82,14 +82,14 @@ LIMIT 10`,
 
   ex('10.6', 12, 'hard',
     'traffic_source is not session source',
-    'Return `user_source` (from the traffic_source STRUCT) and `users` — distinct devices per first-touch source. Order by users descending.',
+    'Return `user_source` (from the traffic_source STRUCT) and `users`, distinct devices per first-touch source. Order by users descending.',
     ['ga4_events'], ['struct', 'ga4-schema', 'attribution'],
     `SELECT traffic_source.source AS user_source,
        COUNT(DISTINCT user_pseudo_id) AS users
 FROM ga4_events
 GROUP BY user_source
 ORDER BY users DESC, user_source`,
-    ['`traffic_source` is a STRUCT, so read it with a dot — no UNNEST.',
+    ['`traffic_source` is a STRUCT, so read it with a dot, no UNNEST.',
       'It is USER-scoped and never changes, unlike the session-scoped source in event_params.'],
     { orderMatters: true,
       explanation: 'This is the single most misunderstood thing in the GA4 export. `traffic_source` is the user\'s *first ever* source and is stamped on every event they will ever fire. The `source` parameter inside event_params is the session\'s source. They disagree constantly, and reports built on the wrong one attribute everything to whatever channel first found the user.',
@@ -153,13 +153,13 @@ GROUP BY channel
 ORDER BY sessions DESC, channel`,
     ['Collapse to one row per session first, carrying its source and medium.',
       'Then a CASE ladder over medium reproduces the channel grouping.',
-      'An ELSE branch catches anything the rules do not cover — never let traffic vanish.'],
+      'An ELSE branch catches anything the rules do not cover. Never let traffic vanish.'],
     { orderMatters: true,
       explanation: 'Channel grouping is business logic, not data. GA4 ships a default set of rules; every company eventually overrides them. Owning the CASE ladder in SQL is what lets you match the definition your CMO actually uses.' }),
 
   ex('10.10', 12, 'hard',
     'Funnel by session',
-    'Return `sessions`, `view_item`, `add_to_cart`, `begin_checkout` and `purchase` — distinct sessions reaching each step.',
+    'Return `sessions`, `view_item`, `add_to_cart`, `begin_checkout` and `purchase`, distinct sessions reaching each step.',
     ['ga4_events'], ['funnel', 'ga4-schema', 'conditional-aggregation'],
     `WITH per_session AS (
   SELECT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING)) AS session_key,
@@ -183,7 +183,7 @@ FROM per_session`,
 
   ex('10.11', 12, 'hard',
     'Landing page from the first event',
-    'Return `landing_page` and `sessions` — the page_location of each session\'s earliest event. Top 10.',
+    'Return `landing_page` and `sessions`, the page_location of each session\'s earliest event. Top 10.',
     ['ga4_events'], ['unnest', 'row-number', 'ga4-schema'],
     `WITH events AS (
   SELECT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING)) AS session_key,
@@ -209,7 +209,7 @@ LIMIT 10`,
 
   ex('10.12', 12, 'hard',
     'Time on site',
-    'Return `event_date` and `avg_session_seconds` — the span between a session\'s first and last event — for the first 10 days of March. Chronological.',
+    'Return `event_date` and `avg_session_seconds`, the span between a session\'s first and last event, for the first 10 days of March. Chronological.',
     ['ga4_events'], ['ga4-schema', 'date-functions'],
     `WITH spans AS (
   SELECT event_date,
@@ -227,7 +227,7 @@ ORDER BY event_date`,
       'Divide by 1,000,000 for seconds.',
       'Aggregate per session first, then average the sessions.'],
     { orderMatters: true,
-      explanation: 'This measures time between first and last event, which is not what GA4 calls engagement time — GA4 sums `engagement_time_msec` from the parameters instead. Two defensible definitions, two different numbers, and this is exactly why your SQL will never match the UI to the last decimal.' }),
+      explanation: 'This measures time between first and last event, which is not what GA4 calls engagement time, GA4 sums `engagement_time_msec` from the parameters instead. Two defensible definitions, two different numbers, and this is exactly why your SQL will never match the UI to the last decimal.' }),
 
   ex('10.13', 12, 'expert',
     'Traffic acquisition report',
@@ -262,7 +262,7 @@ GROUP BY channel
 ORDER BY sessions DESC, channel`,
     ['Collapse to one row per session carrying medium, conversion flag and revenue.',
       'Then group those sessions into channels.',
-      'Engagement here is approximated by more than one event — GA4 uses its own rule.'],
+      'Engagement here is approximated by more than one event, GA4 uses its own rule.'],
     { orderMatters: true }),
 
   ex('10.14', 12, 'expert',

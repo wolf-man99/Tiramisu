@@ -32,7 +32,7 @@ export interface ColumnDef {
   description: string;
   /** Shown in the schema panel's column peek. */
   sample?: string;
-  /** Average bytes per value — feeds the dry-run cost model. */
+  /** Average bytes per value. Feeds the dry-run cost model. */
   bytes?: number;
 }
 
@@ -114,7 +114,7 @@ export const TABLES: TableDef[] = [
     columns: [
       I('ad_group_id', 'Ad group ID.', { pk: true }),
       I('campaign_id', 'Parent campaign.', { fk: 'google_ads_campaigns.campaign_id' }),
-      S('ad_group_name', 'Ad group name.', { sample: 'Running Shoes — Exact', bytes: 28 }),
+      S('ad_group_name', 'Ad group name.', { sample: 'Running Shoes - Exact', bytes: 28 }),
       S('status', 'ENABLED or PAUSED.'),
       F('default_cpc_bid', 'Default max CPC in USD.'),
     ],
@@ -125,7 +125,7 @@ export const TABLES: TableDef[] = [
     grain: 'One row per date × ad group',
     description:
       'Daily Google Ads performance. `conversions` is fractional because Google ' +
-      'attributes conversions fractionally across ads — casting it to an integer ' +
+      'attributes conversions fractionally across ads, casting it to an integer ' +
       'quietly destroys about 8% of your conversions.',
     partitionBy: 'date',
     clusterBy: ['campaign_id'],
@@ -136,7 +136,7 @@ export const TABLES: TableDef[] = [
       I('impressions', 'Impressions served.'),
       I('clicks', 'Clicks received.'),
       F('cost', 'Spend in USD.'),
-      F('conversions', 'Attributed conversions — fractional.', { sample: '3.42' }),
+      F('conversions', 'Attributed conversions: fractional.', { sample: '3.42' }),
       F('conversion_value', 'Attributed conversion value in USD.'),
       F('view_through_conversions', 'View-through conversions (Display/Video only).'),
     ],
@@ -147,7 +147,7 @@ export const TABLES: TableDef[] = [
     grain: 'One row per keyword',
     description:
       'Keyword dimensions. `quality_score` is NULL for keywords with too little ' +
-      'traffic to be scored — the most common NULL you will meet in ad data.',
+      'traffic to be scored. The most common NULL you will meet in ad data.',
     columns: [
       I('keyword_id', 'Keyword ID.', { pk: true }),
       I('ad_group_id', 'Ad group.', { fk: 'google_ads_ad_groups.ad_group_id' }),
@@ -163,7 +163,7 @@ export const TABLES: TableDef[] = [
     name: 'google_ads_keyword_daily',
     group: 'Paid media',
     grain: 'One row per date × keyword',
-    description: 'Daily keyword performance — the largest ads table in the warehouse.',
+    description: 'Daily keyword performance, the largest ads table in the warehouse.',
     partitionBy: 'date',
     clusterBy: ['keyword_id'],
     columns: [
@@ -172,7 +172,7 @@ export const TABLES: TableDef[] = [
       I('impressions', 'Impressions.'),
       I('clicks', 'Clicks.'),
       F('cost', 'Spend in USD.'),
-      F('conversions', 'Attributed conversions — fractional.'),
+      F('conversions', 'Attributed conversions, fractional.'),
       F('conversion_value', 'Attributed conversion value in USD.'),
       F('search_impression_share', 'Share of available impressions won (0–1). NULL when undisclosed.', {
         nullable: true,
@@ -200,7 +200,7 @@ export const TABLES: TableDef[] = [
     description:
       'Daily Meta delivery. `purchases` uses Meta\'s 7-day-click / 1-day-view window, ' +
       'so it is NOT comparable to Google\'s last-click `conversions`. Adding them ' +
-      'together double-counts — this is the whole point of day 13\'s attribution work.',
+      'together double-counts. This is the whole point of day 13\'s attribution work.',
     partitionBy: 'date',
     clusterBy: ['campaign_id'],
     columns: [
@@ -225,7 +225,7 @@ export const TABLES: TableDef[] = [
     name: 'linkedin_ads_campaigns',
     group: 'Paid media',
     grain: 'One row per campaign',
-    description: 'LinkedIn campaigns — the B2B side of the business.',
+    description: 'LinkedIn campaigns, the B2B side of the business.',
     columns: [
       I('campaign_id', 'LinkedIn campaign ID.', { pk: true }),
       S('campaign_name', 'Campaign name.', { bytes: 30 }),
@@ -265,7 +265,7 @@ export const TABLES: TableDef[] = [
     partitionBy: 'event_date',
     clusterBy: ['event_name', 'user_pseudo_id'],
     columns: [
-      S('event_date', 'Event date as YYYYMMDD — a STRING, not a DATE.', {
+      S('event_date', 'Event date as YYYYMMDD: a STRING, not a DATE.', {
         sample: '20240614',
         bytes: 8,
       }),
@@ -279,7 +279,7 @@ export const TABLES: TableDef[] = [
         sample: '1a4f9c02.1707…',
         bytes: 24,
       }),
-      S('user_id', 'Your own user ID — NULL until the user logs in.', {
+      S('user_id', 'Your own user ID - NULL until the user logs in.', {
         nullable: true,
         bytes: 12,
       }),
@@ -439,8 +439,8 @@ export const TABLES: TableDef[] = [
     group: 'CRM',
     grain: 'One row per deal',
     description:
-      'Deals in the sales pipeline. `is_won` is NULL for open deals — neither won nor ' +
-      'lost — which breaks any win-rate calculation that uses `= 0` instead of `IS NULL`.',
+      'Deals in the sales pipeline. `is_won` is NULL for open deals, neither won nor ' +
+      'lost, which breaks any win-rate calculation that uses `= 0` instead of `IS NULL`.',
     columns: [
       I('deal_id', 'Deal ID.', { pk: true }),
       I('contact_id', 'Primary contact.', { fk: 'hubspot_contacts.contact_id' }),
@@ -457,7 +457,7 @@ export const TABLES: TableDef[] = [
     name: 'salesforce_accounts',
     group: 'CRM',
     grain: 'One row per account',
-    description: 'Salesforce accounts — the B2B company dimension.',
+    description: 'Salesforce accounts, the B2B company dimension.',
     columns: [
       I('account_id', 'Account ID.', { pk: true }),
       S('account_name', 'Company name.', { bytes: 24 }),
@@ -473,7 +473,7 @@ export const TABLES: TableDef[] = [
     group: 'CRM',
     grain: 'One row per opportunity',
     description:
-      'Pipeline with ARR. `campaign_id` is NULL on roughly a third of opportunities — ' +
+      'Pipeline with ARR. `campaign_id` is NULL on roughly a third of opportunities, ' +
       'the classic attribution gap between sales-sourced and marketing-sourced revenue.',
     columns: [
       I('opportunity_id', 'Opportunity ID.', { pk: true }),
@@ -504,7 +504,7 @@ export const TABLES: TableDef[] = [
       S('last_touch_channel', 'Channel of the touch immediately before conversion.'),
       I('first_campaign_id', 'Campaign of the first touch. NULL for organic/direct.', { nullable: true }),
       S('country', 'Country.'),
-      S('city', 'City — deliberately messy: mixed case and stray whitespace.', { sample: ' london' }),
+      S('city', 'City: deliberately messy: mixed case and stray whitespace.', { sample: ' london' }),
       S('segment', 'B2C or B2B.'),
       I('is_b2b', '1 for B2B customers.'),
       S('email_domain', 'Email domain, e.g. gmail.com or acme.io.', { bytes: 18 }),
@@ -521,7 +521,7 @@ export const TABLES: TableDef[] = [
     partitionBy: 'order_date',
     clusterBy: ['customer_id'],
     columns: [
-      I('order_id', 'Order ID. Not unique — the webhook replay duplicated some.', { sample: '80231' }),
+      I('order_id', 'Order ID. Not unique: the webhook replay duplicated some.', { sample: '80231' }),
       S('customer_id', 'Customer.', { fk: 'customers.customer_id' }),
       T('order_ts', 'Order timestamp.'),
       D('order_date', 'Order date.'),
@@ -535,7 +535,7 @@ export const TABLES: TableDef[] = [
       I('campaign_id', 'Attributed campaign. NULL or orphaned for some rows.', { nullable: true }),
       S('device', 'desktop, mobile or tablet.'),
       S('country', 'Shipping country.'),
-      S('city', 'Shipping city — messy, same as customers.city.'),
+      S('city', 'Shipping city: messy, same as customers.city.'),
       S('coupon_code', 'Coupon used. NULL when none.', { nullable: true }),
       I('is_first_order', '1 if this is the customer\'s first order.'),
     ],
@@ -546,7 +546,7 @@ export const TABLES: TableDef[] = [
     grain: 'One row per order × product',
     description:
       'Order line items. Joining orders to this table and summing `orders.gross_revenue` ' +
-      'inflates revenue by 2.19× — the fan-out trap taught on day 7.',
+      'inflates revenue by 2.19×, the fan-out trap taught on day 7.',
     columns: [
       I('order_id', 'Order.', { fk: 'orders.order_id' }),
       I('product_id', 'Product.', { fk: 'products.product_id' }),
@@ -590,8 +590,8 @@ export const TABLES: TableDef[] = [
     group: 'Revenue',
     grain: 'One row per subscription',
     description:
-      'SaaS subscriptions. MRR movements — new, expansion, contraction, churn, ' +
-      'reactivation — are derived from these rows on day 13.',
+      'SaaS subscriptions. MRR movements: new, expansion, contraction, churn, ' +
+      'reactivation, are derived from these rows on day 13.',
     columns: [
       I('subscription_id', 'Subscription ID.', { pk: true }),
       S('customer_id', 'Customer.', { fk: 'customers.customer_id' }),
@@ -618,7 +618,7 @@ export const TABLES: TableDef[] = [
       S('customer_id', 'Customer.', { fk: 'customers.customer_id' }),
       I('subscription_id', 'Subscription. NULL for one-off charges.', { nullable: true }),
       F('amount', 'Charge amount in USD.'),
-      S('currency', 'ISO currency code — always usd here.'),
+      S('currency', 'ISO currency code, always usd here.'),
       T('created_at', 'Charge timestamp.'),
       S('status', 'succeeded, failed or refunded.'),
       F('refunded_amount', 'Amount refunded in USD. 0 when none.'),
@@ -726,7 +726,7 @@ export const VIEWS: TableDef[] = [
     grain: 'One row per date × channel × campaign',
     description:
       'All three ad platforms normalised into one shape. Use it for blended CAC and ' +
-      'blended ROAS. It is a VIEW, so querying it re-runs the union every time — ' +
+      'blended ROAS. It is a VIEW, so querying it re-runs the union every time, ' +
       'which is exactly the trade-off day 11 asks you to reason about.',
     columns: [
       D('date', 'Reporting date.'),

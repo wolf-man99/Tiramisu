@@ -11,7 +11,7 @@ import { RunDashboard } from '@/components/meta/RunDashboard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Run — Meta Ads Mastery — Tiramisu' };
+export const metadata = { title: 'Run, Meta Ads Mastery, Tiramisu' };
 
 export default async function MetaAdsRun() {
   const profileId = await requireProfileId('/courses/meta-ads/run');
@@ -20,7 +20,7 @@ export default async function MetaAdsRun() {
 
   if (!unlocked) {
     // Parallel is safe: DATABASE_URL carries pgbouncer=true, so Prisma's engine never
-    // relies on server-side prepared statements — see the fuller note in
+    // relies on server-side prepared statements. See the fuller note in
     // courses/meta-ads/page.tsx.
     const [profile, done, learnComplete] = await Promise.all([
       prisma.profile.findUniqueOrThrow({ where: { id: profileId } }),
@@ -52,7 +52,7 @@ export default async function MetaAdsRun() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">You unlocked Run</h1>
             <p className="mt-1 max-w-xl text-[var(--text-muted)]">
-              You&apos;ve finished every Learn lesson. Below is NORTHBOUND&apos;s account —
+              You&apos;ve finished every Learn lesson. Below is NORTHBOUND&apos;s account,
               built to feel like the real Ads Manager you&apos;ll actually use on the job.
             </p>
           </div>
@@ -88,20 +88,20 @@ function LockedState({ completedCount, xp, level, learnComplete }: { completedCo
         </span>
         {learnComplete ? (
           <>
-            <h1 className="mt-5 text-2xl font-extrabold tracking-tight">You finished Learn — Run is ₹{META_ADS_PRICING.run} to unlock</h1>
+            <h1 className="mt-5 text-2xl font-extrabold tracking-tight">You finished Learn. Run is ₹{META_ADS_PRICING.run} to unlock</h1>
             <p className="mt-2 text-[var(--text-muted)]">
               The theory&apos;s solid. Pay to step into the account simulator, or grab the bundle if
               you&apos;re about to start another course.
             </p>
             <div className="mt-6 flex flex-col items-center gap-2">
-              <CheckoutButton product="run" label={`Buy Run — ₹${META_ADS_PRICING.run}`} size="lg" />
+              <CheckoutButton product="run" label={`Buy Run - ₹${META_ADS_PRICING.run}`} size="lg" />
             </div>
           </>
         ) : (
           <>
             <h1 className="mt-5 text-2xl font-extrabold tracking-tight">Run is locked</h1>
             <p className="mt-2 text-[var(--text-muted)]">
-              Finish every lesson in Learn to unlock the account simulator — this is where the
+              Finish every lesson in Learn to unlock the account simulator. This is where the
               decisions get real, so the theory needs to be solid first.
             </p>
 

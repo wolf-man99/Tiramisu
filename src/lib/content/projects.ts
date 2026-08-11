@@ -66,7 +66,7 @@ ORDER BY spend DESC`,
         { orderMatters: true }),
 
       t('wasted', 'Wasted spend',
-        'Return `campaign_name`, `wasted_spend` and `wasted_days` — spend on campaign-days with zero conversions, excluding the last two days of the year. Order by wasted_spend descending.',
+        'Return `campaign_name`, `wasted_spend` and `wasted_days`: spend on campaign-days with zero conversions, excluding the last two days of the year. Order by wasted_spend descending.',
         `SELECT c.campaign_name,
        SUM(d.cost) AS wasted_spend,
        COUNT(*) AS wasted_days
@@ -92,7 +92,7 @@ GROUP BY k.keyword_id, k.keyword_text, k.match_type
 HAVING SUM(kd.clicks) >= 50 AND SUM(kd.conversions) = 0
 ORDER BY cost DESC, k.keyword_id
 LIMIT 20`,
-        ['Group at keyword_id grain — this is a bid decision on a specific keyword, not on a phrase.',
+        ['Group at keyword_id grain. This is a bid decision on a specific keyword, not on a phrase.',
           'Both conditions are on aggregates, so they belong in HAVING.',
           'Grouping by text instead would merge good and bad instances of the same phrase and hide the problem.'],
         { orderMatters: true }),
@@ -150,7 +150,7 @@ ORDER BY month`,
     badge: 'funnel-builder',
     tasks: [
       t('steps', 'The five steps',
-        'Return `sessions`, `view_item`, `add_to_cart`, `begin_checkout` and `purchase` — distinct sessions reaching each step.',
+        'Return `sessions`, `view_item`, `add_to_cart`, `begin_checkout` and `purchase`, distinct sessions reaching each step.',
         `WITH per_session AS (
   SELECT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING)) AS session_key,
          MAX(CASE WHEN event_name = 'session_start'  THEN 1 ELSE 0 END) AS s1,
@@ -167,7 +167,7 @@ FROM per_session`,
           'MAX over a 0/1 flag answers "did this session ever reach the step?".']),
 
       t('dropoff', 'Drop-off rates',
-        'Return the same five counts plus `view_rate`, `cart_rate`, `checkout_rate` and `purchase_rate` — each step over the one before it.',
+        'Return the same five counts plus `view_rate`, `cart_rate`, `checkout_rate` and `purchase_rate`, each step over the one before it.',
         `WITH per_session AS (
   SELECT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING)) AS session_key,
          MAX(CASE WHEN event_name = 'session_start'  THEN 1 ELSE 0 END) AS s1,
@@ -205,7 +205,7 @@ SELECT device_category,
 FROM per_session
 GROUP BY device_category
 ORDER BY sessions DESC, device_category`,
-        ['Carry the device down from the events with MAX — it is constant within a session.',
+        ['Carry the device down from the events with MAX. It is constant within a session.',
           'Then group the flattened sessions.'],
         { orderMatters: true, chart: chart('bar', 0, 4, 'Conversion rate by device') }),
 
@@ -344,7 +344,7 @@ SELECT s.channel,
 FROM s JOIN v USING (channel)
 ORDER BY ltv_cac_ratio DESC, s.channel`,
         ['The customer_ltv view saves you rebuilding lifetime revenue.',
-          'Ratio is LTV divided by CAC — 3:1 is the conventional floor.'],
+          'Ratio is LTV divided by CAC, 3:1 is the conventional floor.'],
         { orderMatters: true }),
 
       t('summary', 'Executive summary',
@@ -355,7 +355,7 @@ ORDER BY ltv_cac_ratio DESC, s.channel`,
    FROM orders WHERE status = 'completed') AS margin_pct,
   (SELECT SUM(mrr) FROM subscriptions WHERE status = 'active') AS active_mrr,
   (SELECT SAFE_DIVIDE(SUM(converted), COUNT(*)) FROM ga4_sessions WHERE source != 'internal-qa') AS site_cvr`,
-        ['Four scalar subqueries.', 'Profit before revenue — that is the order a CFO reads in.']),
+        ['Four scalar subqueries.', 'Profit before revenue. That is the order a CFO reads in.']),
     ],
   },
 
@@ -388,7 +388,7 @@ FROM ranked GROUP BY decile ORDER BY decile`,
         { orderMatters: true, chart: chart('bar', 0, 3, 'Share of revenue by decile') }),
 
       t('rfm', 'RFM scores',
-        'Return `r`, `f`, `m` and `customers` — the population of each RFM cell, top 20 cells by size.',
+        'Return `r`, `f`, `m` and `customers`: the population of each RFM cell, top 20 cells by size.',
         `WITH scored AS (
   SELECT customer_id,
          NTILE(4) OVER (ORDER BY last_order_date) AS r,
@@ -401,7 +401,7 @@ FROM scored GROUP BY r, f, m
 ORDER BY customers DESC, r, f, m
 LIMIT 20`,
         ['Three NTILE(4) windows over three different orderings.',
-          'Exclude customers who never ordered — they have no R, F or M.'],
+          'Exclude customers who never ordered. They have no R, F or M.'],
         { orderMatters: true }),
 
       t('named', 'Named segments',
@@ -421,7 +421,7 @@ SELECT CASE
        COUNT(*) AS customers
 FROM scored GROUP BY segment ORDER BY customers DESC, segment`,
         ['Order the CASE branches from most specific to least.',
-          'The ELSE catches everyone the rules miss — never let customers vanish.'],
+          'The ELSE catches everyone the rules miss. Never let customers vanish.'],
         { orderMatters: true, chart: chart('pie', 0, 1, 'Segment sizes') }),
 
       t('segment-value', 'Segment value',
@@ -447,7 +447,7 @@ FROM scored GROUP BY segment ORDER BY total_revenue DESC, segment`,
         { orderMatters: true }),
 
       t('channel-mix', 'Which channels produce Champions',
-        'Return `first_touch_channel`, `champions` and `champion_rate` — the share of that channel\'s customers who are Champions. Order by champion_rate descending.',
+        'Return `first_touch_channel`, `champions` and `champion_rate`. The share of that channel\'s customers who are Champions. Order by champion_rate descending.',
         `WITH scored AS (
   SELECT l.customer_id, l.first_touch_channel,
          NTILE(4) OVER (ORDER BY l.last_order_date) AS r,
@@ -461,7 +461,7 @@ FROM scored
 GROUP BY first_touch_channel
 ORDER BY champion_rate DESC, first_touch_channel`,
         ['COUNTIF for the numerator, COUNT(*) for the denominator.',
-          'Rate, not count — otherwise the biggest channel always wins.'],
+          'Rate, not count. Otherwise the biggest channel always wins.'],
         { orderMatters: true }),
     ],
   },
@@ -532,7 +532,7 @@ FROM matrix ORDER BY cohort_month, month_number LIMIT 60`,
 SELECT month_number, AVG(rate) AS avg_retention
 FROM rates GROUP BY month_number ORDER BY month_number`,
         ['Compute the per-cohort rates first, then average them by month offset.',
-          'This is one of the rare cases where averaging rates is right — each cohort is a legitimate unit.'],
+          'This is one of the rare cases where averaging rates is right. Each cohort is a legitimate unit.'],
         { orderMatters: true, chart: chart('line', 0, 1, 'Average retention curve') }),
 
       t('subs-churn', 'Subscription churn by tier',
@@ -549,7 +549,7 @@ ORDER BY churn_rate DESC, p.tier`,
         { orderMatters: true, chart: chart('bar', 0, 3, 'Churn rate by plan tier') }),
 
       t('activation-link', 'Does activation predict retention?',
-        'Return `activated`, `customers` and `avg_days_subscribed` — comparing activated vs never-activated B2B subscriptions.',
+        'Return `activated`, `customers` and `avg_days_subscribed`, comparing activated vs never-activated B2B subscriptions.',
         `WITH act AS (
   SELECT DISTINCT user_id FROM product_events WHERE event_name = 'activated'
 )
@@ -570,7 +570,7 @@ ORDER BY activated`,
     slug: 'ltv-dashboard',
     index: 6,
     title: 'LTV dashboard',
-    subtitle: 'Historical, cohort-based and payback — three honest views of customer value',
+    subtitle: 'Historical, cohort-based and payback, three honest views of customer value',
     scenario:
       'Finance wants an LTV number for the board deck. You know there are at least three, ' +
       'and that the one they want is not the one they asked for.',
@@ -593,7 +593,7 @@ FROM customer_ltv
 GROUP BY ltv_band
 ORDER BY customers DESC, ltv_band`,
         ['Band with a CASE ladder, group by it.',
-          'Put the zero case first — refund-only customers can be negative.'],
+          'Put the zero case first. Refund-only customers can be negative.'],
         { orderMatters: true, chart: chart('bar', 0, 1, 'LTV distribution') }),
 
       t('by-channel', 'LTV by acquisition channel',
@@ -605,7 +605,7 @@ ORDER BY customers DESC, ltv_band`,
 FROM customer_ltv
 GROUP BY first_touch_channel
 ORDER BY avg_ltv DESC, first_touch_channel`,
-        ['Report mean and median together — the gap is the skew.',
+        ['Report mean and median together. The gap is the skew.',
           'PERCENTILE_CONT at 0.5 is the median.'],
         { orderMatters: true }),
 
@@ -658,7 +658,7 @@ LIMIT 25`,
     slug: 'revenue-dashboard',
     index: 7,
     title: 'Revenue dashboard',
-    subtitle: 'Gross, net, refunded, and profitable — four numbers people call "revenue"',
+    subtitle: 'Gross, net, refunded, and profitable, four numbers people call "revenue"',
     scenario:
       'Three teams quote three different revenue numbers in the same meeting. Build the ' +
       'dashboard that names each one and shows how they reconcile.',
@@ -706,7 +706,7 @@ JOIN orders o ON o.order_id = i.order_id
 WHERE o.status = 'completed'
 GROUP BY p.category
 ORDER BY revenue DESC, p.category`,
-        ['Work at line-item grain and sum a line-item measure — never orders.gross_revenue.',
+        ['Work at line-item grain and sum a line-item measure, never orders.gross_revenue.',
           'Join back to orders only to filter on status.'],
         { orderMatters: true, chart: chart('bar', 0, 2, 'Revenue by category') }),
 
@@ -735,7 +735,7 @@ LIMIT 15`,
 FROM orders WHERE status = 'completed'
 GROUP BY used_coupon ORDER BY used_coupon`,
         ['CASE on whether a coupon was present.',
-          'Compare AOV and margin, not just order counts — discounts buy volume at a price.'],
+          'Compare AOV and margin, not just order counts. Discounts buy volume at a price.'],
         { orderMatters: true }),
 
       t('seasonality', 'Day-of-week and holiday effects',
@@ -748,7 +748,7 @@ WHERE o.status = 'completed'
 GROUP BY d.day_name, d.is_holiday
 ORDER BY revenue DESC, d.day_name
 LIMIT 15`,
-        ['date_dim carries both attributes — no date arithmetic needed.'],
+        ['date_dim carries both attributes, no date arithmetic needed.'],
         { orderMatters: true }),
     ],
   },
@@ -784,7 +784,7 @@ ORDER BY m.month`,
         { orderMatters: true, chart: chart('bar', 0, [1, 2], 'MRR movements') }),
 
       t('active-mrr', 'Active MRR over time',
-        'Return `month` and `active_mrr` — MRR live at the start of each month. Chronological.',
+        'Return `month` and `active_mrr`. MRR live at the start of each month. Chronological.',
         `WITH months AS (SELECT DISTINCT month_start AS month FROM date_dim)
 SELECT m.month, COALESCE(SUM(s.mrr), 0) AS active_mrr
 FROM months m
@@ -880,7 +880,7 @@ GROUP BY c.objective ORDER BY spend DESC`,
        SAFE_DIVIDE(SUM(thruplays), SUM(impressions)) AS thruplay_rate
 FROM meta_ads_daily
 GROUP BY creative_format ORDER BY spend DESC`,
-        ['Thruplay rate is only meaningful for video formats — expect zeros elsewhere.'],
+        ['Thruplay rate is only meaningful for video formats. Expect zeros elsewhere.'],
         { orderMatters: true }),
 
       t('fatigue', 'Creative fatigue curve',
@@ -933,7 +933,7 @@ ORDER BY frequency_band`,
 FROM meta_ads_daily d JOIN meta_ads_campaigns c USING (campaign_id)
 GROUP BY audience_type ORDER BY spend DESC`,
         ['Parse the audience out of the naming convention with LIKE.',
-          'Retargeting will show far better ROAS — the question is whether that revenue is incremental.'],
+          'Retargeting will show far better ROAS. The question is whether that revenue is incremental.'],
         { orderMatters: true }),
     ],
   },
@@ -962,7 +962,7 @@ SELECT journey_length, COUNT(*) AS journeys,
        SAFE_DIVIDE(SUM(converted), COUNT(*)) AS conversion_rate
 FROM j GROUP BY journey_length ORDER BY journey_length`,
         ['Collapse to one row per journey first.',
-          'Longer journeys convert more — but that is partly survivorship.'],
+          'Longer journeys convert more, but that is partly survivorship.'],
         { orderMatters: true, chart: chart('bar', 0, 1, 'Journeys by length') }),
 
       t('models', 'Six models side by side',
@@ -1015,7 +1015,7 @@ ORDER BY b.linear DESC, b.channel`,
 SELECT path, COUNT(*) AS conversions
 FROM j GROUP BY path ORDER BY conversions DESC, path LIMIT 15`,
         ['STRING_AGG with an ORDER BY inside it.',
-          'Single-touch paths will dominate — that is the finding.'],
+          'Single-touch paths will dominate. That is the finding.'],
         { orderMatters: true }),
 
       t('model-spread', 'How much do the models disagree?',
@@ -1039,7 +1039,7 @@ ORDER BY spread_pct DESC, channel`,
         { orderMatters: true }),
 
       t('decision', 'The budget decision',
-        'Return `channel`, `spend`, `linear_credit` and `linear_roas` for paid channels only. Order by linear_roas ascending — the cut candidate is at the top.',
+        'Return `channel`, `spend`, `linear_credit` and `linear_roas` for paid channels only. Order by linear_roas ascending. The cut candidate is at the top.',
         `WITH credit AS (
   SELECT channel, SUM(SAFE_DIVIDE(conversion_value, journey_length)) AS linear_credit
   FROM attribution_touchpoints WHERE converted = 1 GROUP BY channel
@@ -1051,7 +1051,7 @@ SELECT s.channel, s.spend, COALESCE(c.linear_credit, 0) AS linear_credit,
 FROM spend s LEFT JOIN credit c USING (channel)
 ORDER BY linear_roas ASC, s.channel`,
         ['Only channels you pay for can be cut.',
-          'Ascending ROAS puts the weakest first — but read the caveat before you act on it.'],
+          'Ascending ROAS puts the weakest first, but read the caveat before you act on it.'],
         { orderMatters: true }),
     ],
   },

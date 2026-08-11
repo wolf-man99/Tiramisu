@@ -28,7 +28,7 @@ const code = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Tiramisu — master the tools that grow companies',
+  title: 'Tiramisu - master the tools that grow companies',
   description:
     'Interactive, hands-on courses for growth and performance marketers: SQL, Meta Ads, Google Ads and more. Real tools, an AI coach, and gamified practice.',
 };

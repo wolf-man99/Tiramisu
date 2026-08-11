@@ -3,7 +3,7 @@ import type { Cheatsheet, CheatsheetEntry } from './types';
 /**
  * Six interactive cheatsheets.
  *
- * Every entry's `example` is executable against the warehouse — the validator runs
+ * Every entry's `example` is executable against the warehouse. The validator runs
  * them, and the UI offers a one-click "open in playground". A cheatsheet whose
  * snippets do not run is a liability, not a reference.
  */
@@ -28,7 +28,7 @@ export const CHEATSHEETS: Cheatsheet[] = [
         name: 'Query shape',
         entries: [
           e('select', 'SELECT', 'SELECT col1, col2 FROM table',
-            'Chooses which columns come back. Runs fifth, after WHERE and GROUP BY — which is why a SELECT alias cannot be used in WHERE.',
+            'Chooses which columns come back. Runs fifth, after WHERE and GROUP BY, which is why a SELECT alias cannot be used in WHERE.',
             'SELECT campaign_name, daily_budget FROM google_ads_campaigns LIMIT 5',
             'Any report. Naming columns instead of * is also what keeps BigQuery cheap.',
             ['select']),
@@ -63,7 +63,7 @@ export const CHEATSHEETS: Cheatsheet[] = [
             'Previewing a table. Never as a cost-control measure.',
             ['limit']),
           e('distinct', 'DISTINCT', 'SELECT DISTINCT col1, col2',
-            'Removes duplicate rows across the whole select list — distinct *combinations*, not distinct columns.',
+            'Removes duplicate rows across the whole select list: distinct *combinations*, not distinct columns.',
             'SELECT DISTINCT channel_type, country FROM google_ads_campaigns ORDER BY channel_type, country',
             'Finding what values exist before you write a filter.',
             ['distinct']),
@@ -90,7 +90,7 @@ export const CHEATSHEETS: Cheatsheet[] = [
           e('isnull', 'IS NULL', 'col IS NULL',
             'The only operator that can see a NULL. `= NULL` is never true, and `!= x` silently drops NULL rows.',
             'SELECT COUNT(*) AS unscored FROM google_ads_keywords WHERE quality_score IS NULL',
-            'Finding missing data — and remembering it exists.',
+            'Finding missing data, and remembering it exists.',
             ['null-handling']),
           e('notin-null', 'NOT IN + NULL', 'col NOT IN (SELECT … WHERE col IS NOT NULL)',
             'NOT IN against a list containing a NULL returns nothing, always, silently. Guard the subquery or use NOT EXISTS.',
@@ -106,7 +106,7 @@ WHERE campaign_id NOT IN (SELECT campaign_id FROM orders WHERE campaign_id IS NO
           e('count', 'COUNT', 'COUNT(*) | COUNT(col) | COUNT(DISTINCT col)',
             'COUNT(*) counts rows. COUNT(col) skips NULLs. COUNT(DISTINCT col) counts unique non-NULL values. Three different numbers.',
             'SELECT COUNT(*) AS events, COUNT(user_id) AS identified, COUNT(DISTINCT user_id) AS users FROM ga4_events',
-            'Any "how many" question — say which one you meant.',
+            'Any "how many" question, say which one you meant.',
             ['count']),
           e('sum-avg', 'SUM / AVG', 'SUM(col), AVG(col)',
             'AVG ignores NULLs, which shrinks the denominator silently. If missing means zero, COALESCE first.',
@@ -123,7 +123,7 @@ WHERE campaign_id NOT IN (SELECT campaign_id FROM orders WHERE campaign_id IS NO
             `SELECT SAFE_DIVIDE(SUM(clicks), SUM(impressions)) AS weighted_ctr,
        AVG(SAFE_DIVIDE(clicks, impressions)) AS misleading_ctr
 FROM google_ads_daily`,
-            'CTR, CVR, margin — every rate metric you will ever report.',
+            'CTR, CVR, margin. Every rate metric you will ever report.',
             ['rate-metrics', 'safe-divide']),
           e('pivot', 'Conditional aggregation', 'SUM(CASE WHEN cond THEN x ELSE 0 END)',
             'Turns rows into columns. Everything you would build with a spreadsheet pivot table is this plus a GROUP BY.',
@@ -139,7 +139,7 @@ FROM orders WHERE status = 'completed' GROUP BY channel`,
         name: 'Structure',
         entries: [
           e('cte', 'WITH (CTE)', 'WITH name AS (…) SELECT … FROM name',
-            'A named intermediate result. Does not make the query faster — makes it readable, and lets you reference the same result twice.',
+            'A named intermediate result. Does not make the query faster: makes it readable, and lets you reference the same result twice.',
             `WITH spend AS (SELECT campaign_id, SUM(cost) AS spend FROM google_ads_daily GROUP BY campaign_id)
 SELECT campaign_id, spend FROM spend WHERE spend > (SELECT AVG(spend) FROM spend) ORDER BY spend DESC LIMIT 5`,
             'Any answer with more than one step.',
@@ -152,7 +152,7 @@ FROM orders WHERE status = 'completed' GROUP BY channel`,
             'Percent-of-total, and putting unrelated aggregates on one row.',
             ['subquery', 'percent-of-total']),
           e('exists', 'EXISTS', 'WHERE EXISTS (SELECT 1 FROM … WHERE …)',
-            'Asks whether the subquery returns any row. The safe form of IN — NULLs cannot break it.',
+            'Asks whether the subquery returns any row. The safe form of IN. NULLs cannot break it.',
             `SELECT COUNT(*) AS buyers FROM customers c
 WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.status = 'completed')`,
             'Anti-joins and "has at least one" questions.',
@@ -182,10 +182,10 @@ GROUP BY c.campaign_name ORDER BY spend DESC LIMIT 5`,
             `SELECT p.product_name, COALESCE(SUM(i.quantity), 0) AS units
 FROM products p LEFT JOIN order_items i ON i.product_id = p.product_id
 GROUP BY p.product_name ORDER BY units LIMIT 5`,
-            '"All X, with their Y" — including the X that have no Y.',
+            '"All X, with their Y", including the X that have no Y.',
             ['left-join']),
           e('right', 'RIGHT JOIN', 'FROM a RIGHT JOIN b ON a.k = b.k',
-            'Mirror of LEFT. Legal and rare — most teams standardise on LEFT because it reads top-to-bottom.',
+            'Mirror of LEFT. Legal and rare, most teams standardise on LEFT because it reads top-to-bottom.',
             `SELECT c.segment, COUNT(DISTINCT c.customer_id) AS customers
 FROM orders o RIGHT JOIN customers c ON c.customer_id = o.customer_id
 GROUP BY c.segment ORDER BY c.segment`,
@@ -199,10 +199,10 @@ FROM google_ads_campaigns g FULL OUTER JOIN meta_ads_campaigns m ON m.campaign_i
             '"What is in system A, what is in B, what is in only one?"',
             ['full-join']),
           e('cross', 'CROSS JOIN', 'FROM a CROSS JOIN b',
-            'Every row on the left paired with every row on the right. No ON clause — that is what makes it a cross join.',
+            'Every row on the left paired with every row on the right. No ON clause. That is what makes it a cross join.',
             `SELECT c.category, d.device FROM (SELECT DISTINCT category FROM products) c
 CROSS JOIN (SELECT DISTINCT device FROM orders) d ORDER BY c.category, d.device LIMIT 6`,
-            'Building a complete scaffold — a date spine or a cohort grid.',
+            'Building a complete scaffold, a date spine or a cohort grid.',
             ['cross-join']),
           e('self', 'SELF JOIN', 'FROM t a JOIN t b ON …',
             'Join a table to itself with two aliases. Needs an inequality or you get every pair twice plus self-pairs.',
@@ -219,7 +219,7 @@ GROUP BY first_channel, last_channel ORDER BY journeys DESC LIMIT 5`,
         name: 'Patterns and traps',
         entries: [
           e('anti', 'Anti-join', 'LEFT JOIN … WHERE b.key IS NULL',
-            'The way to ask "which of these has none of those?". Not a join type — a pattern.',
+            'The way to ask "which of these has none of those?". Not a join type, a pattern.',
             `SELECT c.campaign_id, c.campaign_name
 FROM google_ads_campaigns c LEFT JOIN orders o ON o.campaign_id = c.campaign_id
 WHERE o.campaign_id IS NULL ORDER BY c.campaign_id`,
@@ -235,7 +235,7 @@ WHERE o.campaign_id IS NULL ORDER BY c.campaign_id`,
             'The most common JOIN bug in existence, and it fails silently.',
             ['left-join', 'boolean-logic']),
           e('fanout', 'Fan-out', 'aggregate before you join',
-            'Joining to a finer grain duplicates the coarse side. Summing a coarse-grain column afterwards inflates it — here by 2.19×.',
+            'Joining to a finer grain duplicates the coarse side. Summing a coarse-grain column afterwards inflates it, here by 2.19×.',
             `SELECT
   (SELECT SUM(gross_revenue) FROM orders WHERE status = 'completed') AS correct,
   (SELECT SUM(o.gross_revenue) FROM orders o JOIN order_items i ON i.order_id = o.order_id
@@ -264,7 +264,7 @@ GROUP BY d.date ORDER BY d.date`,
         name: 'Ranking',
         entries: [
           e('rownumber', 'ROW_NUMBER', 'ROW_NUMBER() OVER (PARTITION BY p ORDER BY o)',
-            'Numbers rows 1, 2, 3 within each partition. Never ties — it picks arbitrarily unless you add a tie-break.',
+            'Numbers rows 1, 2, 3 within each partition. Never ties. It picks arbitrarily unless you add a tie-break.',
             `SELECT category, product_name, list_price
 FROM products
 QUALIFY ROW_NUMBER() OVER (PARTITION BY category ORDER BY list_price DESC, product_id) <= 2
@@ -305,7 +305,7 @@ SELECT month, revenue, LAG(revenue) OVER (ORDER BY month) AS prev_month FROM m O
             'Month-over-month, week-over-week, days between orders.',
             ['lag-lead']),
           e('firstlast', 'FIRST_VALUE / LAST_VALUE', 'FIRST_VALUE(col) OVER (PARTITION BY p ORDER BY o)',
-            'FIRST_VALUE works with the default frame. LAST_VALUE does NOT — the default frame ends at the current row, so you must widen it.',
+            'FIRST_VALUE works with the default frame. LAST_VALUE does NOT. The default frame ends at the current row, so you must widen it.',
             `SELECT campaign_id, date, cost,
        FIRST_VALUE(cost) OVER (PARTITION BY campaign_id ORDER BY date) AS first_day,
        LAST_VALUE(cost) OVER (PARTITION BY campaign_id ORDER BY date
@@ -383,12 +383,12 @@ WHERE date BETWEEN '2024-06-01' AND '2024-06-30' AND campaign_id = 1001 GROUP BY
         name: 'Nested data',
         entries: [
           e('struct', 'STRUCT', 'col.field',
-            'A nested record — one value with named fields. Reach in with a dot. No UNNEST.',
+            'A nested record, one value with named fields. Reach in with a dot. No UNNEST.',
             'SELECT device.category, geo.country, COUNT(*) AS events FROM ga4_events GROUP BY 1, 2 ORDER BY events DESC LIMIT 5',
             'device, geo, traffic_source, ecommerce in the GA4 export.',
             ['struct']),
           e('unnest', 'UNNEST', 'FROM t, UNNEST(t.arr) AS a',
-            'Flattens a repeated field. It is an implicit CROSS JOIN, so it multiplies your row count by the array length — filter first.',
+            'Flattens a repeated field. It is an implicit CROSS JOIN, so it multiplies your row count by the array length. Filter first.',
             `SELECT ep.key, COUNT(*) AS n FROM ga4_events e, UNNEST(e.event_params) AS ep
 WHERE e.event_name = 'purchase' GROUP BY ep.key ORDER BY n DESC LIMIT 5`,
             'event_params and items in the GA4 export.',
@@ -429,7 +429,7 @@ FROM orders GROUP BY month ORDER BY month LIMIT 5`,
             'Every time-based report.',
             ['date-functions', 'date-diff', 'date-trunc']),
           e('parsedate', 'PARSE_DATE / FORMAT_DATE', "PARSE_DATE('%Y%m%d', s)",
-            'Converts between text and DATE. GA4 stores event_date as a YYYYMMDD string on purpose — it sorts correctly and prunes cheaply.',
+            'Converts between text and DATE. GA4 stores event_date as a YYYYMMDD string on purpose, it sorts correctly and prunes cheaply.',
             `SELECT event_date, PARSE_DATE('%Y%m%d', event_date) AS d,
        FORMAT_DATE('%b %Y', PARSE_DATE('%Y%m%d', event_date)) AS label
 FROM ga4_events GROUP BY event_date, d, label ORDER BY event_date LIMIT 5`,
@@ -470,7 +470,7 @@ FROM orders GROUP BY m, dow ORDER BY m, dow LIMIT 10`,
             'A physical calendar table carrying week starts, quarters, weekends and holidays. Everyone gets the same definitions.',
             `SELECT d.day_name, COUNT(*) AS orders FROM orders o JOIN date_dim d ON d.date = o.order_date
 WHERE o.status = 'completed' GROUP BY d.day_name ORDER BY orders DESC`,
-            'Business calendars — fiscal quarters, holidays, trading days.',
+            'Business calendars: fiscal quarters, holidays, trading days.',
             ['date-spine']),
         ],
       },
@@ -478,7 +478,7 @@ WHERE o.status = 'completed' GROUP BY d.day_name ORDER BY orders DESC`,
         name: 'Arithmetic',
         entries: [
           e('datediff', 'DATE_DIFF', 'DATE_DIFF(later, earlier, DAY)',
-            'The LATER date comes first. Counts boundaries crossed, not whole periods — DATE_DIFF on two month-truncated dates gives whole months.',
+            'The LATER date comes first. Counts boundaries crossed, not whole periods. DATE_DIFF on two month-truncated dates gives whole months.',
             `SELECT subscription_id, DATE_DIFF(canceled_at, started_at, DAY) AS days_subscribed
 FROM subscriptions WHERE canceled_at IS NOT NULL ORDER BY days_subscribed LIMIT 5`,
             'Tenure, sales cycle length, time to activate.',
@@ -501,7 +501,7 @@ FROM support_tickets WHERE first_response_at IS NOT NULL GROUP BY priority ORDER
         name: 'Text and dates',
         entries: [
           e('format', 'FORMAT_DATE', "FORMAT_DATE('%b %Y', d)",
-            'Renders a date as text. Never sort by the formatted string — April sorts before January.',
+            'Renders a date as text. Never sort by the formatted string, April sorts before January.',
             `SELECT FORMAT_DATE('%b %Y', DATE_TRUNC(order_date, MONTH)) AS label, SUM(gross_revenue) AS revenue
 FROM orders WHERE status = 'completed'
 GROUP BY label, DATE_TRUNC(order_date, MONTH) ORDER BY DATE_TRUNC(order_date, MONTH)`,
@@ -560,7 +560,7 @@ FROM ad_spend_daily GROUP BY platform ORDER BY roas DESC`,
             'Whether the acquisition engine works at all.',
             ['cac']),
           e('aov', 'AOV', 'revenue / orders',
-            'Report the median alongside the mean when order values are skewed — they usually are.',
+            'Report the median alongside the mean when order values are skewed. They usually are.',
             `SELECT SAFE_DIVIDE(SUM(gross_revenue), COUNT(*)) AS mean_aov,
        PERCENTILE_CONT(gross_revenue, 0.5) AS median_aov
 FROM orders WHERE status = 'completed'`,
@@ -599,7 +599,7 @@ FROM m ORDER BY cm, mn LIMIT 12`,
             'Whether the product keeps the customers marketing buys.',
             ['retention', 'cohort']),
           e('churn', 'Churn', 'cancellations / population at period start',
-            'The denominator must be the population that had the opportunity to churn — the start, not the end.',
+            'The denominator must be the population that had the opportunity to churn. The start, not the end.',
             `SELECT p.tier, SAFE_DIVIDE(COUNTIF(s.canceled_at IS NOT NULL), COUNT(*)) AS churn_rate
 FROM subscriptions s JOIN plans p USING (plan_id) GROUP BY p.tier ORDER BY churn_rate DESC`,
             'The leak the growth engine is filling.',
@@ -628,7 +628,7 @@ SELECT SUM(c) AS carts, SUM(p) AS purchases, SAFE_DIVIDE(SUM(p), SUM(c)) AS cart
             'Finding the one page to fix.',
             ['funnel']),
           e('attribution', 'Attribution models', 'first · last · linear · position · time-decay',
-            'All models redistribute the same revenue. Choosing one is a business decision dressed as a technical one — and none of them establish incrementality.',
+            'All models redistribute the same revenue. Choosing one is a business decision dressed as a technical one, and none of them establish incrementality.',
             `SELECT channel,
        SUM(CASE WHEN touch_position = 1 THEN conversion_value ELSE 0 END) AS first_touch,
        SUM(SAFE_DIVIDE(conversion_value, journey_length)) AS linear
@@ -636,7 +636,7 @@ FROM attribution_touchpoints WHERE converted = 1 GROUP BY channel ORDER BY linea
             'Budget allocation arguments.',
             ['attribution']),
           e('activation', 'Activation rate', 'activated users / signups',
-            'Upstream of retention, expansion and referral — and the fastest metric to move.',
+            'Upstream of retention, expansion and referral, and the fastest metric to move.',
             `WITH a AS (SELECT DISTINCT user_id FROM product_events WHERE event_name = 'activated')
 SELECT COUNT(DISTINCT s.customer_id) AS subs, COUNT(DISTINCT a.user_id) AS activated,
        SAFE_DIVIDE(COUNT(DISTINCT a.user_id), COUNT(DISTINCT s.customer_id)) AS activation_rate

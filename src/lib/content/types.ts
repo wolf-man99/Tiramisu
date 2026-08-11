@@ -16,7 +16,7 @@ export const DIFFICULTY_XP: Record<Difficulty, number> = {
 };
 
 export interface Exercise {
-  /** `module.index`, e.g. `3.14`. Stable — it is the URL and the attempt key. */
+  /** `module.index`, e.g. `3.14`. Stable. It is the URL and the attempt key. */
   id: string;
   module: number;
   day: number;
@@ -202,7 +202,7 @@ export interface LabStep {
   title: string;
   body: string;
   sql?: string;
-  /** Compare bytes scanned before/after — the point of most labs. */
+  /** Compare bytes scanned before/after, the point of most labs. */
   measure?: boolean;
   task?: { prompt: string; solution: string; hints: string[]; orderMatters?: boolean };
 }

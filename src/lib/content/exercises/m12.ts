@@ -1,11 +1,11 @@
 import { ex } from './helpers';
 
 /**
- * Module 12 — Thinking like an analyst (day 14).
+ * Module 12, Thinking like an analyst (day 14).
  *
  * 6 exercises, all of them about judgement rather than syntax. Each one produces a
  * number that is technically correct and would be professionally negligent to publish
- * without the caveat attached — and asks the learner to produce the caveat too.
+ * without the caveat attached, and asks the learner to produce the caveat too.
  */
 export const M12 = [
   ex('12.1', 14, 'expert',
@@ -25,7 +25,7 @@ ORDER BY device, channel`,
       'Compare the AOV ranking within each device against the ranking overall.'],
     { orderMatters: true,
       explanation:
-        "Simpson's paradox is when an aggregate comparison reverses inside every subgroup, because the groups have different mixes. Whenever you report a single comparative number, ask which confound could be driving it — device, geography, and new-vs-returning are the usual three." }),
+        "Simpson's paradox is when an aggregate comparison reverses inside every subgroup, because the groups have different mixes. Whenever you report a single comparative number, ask which confound could be driving it: device, geography, and new-vs-returning are the usual three." }),
 
   ex('12.2', 14, 'expert',
     'Sanity-check a number three ways',
@@ -40,7 +40,7 @@ ORDER BY device, channel`,
   (SELECT SUM(ecommerce.purchase_revenue) FROM ga4_events WHERE event_name = 'purchase') AS from_ga4_purchases`,
     ['Three independent paths to the same concept.',
       'Each has a different grain and a different source system.',
-      'Expect disagreement — the job is to explain its size and direction, not eliminate it.'],
+      'Expect disagreement. The job is to explain its size and direction, not eliminate it.'],
     {
       explanation:
         'Order-level revenue includes seasonal uplift the line items do not carry, and GA4 only sees purchases that fired a tag on the website. Three numbers, three defensible definitions. Publishing one without knowing the other two is how analysts get ambushed in meetings.',
@@ -57,11 +57,11 @@ ORDER BY device, channel`,
 FROM google_ads_daily
 GROUP BY campaign_id
 ORDER BY cvr DESC, campaign_id`,
-    ['No minimum-volume filter here — on purpose.',
+    ['No minimum-volume filter here, on purpose.',
       'Look at the clicks column beside the rate.'],
     { orderMatters: true,
       explanation:
-        'Rates computed on small denominators are noise wearing a number\'s clothes. The fix is a minimum-volume threshold, stated explicitly in the report — and chosen before you look at the results, not after.',
+        'Rates computed on small denominators are noise wearing a number\'s clothes. The fix is a minimum-volume threshold, stated explicitly in the report: and chosen before you look at the results, not after.',
       trap: 'Ranking anything by a rate without a volume floor.' }),
 
   ex('12.4', 14, 'expert',
@@ -84,7 +84,7 @@ WHERE source != 'internal-qa'`,
 
   ex('12.5', 14, 'expert',
     'What the data cannot tell you',
-    'Return `channel`, `spend`, `attributed_revenue` and `implied_roas` for paid channels — then write down, in the reflection, why this number cannot establish that the spend caused the revenue.',
+    'Return `channel`, `spend`, `attributed_revenue` and `implied_roas` for paid channels. Then write down, in the reflection, why this number cannot establish that the spend caused the revenue.',
     ['ad_spend_daily', 'orders', 'customers'], ['roas', 'attribution', 'chained-cte'],
     `WITH spend AS (
   SELECT channel, SUM(spend) AS spend FROM ad_spend_daily GROUP BY channel
@@ -106,7 +106,7 @@ ORDER BY implied_roas DESC, s.channel`,
       'The SQL is easy. The epistemics are not.'],
     { orderMatters: true,
       explanation:
-        'Every attribution model in this course is correlational. Brand search converts at a spectacular ROAS because it captures demand other channels created — turn it off and most of that revenue arrives through another door. Only a holdout test can separate incremental revenue from captured revenue, and no amount of SQL substitutes for it. Knowing this is the difference between an analyst and a reporting tool.' }),
+        'Every attribution model in this course is correlational. Brand search converts at a spectacular ROAS because it captures demand other channels created, turn it off and most of that revenue arrives through another door. Only a holdout test can separate incremental revenue from captured revenue, and no amount of SQL substitutes for it. Knowing this is the difference between an analyst and a reporting tool.' }),
 
   ex('12.6', 14, 'expert',
     'The number you would defend',
@@ -123,11 +123,11 @@ SELECT s.spend,
        SAFE_DIVIDE(c.avg_ltv, SAFE_DIVIDE(s.spend, c.customers)) AS ltv_cac,
        SAFE_DIVIDE(SAFE_DIVIDE(s.spend, c.customers), c.avg_ltv / 12) AS payback_months
 FROM s, c, o`,
-    ['Three single-row CTEs cross-joined together — a rare legitimate use of a comma join.',
+    ['Three single-row CTEs cross-joined together, a rare legitimate use of a comma join.',
       'A CROSS JOIN of one-row tables produces exactly one row.',
       'Every value here is one you have computed before; the skill is choosing which six.'],
     {
       explanation:
-        'Six numbers, each one you can defend for ten minutes. That is the deliverable. Everything else in this course was practice for deciding what goes on this slide — and for being able to say, when challenged, exactly which rows are in each denominator.',
+        'Six numbers, each one you can defend for ten minutes. That is the deliverable. Everything else in this course was practice for deciding what goes on this slide: and for being able to say, when challenged, exactly which rows are in each denominator.',
     }),
 ];

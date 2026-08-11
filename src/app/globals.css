@@ -9,7 +9,7 @@
   Colour follows a Google-style "one hue, one job" system rather than a
   single accent: blue/purple/amber/green/teal/red each own exactly one
   semantic role (see below) plus, where noted, one course in the catalog
-  (src/lib/courses/registry.ts). The chrome — nav, buttons, page background —
+  (src/lib/courses/registry.ts). The chrome, nav, buttons, page background,
   stays neutral so colour stays legible as an identifier instead of
   decoration. See the "six-colour system" note in registry.ts for the full
   course → colour mapping.
@@ -39,7 +39,7 @@
   --surface-3: #f1e9da;
   --elevated: #ffffff;
 
-  /* ─── Borders — always ink, always solid ───────────────────────────── */
+  /* ─── Borders: always ink, always solid ───────────────────────────── */
   --border: var(--ink);
   --border-strong: var(--ink);
   --border-accent: var(--blue);
@@ -51,24 +51,24 @@
   --text-subtle: #6b7a88;
   --text-faint: #8d9aa6;
 
-  /* ─── Accent — the primary action colour ───────────────────────────── */
+  /* ─── Accent, the primary action colour ───────────────────────────── */
   --accent: var(--blue);
   --accent-hover: #05639c;
   --accent-soft: #0450991a;
   --accent-border: var(--blue);
   --accent-text: var(--blue);
 
-  /* ─── Semantic — each colour's one non-course job ───────────────────── */
+  /* ─── Semantic, each colour's one non-course job ───────────────────── */
   --success: var(--green);
   --success-soft: #1e8e4a1f;
-  --warn: #b46f04; /* text-safe amber — energy/streaks/coins */
+  --warn: #b46f04; /* text-safe amber, energy/streaks/coins */
   --warn-soft: #f5a6232e;
   --danger: var(--red);
   --danger-soft: #e51f271a;
   --info: var(--blue); /* the flagship platform action colour */
   --info-soft: #0450991a;
 
-  /* ─── Difficulty scale — reuses the semantic colours, not the courses ── */
+  /* ─── Difficulty scale: reuses the semantic colours, not the courses ── */
   --easy: var(--green);
   --medium: var(--blue);
   --hard: #b46f04;
@@ -159,7 +159,7 @@ h1, h2, h3, h4 {
 
 ::selection { background: var(--amber); color: var(--ink); }
 
-/* Scrollbars — squared off and inky */
+/* Scrollbars, squared off and inky */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: var(--bg-subtle); }
 ::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 999px; border: 3px solid var(--bg-subtle); }
@@ -181,7 +181,7 @@ h1, h2, h3, h4 {
 .lift { transition: transform .14s ease, box-shadow .14s ease; }
 .lift:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-hover); }
 
-/* No blur in this system — "glass" is just a solid bar with an ink rule. */
+/* No blur in this system, "glass" is just a solid bar with an ink rule. */
 .glass {
   background: var(--cream);
   border-bottom: var(--bw) solid var(--ink);
@@ -207,7 +207,7 @@ h1, h2, h3, h4 {
   outline-offset: 2px;
 }
 
-/* Small uppercase label, wide tracking — used above sections. */
+/* Small uppercase label, wide tracking, used above sections. */
 .eyebrow {
   font-size: .68rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .18em;
@@ -234,7 +234,7 @@ h1, h2, h3, h4 {
 
 /*
   Subtle nudge for the course card matching what a user picked as their onboarding
-  interest — a slow breathing glow in the course's own accent colour, not a hard
+  interest: a slow breathing glow in the course's own accent colour, not a hard
   gate on the other cards. --nudge-accent is set inline per-card by CourseCard.
 */
 @keyframes nudge-glow {

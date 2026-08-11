@@ -30,7 +30,7 @@ LIMIT 5`,
       ),
       h('INNER keeps matches; LEFT keeps everything on the left'),
       p(
-        '`INNER JOIN` returns only rows that match on both sides — and silently deletes ' +
+        '`INNER JOIN` returns only rows that match on both sides, and silently deletes ' +
         'everything that does not. `LEFT JOIN` keeps every row from the left table, filling the ' +
         'right side with NULLs where nothing matched.',
       ),
@@ -41,21 +41,21 @@ LIMIT 5`,
       h('The bug that costs the most'),
       p(
         'A condition on the *right-hand* table of a LEFT JOIN belongs in `ON`. Put it in `WHERE` ' +
-        'and the unmatched rows — which have NULL in every right-hand column — fail the test and ' +
+        'and the unmatched rows, which have NULL in every right-hand column, fail the test and ' +
         'get dropped. Your LEFT JOIN has silently become an INNER JOIN.',
       ),
       compare(
-        'Broken — becomes an INNER JOIN',
+        'Broken, becomes an INNER JOIN',
         "FROM campaigns c\nLEFT JOIN orders o ON o.campaign_id = c.campaign_id\nWHERE o.status = 'completed'",
-        'Correct — stays a LEFT JOIN',
+        'Correct, stays a LEFT JOIN',
         "FROM campaigns c\nLEFT JOIN orders o\n  ON o.campaign_id = c.campaign_id\n AND o.status = 'completed'",
-        'In this warehouse the first returns 22 campaigns and the second returns 24. Nothing errors. The two campaigns you lose are the ones with spend and no orders — exactly the ones worth investigating.',
+        'In this warehouse the first returns 22 campaigns and the second returns 24. Nothing errors. The two campaigns you lose are the ones with spend and no orders, exactly the ones worth investigating.',
       ),
       h('The anti-join'),
       p(
         '`LEFT JOIN … WHERE right.key IS NULL` keeps exactly the left rows that matched nothing. ' +
         'It is not a join type, it is a pattern, and it is how you ask "which of these has none ' +
-        'of those?" — campaigns with no orders, customers who never bought, products never sold.',
+        'of those?": campaigns with no orders, customers who never bought, products never sold.',
       ),
       call(
         'info',
@@ -102,7 +102,7 @@ WHERE o.campaign_id IS NULL
 ORDER BY c.campaign_id`,
         takeaway:
           'The video and display prospecting campaigns. They are bought on view-through, so ' +
-          'zero last-click orders is expected — but an INNER JOIN would have hidden them entirely.',
+          'zero last-click orders is expected, but an INNER JOIN would have hidden them entirely.',
       },
       {
         title: 'Aggregate each side, then join',
@@ -136,14 +136,14 @@ LEFT JOIN orders o ON o.campaign_id = c.campaign_id AND o.status = 'completed'`,
       '5.12', '5.13', '5.14', '5.17'],
     quiz: [
       mcq('d6q1', 'Where does a filter on the right table of a LEFT JOIN belong?',
-        ['WHERE', 'ON', 'Either — they are equivalent', 'HAVING'],
+        ['WHERE', 'ON', 'Either. They are equivalent', 'HAVING'],
         1,
         'In WHERE it tests NULL for unmatched rows, fails, and silently converts the LEFT JOIN into an INNER JOIN.'),
       predict('d6q2', 'products has 24 rows. What does this return?',
         `SELECT COUNT(*) FROM products p LEFT JOIN order_items i ON i.product_id = p.product_id`,
         ['24', 'The number of order_items rows, or more', '0', '48'],
         1,
-        'Each product appears once per matching line item. A LEFT JOIN to a finer grain fans out — that is tomorrow\'s lesson.'),
+        'Each product appears once per matching line item. A LEFT JOIN to a finer grain fans out. That is tomorrow\'s lesson.'),
       debug('d6q3', 'This should show all channels including those with no orders, but it does not.',
         `SELECT c.first_touch_channel, COUNT(*) AS orders
 FROM customers c
@@ -186,7 +186,7 @@ GROUP BY c.first_touch_channel`,
           `FROM products p LEFT JOIN order_items i ON i.product_id = p.product_id
 WHERE i.product_id IS NULL`,
           ['Finds products with NULL ids',
-            'Finds products that appear in no order line — an anti-join',
+            'Finds products that appear in no order line, an anti-join',
             'Removes duplicates',
             'Errors, because you cannot filter on a NULL from a join'],
           1,
@@ -203,7 +203,7 @@ WHERE i.product_id IS NULL`,
     project: {
       title: 'Spend-to-revenue bridge',
       brief:
-        'Join ad spend to orders and quantify how much revenue has no attributable campaign — ' +
+        'Join ad spend to orders and quantify how much revenue has no attributable campaign, ' +
         'the number every CMO eventually asks for.',
       tasks: [
         task('bridge-total', 'The attribution gap',
@@ -246,7 +246,7 @@ LIMIT 12`,
     module: 5,
     moduleTitle: 'JOINs',
     title: 'The rest of the family, and the 2.19× revenue bug',
-    subtitle: 'RIGHT, FULL, SELF, CROSS — and fan-out',
+    subtitle: 'RIGHT, FULL, SELF, CROSS, and fan-out',
     objective:
       'Recognise fan-out before it happens, and build a date spine so no day goes missing.',
     estimatedMinutes: 95,
@@ -254,10 +254,10 @@ LIMIT 12`,
     theory: [
       h('The remaining join types'),
       list([
-        '**RIGHT JOIN** — the mirror of LEFT. Legal, rare, and usually clearer rewritten as a LEFT with the tables swapped.',
-        '**FULL OUTER JOIN** — keeps unmatched rows from both sides. The reconciliation join: "what is in A, what is in B, what is in only one?"',
-        '**SELF JOIN** — a table joined to itself with two aliases. Needs an inequality or you get every pair twice plus every row paired with itself.',
-        '**CROSS JOIN** — every row on the left paired with every row on the right, with no ON clause at all.',
+        '**RIGHT JOIN**, the mirror of LEFT. Legal, rare, and usually clearer rewritten as a LEFT with the tables swapped.',
+        '**FULL OUTER JOIN**, keeps unmatched rows from both sides. The reconciliation join: "what is in A, what is in B, what is in only one?"',
+        '**SELF JOIN**, a table joined to itself with two aliases. Needs an inequality or you get every pair twice plus every row paired with itself.',
+        '**CROSS JOIN**: every row on the left paired with every row on the right, with no ON clause at all.',
       ]),
       h('Fan-out: the expensive one'),
       p(
@@ -268,7 +268,7 @@ LIMIT 12`,
       call(
         'money',
         '965,128 becomes 2,114,146',
-        'That is 2.19× — and notice it is *higher* than the 1.64 average lines per order, ' +
+        'That is 2.19×: and notice it is *higher* than the 1.64 average lines per order, ' +
         'because bigger orders tend to have more lines. The fan-out is weighted towards exactly ' +
         'the rows that hurt most. Nothing errors. Nothing warns you.',
       ),
@@ -361,7 +361,7 @@ WHERE o.status = 'completed'`,
     quiz: [
       predict('d7q1', 'orders has 6,610 rows, order_items has 10,834. Roughly how many rows does an inner join produce?',
         'SELECT COUNT(*) FROM orders o JOIN order_items i ON i.order_id = o.order_id',
-        ['6,610', 'About 10,900 — one per line item, plus a few from duplicate orders',
+        ['6,610', 'About 10,900: one per line item, plus a few from duplicate orders',
           '71 million', '10,834 exactly'],
         1,
         'Each line item matches its order, so the result is roughly line-item count. The extra comes from the 26 duplicated orders each matching their lines twice.'),
@@ -406,7 +406,7 @@ WHERE o.status = 'completed'`,
           'Spine, pre-aggregate, join, fill. Doing it in any other order reintroduces either gaps or fan-out.'),
         mcq('d7a3', 'When is a CROSS JOIN the right tool?',
           ['Never',
-            'When you deliberately need every combination — a scaffold or a date spine',
+            'When you deliberately need every combination, a scaffold or a date spine',
             'When the join key is missing',
             'For deduplication'],
           1,
@@ -473,7 +473,7 @@ ORDER BY d.date, pl.platform`,
     theory: [
       h('CASE: the conditional'),
       p(
-        '`CASE WHEN cond THEN x ELSE y END` is an expression, so it goes anywhere a value goes — ' +
+        '`CASE WHEN cond THEN x ELSE y END` is an expression, so it goes anywhere a value goes, ' +
         'SELECT, WHERE, GROUP BY, ORDER BY, even inside an aggregate. Branches are evaluated top ' +
         'to bottom and the first match wins, so later branches need only an upper bound.',
       ),
@@ -486,11 +486,11 @@ ORDER BY d.date, pl.platform`,
       key('Conditional aggregation is the single most useful pattern in analytical SQL.'),
       h('Dates'),
       list([
-        '`DATE_TRUNC(date, MONTH)` — snap back to the start of the period.',
-        '`DATE_DIFF(later, earlier, DAY)` — **the later date comes first**.',
-        '`DATE_ADD(date, INTERVAL 30 DAY)` — note the INTERVAL keyword.',
-        '`EXTRACT(part FROM date)` — pull out one component; DAYOFWEEK is 1 for Sunday.',
-        '`PARSE_DATE` / `FORMAT_DATE` — text to date and back.',
+        '`DATE_TRUNC(date, MONTH)`. Snap back to the start of the period.',
+        '`DATE_DIFF(later, earlier, DAY)`, **the later date comes first**.',
+        '`DATE_ADD(date, INTERVAL 30 DAY)`. Note the INTERVAL keyword.',
+        '`EXTRACT(part FROM date)`, pull out one component; DAYOFWEEK is 1 for Sunday.',
+        '`PARSE_DATE` / `FORMAT_DATE`, text to date and back.',
       ]),
       call(
         'trap',
@@ -502,13 +502,13 @@ ORDER BY d.date, pl.platform`,
       p(
         '`GB_Search_NonBrand_UK_Exact` contains five dimensions that do not exist as columns. ' +
         '`SPLIT(name, \'_\')[OFFSET(0)]` extracts the first; `REGEXP_EXTRACT` handles the messier ' +
-        'cases. Use `SAFE_OFFSET` for segments that might not be there — because one day someone ' +
+        'cases. Use `SAFE_OFFSET` for segments that might not be there, because one day someone ' +
         'will name a campaign differently.',
       ),
       h('NULL handling, deliberately'),
       p(
         '`COALESCE(a, b, c)` returns the first non-NULL. `IFNULL(a, b)` is the two-argument ' +
-        'version. `NULLIF(a, b)` returns NULL when a equals b — useful for turning a zero ' +
+        'version. `NULLIF(a, b)` returns NULL when a equals b, useful for turning a zero ' +
         'denominator into a NULL rather than an error.',
       ),
       call(
@@ -564,7 +564,7 @@ ORDER BY event_date
 LIMIT 5`,
         takeaway:
           'The export really does store dates as strings. It is the partitioning column, and ' +
-          'YYYYMMDD sorts correctly as text — so you get pruning for free.',
+          'YYYYMMDD sorts correctly as text. So you get pruning for free.',
       },
     ],
     playground: {
@@ -598,7 +598,7 @@ FROM orders GROUP BY month ORDER BY month`,
         1,
         'Sort by the underlying date: add it to the GROUP BY and ORDER BY it instead of the label.'),
       mcq('d8q3', 'What does `DATE_DIFF(a, b, DAY)` compute?',
-        ['b minus a', 'a minus b — the later date comes first', 'The absolute difference', 'An error if a < b'],
+        ['b minus a', 'a minus b. The later date comes first', 'The absolute difference', 'An error if a < b'],
         1,
         'Swap them and you get negative numbers, which is a very quiet way to break a tenure metric.'),
       mcq('d8q4', 'When is `COALESCE(quality_score, 0)` the wrong choice?',
@@ -661,7 +661,7 @@ FROM orders GROUP BY month ORDER BY month`,
 FROM google_ads_campaigns
 ORDER BY campaign_name`,
           ['One SPLIT per segment.',
-            'SAFE_OFFSET on the last one — not every name has five parts.'],
+            'SAFE_OFFSET on the last one, not every name has five parts.'],
           { orderMatters: true }),
         task('parse-report', 'Report by parsed dimension',
           'Per parsed `market` and `brandness`, return `spend`, `clicks`, `ctr`, `conversions` and `cpa`, for markets with over 5,000 spend. Order by spend descending.',
@@ -700,7 +700,7 @@ ORDER BY spend DESC, market, brandness`,
       h('A CTE is a named intermediate result'),
       p(
         '`WITH name AS ( … )` defines a result you can then select from. It does not make the ' +
-        'query faster — in BigQuery it is not even materialised. It makes the query readable, ' +
+        'query faster, in BigQuery it is not even materialised. It makes the query readable, ' +
         'which is the reason that actually matters.',
       ),
       key(
@@ -710,7 +710,7 @@ ORDER BY spend DESC, market, brandness`,
       h('When a CTE genuinely beats a subquery'),
       p(
         'When you need the same intermediate result twice. Writing it twice is both verbose and ' +
-        'a maintenance trap — the day someone edits one copy and not the other, the query starts ' +
+        'a maintenance trap: the day someone edits one copy and not the other, the query starts ' +
         'lying.',
       ),
       sql(
@@ -725,14 +725,14 @@ ORDER BY spend DESC`,
       ),
       h('The three kinds of subquery'),
       list([
-        '**Scalar** — returns one value, usable anywhere a value is. Evaluated once.',
-        '**Table** — sits in FROM. A derived table; an unnamed CTE.',
-        '**Predicate** — `IN`, `EXISTS`, `NOT EXISTS` in the WHERE clause.',
+        '**Scalar**: returns one value, usable anywhere a value is. Evaluated once.',
+        '**Table**, sits in FROM. A derived table; an unnamed CTE.',
+        '**Predicate**: `IN`, `EXISTS`, `NOT EXISTS` in the WHERE clause.',
       ]),
       call(
         'trap',
         'NOT IN + NULL = no rows, silently',
-        '`x NOT IN (1, 2, NULL)` is never TRUE — it is UNKNOWN, because x might equal the ' +
+        '`x NOT IN (1, 2, NULL)` is never TRUE. It is UNKNOWN, because x might equal the ' +
         'unknown value. The query runs, returns zero rows, and looks like a legitimate finding. ' +
         'Use `NOT EXISTS`, which cannot be broken this way.',
       ),
@@ -789,7 +789,7 @@ WHERE NOT EXISTS (
   WHERE o.customer_id = c.customer_id AND o.status = 'completed'
 )`,
         takeaway:
-          '`SELECT 1` is the convention — EXISTS only cares whether a row comes back, not what ' +
+          '`SELECT 1` is the convention: EXISTS only cares whether a row comes back, not what ' +
           'is in it. And unlike NOT IN, a NULL cannot silently empty your result.',
       },
       {
@@ -820,7 +820,7 @@ SELECT campaign_id, spend FROM spend ORDER BY spend DESC LIMIT 10`,
     practice: ['7.1', '7.2', '7.3', '7.4', '7.5', '7.7', '7.8', '7.10', '7.11', '7.13', '7.14', '7.17'],
     quiz: [
       mcq('d9q1', 'Does a CTE make a query faster?',
-        ['Always', 'No — it makes it readable, and in BigQuery it is not materialised',
+        ['Always', 'No. It makes it readable, and in BigQuery it is not materialised',
           'Only with an index', 'Only for large tables'],
         1,
         'Readability is the reason. The one performance-adjacent benefit is avoiding writing the same subquery twice.'),
@@ -834,15 +834,15 @@ WHERE campaign_id NOT IN (SELECT campaign_id FROM orders)`,
         1,
         'Add `WHERE campaign_id IS NOT NULL` to the subquery, or use NOT EXISTS, which cannot break this way.'),
       mcq('d9q3', 'What does `SELECT 1` inside EXISTS mean?',
-        ['Return the first row', 'Nothing — EXISTS only checks whether any row comes back',
+        ['Return the first row', 'Nothing - EXISTS only checks whether any row comes back',
           'Count the rows', 'Select the first column'],
         1,
         'It is a convention. `SELECT *`, `SELECT NULL` and `SELECT 1` all behave identically inside EXISTS.'),
       order('d9q4', 'Order the CTEs of a cohort analysis.',
-        ['cohort — each customer\'s first event',
-          'activity — every event tagged with its offset',
-          'matrix — counted per cohort per offset',
-          'rates — divided by the cohort size'],
+        ['cohort, each customer\'s first event',
+          'activity, every event tagged with its offset',
+          'matrix, counted per cohort per offset',
+          'rates, divided by the cohort size'],
         'Each step does one thing. Naming them this way is what lets you debug the middle when the numbers look wrong.'),
     ],
     assessment: {
@@ -902,7 +902,7 @@ ORDER BY cohort_month, month_number LIMIT 40`,
             'COUNT DISTINCT because a customer can order twice in a month.'],
           { orderMatters: true }),
         task('cohort-rates', 'Add the retention rate',
-          'Extend the matrix with `retention_rate` — customers divided by the cohort\'s month-0 size. Chronological, limit 40.',
+          'Extend the matrix with `retention_rate`, customers divided by the cohort\'s month-0 size. Chronological, limit 40.',
           `WITH cohort AS (
   SELECT customer_id, DATE_TRUNC(MIN(order_date), MONTH) AS cohort_month
   FROM orders WHERE status = 'completed' GROUP BY customer_id
@@ -958,13 +958,13 @@ LIMIT 5`,
       ),
       h('The three families'),
       list([
-        '**Ranking** — ROW_NUMBER, RANK, DENSE_RANK, NTILE. Position within the partition.',
-        '**Offset** — LAG, LEAD, FIRST_VALUE, LAST_VALUE. Look at another row.',
-        '**Aggregate** — SUM, AVG, COUNT with OVER. The group\'s answer on every row.',
+        '**Ranking**: ROW_NUMBER, RANK, DENSE_RANK, NTILE. Position within the partition.',
+        '**Offset**: LAG, LEAD, FIRST_VALUE, LAST_VALUE. Look at another row.',
+        '**Aggregate**. SUM, AVG, COUNT with OVER. The group\'s answer on every row.',
       ]),
       h('Ties'),
       p(
-        'ROW_NUMBER never ties — it picks arbitrarily unless you add a tie-break. RANK ties then ' +
+        'ROW_NUMBER never ties. It picks arbitrarily unless you add a tie-break. RANK ties then ' +
         'skips (1, 1, 3). DENSE_RANK ties then continues (1, 1, 2). Use ROW_NUMBER to *pick one*, ' +
         'RANK to *report a placing*.',
       ),
@@ -984,7 +984,7 @@ LIMIT 5`,
       ),
       h('Filtering on a window function'),
       p(
-        'You cannot put a window function in WHERE — WHERE runs before SELECT, so it does not ' +
+        'You cannot put a window function in WHERE: WHERE runs before SELECT, so it does not ' +
         'exist yet. BigQuery gives you `QUALIFY`; everywhere else you wrap the query in a ' +
         'subquery and filter outside.',
       ),
@@ -1069,7 +1069,7 @@ LIMIT 10`,
       debug('d10q3', 'LAST_VALUE returns the same value as the current row. Why?',
         `LAST_VALUE(cost) OVER (PARTITION BY campaign_id ORDER BY date)`,
         ['ORDER BY is wrong',
-          'The default frame ends at CURRENT ROW — widen it to UNBOUNDED FOLLOWING',
+          'The default frame ends at CURRENT ROW, widen it to UNBOUNDED FOLLOWING',
           'LAST_VALUE needs a PARTITION BY',
           'cost is NULL'],
         1,
@@ -1099,7 +1099,7 @@ LIMIT 10`,
             'A running total',
             'The average spend'],
           1,
-          'The windowed SUM puts the channel total on every row, so the division gives a within-channel share — no self-join needed.'),
+          'The windowed SUM puts the channel total on every row, so the division gives a within-channel share, no self-join needed.'),
       ],
       exerciseIds: ['8.15', '8.22'],
     },
@@ -1152,7 +1152,7 @@ FROM ranked
 ORDER BY week_start, rank_this_week, campaign_id
 LIMIT 40`,
           ['Rank within each week first.',
-            'Then LAG that rank partitioned by *campaign* — a different partition from the ranking.'],
+            'Then LAG that rank partitioned by *campaign*, a different partition from the ranking.'],
           { orderMatters: true }),
       ],
     },

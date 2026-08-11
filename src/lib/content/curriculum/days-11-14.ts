@@ -29,7 +29,7 @@ export const DAYS_11_14: DayContent[] = [
       p(
         'BigQuery stores each column separately. A query that names three columns out of forty ' +
         'reads three columns out of forty. This is why `SELECT *` is the single most expensive ' +
-        'habit a new user brings with them — and why the fix is free.',
+        'habit a new user brings with them, and why the fix is free.',
       ),
       table(
         ['Query', 'Columns read', 'Relative cost'],
@@ -37,28 +37,28 @@ export const DAYS_11_14: DayContent[] = [
           ['`SELECT * FROM ga4_events`', 'all 14', '1.00×'],
           ['`SELECT event_name, user_pseudo_id FROM ga4_events`', '2 narrow', '≈ 0.05×'],
           ['`SELECT event_params FROM ga4_events`', '1 wide', '≈ 0.30×'],
-          ['`SELECT COUNT(*) FROM ga4_events`', 'none — metadata only', '0.00×'],
+          ['`SELECT COUNT(*) FROM ga4_events`', 'none: metadata only', '0.00×'],
         ],
         'Not all columns are the same size. `event_params` alone is bigger than every scalar column combined.',
       ),
       h('Partitioning: skipping whole slabs of the table'),
       p(
-        'A partitioned table is physically split — usually by day. A filter directly on the ' +
+        'A partitioned table is physically split, usually by day. A filter directly on the ' +
         'partitioning column lets BigQuery skip every partition that cannot match. `ga4_events` ' +
         'is partitioned on `event_date` and `google_ads_daily` on `date`; one day out of 366 is ' +
         'about 0.3% of the bytes.',
       ),
       compare(
-        'Prunes — 1 partition read',
+        'Prunes - 1 partition read',
         "SELECT SUM(cost)\nFROM google_ads_daily\nWHERE date = '2024-06-14'",
-        'Does not prune — 366 partitions read',
+        'Does not prune - 366 partitions read',
         "SELECT SUM(cost)\nFROM google_ads_daily\nWHERE CAST(date AS STRING) = '2024-06-14'",
         'Both return the same number. The second costs about 366 times more, because a function wrapped around the partitioning column makes it opaque to the pruner. The rule generalises: keep the partitioning column naked on the left of the comparison.',
       ),
       call(
         'warn',
         'The join that quietly unprunes',
-        'Filtering on a date that comes from *another* table — `WHERE d.date = other.date` — ' +
+        'Filtering on a date that comes from *another* table, `WHERE d.date = other.date`, ' +
         'cannot prune, because BigQuery does not know the value until the join runs. Push a ' +
         'literal date range onto the partitioned table as well, even when it looks redundant.',
       ),
@@ -66,25 +66,25 @@ export const DAYS_11_14: DayContent[] = [
       p(
         'Clustering sorts rows within a partition by up to four columns. A filter on a clustering ' +
         'column lets BigQuery skip blocks. `ga4_events` is clustered on `event_name` then ' +
-        '`user_pseudo_id`, so `WHERE event_name = \'purchase\'` is cheap — purchases live ' +
+        '`user_pseudo_id`, so `WHERE event_name = \'purchase\'` is cheap, purchases live ' +
         'together on disk.',
       ),
       list([
         '**Prefix matters.** Clustering on `(a, b)` helps a filter on `a`, or on `a AND b`. A filter on `b` alone barely helps.',
         '**Order by selectivity**, most-filtered column first.',
         '**Partition first, cluster second.** Pruning removes slabs; clustering removes blocks inside the surviving slabs.',
-        '**Cost is an estimate, not a guarantee.** The dry-run byte count for a clustered table is an upper bound — the actual bill is often lower.',
+        '**Cost is an estimate, not a guarantee.** The dry-run byte count for a clustered table is an upper bound. The actual bill is often lower.',
       ]),
       h('Nested and repeated fields'),
       p(
         'BigQuery lets a column hold a `STRUCT` (a record) or an `ARRAY` (a repeated value), or ' +
-        'an array of structs. This is not exotic — it is how the GA4 export is shaped, and it ' +
+        'an array of structs. This is not exotic. It is how the GA4 export is shaped, and it ' +
         'exists so that one row can stay one row instead of exploding into a join.',
       ),
       list([
-        '`STRUCT` — read with a dot: `device.category`, `geo.country`, `ecommerce.purchase_revenue`. No UNNEST, no join, no cost.',
-        '`ARRAY` — read with `UNNEST`, which flattens it into rows you can join to.',
-        '`ARRAY<STRUCT<…>>` — both at once. `event_params` and `items` are this shape.',
+        '`STRUCT`. Read with a dot: `device.category`, `geo.country`, `ecommerce.purchase_revenue`. No UNNEST, no join, no cost.',
+        '`ARRAY`. Read with `UNNEST`, which flattens it into rows you can join to.',
+        '`ARRAY<STRUCT<…>>`, both at once. `event_params` and `items` are this shape.',
       ]),
       sql(
         `SELECT device.category AS device, geo.country AS country, COUNT(*) AS events
@@ -113,13 +113,13 @@ LIMIT 8`,
       h('The value STRUCT has four fields and only one is populated'),
       p(
         'Every GA4 parameter value is `STRUCT<string_value, int_value, double_value, float_value>`. ' +
-        'Read the wrong sub-field and you get NULL — silently, with no error. `page_location` is a ' +
+        'Read the wrong sub-field and you get NULL: silently, with no error. `page_location` is a ' +
         'string; `ga_session_id` and `engagement_time_msec` are ints; `value` on a purchase is a ' +
         'double. Getting this wrong is the most common reason a GA4 query "returns nothing".',
       ),
       h('Dry runs and the seatbelt'),
       p(
-        'Every BigQuery client will tell you the byte count *before* you run — that is a dry run, ' +
+        'Every BigQuery client will tell you the byte count *before* you run. That is a dry run, ' +
         'and it is free. Read it. Then set `maximum_bytes_billed` on the job so a mistake fails ' +
         'instead of billing. A 4 TB accident costs about $25; the same accident on a schedule, ' +
         'hourly, costs $18,000 a month.',
@@ -180,7 +180,7 @@ WHERE event_date BETWEEN '20241125' AND '20241202'
 GROUP BY event_name
 ORDER BY events DESC`,
         takeaway:
-          '`event_date` prunes partitions and `event_name` — the first clustering column — skips ' +
+          '`event_date` prunes partitions and `event_name`, the first clustering column, skips ' +
           'blocks inside them. The two filters compose, and this is the cheapest shape a GA4 ' +
           'question can take.',
       },
@@ -254,13 +254,13 @@ ORDER BY event_date`,
       timeLimitSec: 1080,
       questions: [
         mcq('d11a1', 'A scheduled query scans 4 TB every hour. Roughly what does it cost per month?',
-          ['About $25', 'About $180', 'About $18,000', 'Nothing — schedules are free'],
+          ['About $25', 'About $180', 'About $18,000', 'Nothing. Schedules are free'],
           2,
           '4 TB × ~$6.25 × 24 × 30 ≈ $18,000. The same 4 TB run once is $25. Scheduling multiplies mistakes.'),
         explain('d11a2', 'What does the comma in this FROM clause do?',
           `FROM ga4_events e, UNNEST(e.event_params) AS ep`,
           ['A CROSS JOIN with every event_params in the table',
-            'A correlated CROSS JOIN — each event joined only to its own parameters',
+            'A correlated CROSS JOIN, each event joined only to its own parameters',
             'An INNER JOIN on key',
             'Nothing; it is a syntax quirk'],
           1,
@@ -272,7 +272,7 @@ ORDER BY event_date`,
           'LIMIT and ORDER BY happen after the scan. Naming columns is the only one of the four that reads less data.'),
         mcq('d11a4', 'The same heavy aggregate powers six dashboards and refreshes hourly. What do you do?',
           ['Add more clustering', 'Materialise it into a table and point the dashboards at that',
-            'Add LIMIT to each dashboard', 'Nothing — BigQuery caches it'],
+            'Add LIMIT to each dashboard', 'Nothing - BigQuery caches it'],
           1,
           'Caching only helps byte-identical queries within 24 hours and is invalidated by any change to the source. Pay for the aggregate once, read it six times.'),
       ],
@@ -289,7 +289,7 @@ ORDER BY event_date`,
       brief:
         'You inherit a nightly job: `SELECT * FROM ga4_events` exported to a spreadsheet, where ' +
         'somebody pivots it. Replace it with two queries that answer the same two questions in a ' +
-        'fraction of the bytes — and produce answers small enough to email.',
+        'fraction of the bytes, and produce answers small enough to email.',
       tasks: [
         task('prune-and-project', 'Aggregate in the warehouse, not the spreadsheet',
           'Return `event_date`, `page_views`, `purchases` and `devices` for December 2024, one row per day, chronological. The old job exported every column of every event to get this.',
@@ -303,7 +303,7 @@ GROUP BY event_date
 ORDER BY event_date`,
           ['Filter on the raw `event_date` string so the partition filter stays naked.',
             'COUNTIF gives you one pass over the data instead of three separate queries.',
-            'Three named columns, 31 rows out — that is the whole point of the rewrite.'],
+            'Three named columns, 31 rows out. That is the whole point of the rewrite.'],
           { orderMatters: true }),
         task('filter-before-unnest', 'Filter first, flatten second',
           'Return `source`, `purchases` and `revenue` for Q4 2024 purchase events, ordered by revenue descending. Reduce the event set *before* touching `event_params`.',
@@ -342,13 +342,13 @@ ORDER BY revenue DESC, source`,
       h('One row per event. That is the whole schema.'),
       p(
         'The GA4 BigQuery export has no sessions table, no users table and no pages table. It has ' +
-        'events. Everything the GA4 interface shows you — sessions, engagement rate, channel ' +
-        'grouping, landing pages, conversion rate — is *derived* at query time from this one ' +
+        'events. Everything the GA4 interface shows you: sessions, engagement rate, channel ' +
+        'grouping (landing pages, conversion rate) is *derived* at query time from this one ' +
         'stream. Once you accept that, the export stops being confusing and starts being honest.',
       ),
       key(
         'The GA4 UI is a set of opinions applied to this table. When your SQL disagrees with the ' +
-        'UI, one of you has a different opinion — and you can read yours.',
+        'UI, one of you has a different opinion, and you can read yours.',
       ),
       h('Four traps, in the order they will bite you'),
       table(
@@ -361,14 +361,14 @@ ORDER BY revenue DESC, source`,
         ],
       ),
       p(
-        'The string date is not an accident — it is what makes the table partitionable and cheap. ' +
+        'The string date is not an accident. It is what makes the table partitionable and cheap. ' +
         'Convert it when you need date maths (`PARSE_DATE(\'%Y%m%d\', event_date)`), but always ' +
         'filter on the raw string so pruning survives.',
       ),
       h('There is no session. You build one.'),
       p(
         'A session is a *pair*: `user_pseudo_id` plus the `ga_session_id` parameter. Neither is ' +
-        'unique alone — session ids are timestamps and collide across devices. Concatenate them.',
+        'unique alone. Session ids are timestamps and collide across devices. Concatenate them.',
       ),
       sql(
         `SELECT COUNT(DISTINCT CONCAT(user_pseudo_id, '.', CAST(ga_session_id AS STRING))) AS sessions,
@@ -383,7 +383,7 @@ WHERE event_date BETWEEN '20241201' AND '20241207'`,
         'In the real export, ga_session_id lives inside event_params',
         'This warehouse promotes `ga_session_id` and `ga_session_number` to top-level columns so ' +
         'you can learn sessionisation before you learn array-wrangling. In production you pull ' +
-        'them out of `event_params` with `value.int_value` — and every session query starts with ' +
+        'them out of `event_params` with `value.int_value`, and every session query starts with ' +
         'that extraction. Exercise 10.3 and the `ga4-sessionisation` lab do it the real way.',
       ),
       h('event_params: the key/value bag'),
@@ -393,9 +393,9 @@ WHERE event_date BETWEEN '20241201' AND '20241207'`,
         'the skill.',
       ),
       compare(
-        'One parameter — scalar subquery',
+        'One parameter, scalar subquery',
         "SELECT\n  (SELECT ep.value.string_value\n   FROM UNNEST(e.event_params) AS ep\n   WHERE ep.key = 'page_location') AS page,\n  COUNT(*) AS views\nFROM ga4_events e\nWHERE e.event_name = 'page_view'\nGROUP BY page",
-        'Several parameters — flatten and pivot',
+        'Several parameters, flatten and pivot',
         "SELECT e.event_timestamp,\n  MAX(CASE WHEN ep.key = 'page_location'\n           THEN ep.value.string_value END) AS page,\n  MAX(CASE WHEN ep.key = 'engagement_time_msec'\n           THEN ep.value.int_value END) AS engaged_ms\nFROM ga4_events e, UNNEST(e.event_params) AS ep\nGROUP BY e.event_timestamp",
         'The scalar subquery keeps one row per event and is clearer for one or two parameters. The flatten-and-pivot reads the array once and is faster when you need five. Both are correct; neither is always right.',
       ),
@@ -427,16 +427,16 @@ WHERE event_date BETWEEN '20241201' AND '20241207'`,
         'GA4 has no `channel` column. The Default Channel Group you see in the UI is a CASE ' +
         'ladder over source and medium that Google maintains and every company eventually ' +
         'overrides. Owning that ladder in SQL is what lets you match the definition your CMO ' +
-        'actually uses — and it is why your rebuild must always have an `ELSE`, so traffic can ' +
+        'actually uses: and it is why your rebuild must always have an `ELSE`, so traffic can ' +
         'never silently vanish.',
       ),
       h('Sessions, engagement and conversion, defined exactly'),
       list([
-        '**Session** — distinct `user_pseudo_id` + `ga_session_id`. Ends after 30 minutes idle, and resets at midnight in the property timezone.',
-        '**Engaged session** — lasted 10+ seconds, *or* had 2+ page views, *or* had a conversion. Any one of the three.',
-        '**Engagement rate** — engaged sessions ÷ sessions. Bounce rate is now just its complement.',
-        '**Conversion** — an event you flagged as a key event. It is a label you chose, not a fact about the data.',
-        '**Users** — distinct `user_pseudo_id`. Devices, not people.',
+        '**Session**, distinct `user_pseudo_id` + `ga_session_id`. Ends after 30 minutes idle, and resets at midnight in the property timezone.',
+        '**Engaged session**: lasted 10+ seconds, *or* had 2+ page views, *or* had a conversion. Any one of the three.',
+        '**Engagement rate**, engaged sessions ÷ sessions. Bounce rate is now just its complement.',
+        '**Conversion**, an event you flagged as a key event. It is a label you chose, not a fact about the data.',
+        '**Users**, distinct `user_pseudo_id`. Devices, not people.',
       ]),
       h('Why your SQL will still disagree with the UI by 1–3%'),
       list([
@@ -509,7 +509,7 @@ LIMIT 12`,
       prompt:
         'Change `value.string_value` to `value.int_value` and watch the column fill with NULLs ' +
         'instead of erroring. Then swap the scalar subquery for a comma-UNNEST and see the event ' +
-        'count multiply by thirteen. Both failures are silent — that is why you check.',
+        'count multiply by thirteen. Both failures are silent. That is why you check.',
       starter: `SELECT (SELECT ep.value.string_value FROM UNNEST(e.event_params) AS ep WHERE ep.key = 'page_location') AS page,
        COUNT(*) AS views,
        COUNT(DISTINCT e.user_pseudo_id) AS devices
@@ -525,12 +525,12 @@ LIMIT 15`,
       mcq('d12q1', 'What is the grain of the GA4 export?',
         ['One row per session', 'One row per user', 'One row per event', 'One row per day'],
         2,
-        'Everything else — sessions, users, channels, funnels — is derived from that grain at query time.'),
+        'Everything else (sessions, users, channels, funnels) is derived from that grain at query time.'),
       predict('d12q2', 'What does this return?',
         `SELECT COUNT(*) FROM ga4_events WHERE event_date = '2024-06-14'`,
         ['The events on 14 June', 'Zero rows', 'An error', 'Every event'],
         1,
-        '`event_date` is a STRING shaped `20240614`. The comparison is valid, matches nothing, and reports zero without complaint — the worst kind of failure.'),
+        '`event_date` is a STRING shaped `20240614`. The comparison is valid, matches nothing, and reports zero without complaint, the worst kind of failure.'),
       mcq('d12q3', 'A campaign that stopped running in March is credited with direct traffic in November. Why?',
         ['Attribution lag', 'The report used `traffic_source`, which is user-scoped and immutable',
           'GA4 is sampling', 'The campaign is still live'],
@@ -560,7 +560,7 @@ FROM ga4_events e, UNNEST(e.event_params) AS ep`,
           '`ga_session_id` is derived from a timestamp and collides across devices. Only the pair is unique.'),
         explain('d12a2', 'Why does this return NULL for every row?',
           `(SELECT ep.value.string_value FROM UNNEST(e.event_params) AS ep WHERE ep.key = 'engagement_time_msec')`,
-          ['The parameter does not exist', 'engagement_time_msec is an INT64 — read `value.int_value`',
+          ['The parameter does not exist', 'engagement_time_msec is an INT64. Read `value.int_value`',
             'UNNEST is wrong', 'The key needs quoting'],
           1,
           'The value STRUCT populates exactly one sub-field. Reading the wrong one is legal SQL and returns silent NULLs.'),
@@ -618,7 +618,7 @@ FROM per_session
 GROUP BY month, channel
 ORDER BY month, sessions DESC, channel`,
           ['Collapse events to one row per session before you group by anything else.',
-            'The session date is the first event\'s `event_date` — a session cannot start twice.',
+            'The session date is the first event\'s `event_date`. A session cannot start twice.',
             'PARSE_DATE turns the YYYYMMDD string into a real date; FORMAT_DATE gives you the month label.',
             'End the CASE ladder with ELSE so no traffic disappears.'],
           { orderMatters: true }),
@@ -647,14 +647,14 @@ HAVING stored_channel <> rebuilt_channel
 ORDER BY sessions DESC, stored_channel, rebuilt_channel`,
           ['The stored `session_key` is `user_pseudo_id` and `ga_session_id` joined by a dot.',
             'Apply the identical CASE ladder to the rebuild so the comparison is fair.',
-            'HAVING can filter on the grouping keys — keep only the pairs that disagree.',
+            'HAVING can filter on the grouping keys. Keep only the pairs that disagree.',
             'Look at the `source` on the stored side of the disagreeing rows before you write your explanation.'],
           {
             orderMatters: true,
             note:
               'Every disagreeing session is `internal-qa` traffic. The flattened table labels it ' +
               'Referral; the raw events carry the real medium the QA script simulated. Totals ' +
-              'reconcile exactly — 10,633 sessions either way — so a top-line check would have ' +
+              'reconcile exactly, 10,633 sessions either way, so a top-line check would have ' +
               'missed it entirely. Reconcile at the grain you report at, not at the total.',
           }),
       ],
@@ -678,7 +678,7 @@ ORDER BY sessions DESC, stored_channel, rebuilt_channel`,
       p(
         'Everything today follows one pattern: **decide the numerator, decide the denominator, ' +
         'decide the population, decide the window.** Change any of the four and the number ' +
-        'changes. Nobody is lying — they made a different choice and did not say so.',
+        'changes. Nobody is lying, they made a different choice and did not say so.',
       ),
       key(
         'When two dashboards disagree, the bug is almost never arithmetic. It is a denominator ' +
@@ -686,7 +686,7 @@ ORDER BY sessions DESC, stored_channel, rebuilt_channel`,
       ),
       h('Rate metrics: weight, always'),
       p(
-        'CTR, CPC, CPM, conversion rate, ROAS — all of them are ratios of sums, never averages of ' +
+        'CTR, CPC, CPM, conversion rate, ROAS. All of them are ratios of sums, never averages of ' +
         'ratios. Day 4 proved this; today you will feel it, because the numbers you produce go on ' +
         'a slide.',
       ),
@@ -724,13 +724,13 @@ ORDER BY cpm DESC`,
       ),
       h('ROAS: two numbers, one gap'),
       p(
-        'Platform-reported ROAS comes from the ad platform\'s own attribution — view-through ' +
+        'Platform-reported ROAS comes from the ad platform\'s own attribution, view-through ' +
         'windows, cross-device modelling, and a strong incentive to look good. Warehouse ROAS ' +
         'comes from your orders table. They will never match, and the *gap itself* is the ' +
         'interesting number.',
       ),
       list([
-        'Platform > warehouse: the platform is claiming conversions your data cannot see — view-throughs, modelled conversions, or double counting across platforms.',
+        'Platform > warehouse: the platform is claiming conversions your data cannot see: view-throughs, modelled conversions, or double counting across platforms.',
         'Warehouse > platform: your attribution is crediting the channel for orders it did not touch, or tracking is broken on the platform side.',
         'Both are normal. Track the ratio over time; a sudden move in it is a tracking incident, not a performance change.',
       ]),
@@ -744,7 +744,7 @@ ORDER BY cpm DESC`,
       table(
         ['Flavour', 'How', 'Trap'],
         [
-          ['Historical', 'Sum revenue to date per customer', 'Biased low — young customers have not had time to spend.'],
+          ['Historical', 'Sum revenue to date per customer', 'Biased low. Young customers have not had time to spend.'],
           ['Cohort-at-age', 'Revenue by month N, only cohorts old enough to have a month N', 'The only one that compares fairly. Fewer cohorts qualify as N grows.'],
           ['Predicted', 'Fit a retention curve and extrapolate', 'Honest only if you state the assumption and the horizon.'],
         ],
@@ -763,8 +763,8 @@ ORDER BY cpm DESC`,
         'improving, and *across* a row to see how one cohort decays.',
       ),
       list([
-        '**Classic retention** — active in exactly month N. Strict, spiky, honest.',
-        '**Rolling retention** — active in month N *or later*. Smoother, more flattering, and it can only be computed for the past.',
+        '**Classic retention**, active in exactly month N. Strict, spiky, honest.',
+        '**Rolling retention**, active in month N *or later*. Smoother, more flattering, and it can only be computed for the past.',
         '**Never divide by the wrong cohort size.** The denominator is the cohort at month 0, not the survivors of month N-1.',
       ]),
       h('Churn: logo, revenue, gross, net'),
@@ -772,7 +772,7 @@ ORDER BY cpm DESC`,
         ['Metric', 'Counts', 'What it hides'],
         [
           ['Logo churn', 'Customers lost ÷ customers at start', 'That the ones you lost were tiny.'],
-          ['Gross revenue churn', 'MRR lost ÷ MRR at start', 'Nothing — it is the floor. Always ≥ 0.'],
+          ['Gross revenue churn', 'MRR lost ÷ MRR at start', 'Nothing. It is the floor. Always ≥ 0.'],
           ['Net revenue retention', '(start − churn − contraction + expansion) ÷ start', 'That your logo count is shrinking. NRR above 100% with negative logo growth is a real and dangerous shape.'],
         ],
       ),
@@ -780,7 +780,7 @@ ORDER BY cpm DESC`,
       p(
         'Last month\'s MRR plus new plus expansion minus contraction minus churn plus ' +
         'reactivation equals this month\'s MRR. If it does not balance, one of your five buckets ' +
-        'is misclassifying somebody — usually a customer who cancelled and came back inside the ' +
+        'is misclassifying somebody, usually a customer who cancelled and came back inside the ' +
         'same month.',
       ),
       h('Funnels: any-order versus strict-order'),
@@ -799,7 +799,7 @@ ORDER BY cpm DESC`,
       ),
       key(
         'Every attribution model above is correlational. None of them establishes that the spend ' +
-        'caused the revenue. Only a holdout does — and knowing that is the difference between an ' +
+        'caused the revenue. Only a holdout does, and knowing that is the difference between an ' +
         'analyst and a dashboard.',
       ),
     ],
@@ -814,7 +814,7 @@ ORDER BY cpm DESC`,
     examples: [
       {
         title: 'CAC, blended and paid-only',
-        question: 'What did a customer cost us — and which number should go on the board slide?',
+        question: 'What did a customer cost us, and which number should go on the board slide?',
         sql: `WITH spend AS (
   SELECT SUM(spend) AS paid_spend FROM ad_spend_daily
 ), new_customers AS (
@@ -855,7 +855,7 @@ WHERE DATE_DIFF(a.order_month, c.cohort_month, MONTH) BETWEEN 0 AND 5
 GROUP BY cohort, month_index, s.cohort_size
 ORDER BY cohort, month_index`,
         takeaway:
-          'The denominator is `cohort_size` — the cohort at month 0 — on every single row. ' +
+          'The denominator is `cohort_size`, the cohort at month 0, on every single row. ' +
           'Dividing by last month\'s survivors instead produces a chart that only ever goes up.',
       },
       {
@@ -877,7 +877,7 @@ ORDER BY revenue DESC`,
     ],
     playground: {
       prompt:
-        'Take the CAC query and change the paid-channel list — add Email, then remove Display. ' +
+        'Take the CAC query and change the paid-channel list. Add Email, then remove Display. ' +
         'Watch paid-only CAC swing by more than $50 without a dollar of spend changing. That ' +
         'swing is the whole lesson of the day.',
       starter: `SELECT c.first_touch_channel AS channel,
@@ -894,7 +894,7 @@ ORDER BY revenue_12m DESC`,
       '11.23', '11.24', '11.26', '11.27', '11.28', '11.29'],
     quiz: [
       mcq('d13q1', 'Blended CAC is $192 and paid-only CAC is $352. Which is wrong?',
-        ['Blended', 'Paid-only', 'Neither — they have different denominators', 'Both'],
+        ['Blended', 'Paid-only', 'Neither. They have different denominators', 'Both'],
         2,
         'Same numerator, different populations. The error is quoting one without naming it, not computing either.'),
       predict('d13q2', 'Cohort retention is computed as active ÷ previous month\'s actives. What shape does the chart have?',
@@ -905,7 +905,7 @@ ORDER BY revenue_12m DESC`,
         'Survivors are the loyal ones, so month-on-month survival keeps rising. The denominator must be the cohort at month 0 throughout.'),
       mcq('d13q3', 'Platform-reported ROAS is 4.1 and warehouse ROAS is 2.8. What is the first thing you check?',
         ['The orders table is broken', 'The platform\'s attribution window and view-through settings',
-          'Your SQL', 'Nothing — platforms are always right'],
+          'Your SQL', 'Nothing. Platforms are always right'],
         1,
         'A platform claiming more than your warehouse can see usually means view-through credit or a long click window. Check the setting before you accuse anyone\'s data.'),
       mcq('d13q4', 'NRR is 112% and the logo count fell 6% this quarter. What is happening?',
@@ -928,14 +928,14 @@ ORDER BY revenue_12m DESC`,
           'Only a fixed age removes the bias where older cohorts have had longer to spend. Cohorts too young to have reached that age must be excluded, not zero-filled.'),
         explain('d13a2', 'What does this compute, and what is its flaw?',
           `SAFE_DIVIDE(SUM(gross_revenue), COUNT(DISTINCT customer_id))`,
-          ['Historical revenue per customer — biased low because recent signups have had less time',
+          ['Historical revenue per customer. Biased low because recent signups have had less time',
             'True LTV',
             'AOV',
             'Predicted LTV'],
           0,
           'It is a perfectly good number as long as you call it "revenue per customer to date" and never call it LTV.'),
         mcq('d13a3', 'First-touch gives Paid Social $187k; last-touch gives it $91k. What do you report?',
-          ['First-touch — it found the customer', 'Last-touch — it closed the sale',
+          ['First-touch: it found the customer', 'Last-touch, it closed the sale',
             'Both, plus the spread, and say the model is a choice', 'The average of the two'],
           2,
           'The spread is the finding. Picking one silently is how a channel gets defunded on the strength of a formatting decision.'),
@@ -998,7 +998,7 @@ ORDER BY sort_key`,
           {
             orderMatters: true,
             note:
-              'Spend rose 13.5% and revenue rose 22.2%, so blended ROAS improved — but new ' +
+              'Spend rose 13.5% and revenue rose 22.2%, so blended ROAS improved, but new ' +
               'customers only rose 6.7%, so blended CAC rose too. The quarter was good for ' +
               'revenue and mediocre for acquisition, and only the two together tell you that.',
           }),
@@ -1029,7 +1029,7 @@ ORDER BY ltv_to_cac DESC, s.channel`,
           ['Three CTEs at three different grains, joined on the channel label.',
             'CAC is that channel\'s spend over the customers whose *first* touch was that channel.',
             'Payback months is CAC divided by monthly revenue per customer, which simplifies to 12 × spend ÷ revenue.',
-            'The revenue here covers twelve months only — say so when you present it.'],
+            'The revenue here covers twelve months only, say so when you present it.'],
           {
             orderMatters: true,
             note:
@@ -1064,7 +1064,7 @@ ORDER BY ltv_to_cac DESC, s.channel`,
       p(
         'Before any query, answer out loud: **what is one row of my answer?** One row per ' +
         'campaign? Per campaign-day? Per customer? Almost every wrong number in analytics is a ' +
-        'grain mistake wearing a costume — a fan-out that double-counted revenue, an average of ' +
+        'grain mistake wearing a costume: a fan-out that double-counted revenue, an average of ' +
         'averages, a cohort divided by the wrong denominator.',
       ),
       key(
@@ -1086,7 +1086,7 @@ ORDER BY ltv_to_cac DESC, s.channel`,
       h('Simpson\'s paradox is not a curiosity'),
       p(
         'A channel can lose on every device and still win overall, purely because of the mix. ' +
-        'Whenever you compare two segments, ask what else differs between them — and if the ' +
+        'Whenever you compare two segments, ask what else differs between them, and if the ' +
         'headline flips when you split, the split is the story.',
       ),
       compare(
@@ -1105,7 +1105,7 @@ ORDER BY ltv_to_cac DESC, s.channel`,
       call(
         'info',
         'A rule of thumb, not a law',
-        'Below roughly 100 trials, treat a rate as a rumour. Below 30, do not report it at all — ' +
+        'Below roughly 100 trials, treat a rate as a rumour. Below 30, do not report it at all, ' +
         'report the counts. And when you do apply a threshold, say what it was.',
       ),
       h('Directionally useful, numerically wrong'),
@@ -1118,7 +1118,7 @@ ORDER BY ltv_to_cac DESC, s.channel`,
       table(
         ['Claim', 'Supported by attribution?'],
         [
-          ['Paid Social drove more first touches than Paid Search', 'Yes — it is a count of touches.'],
+          ['Paid Social drove more first touches than Paid Search', 'Yes. It is a count of touches.'],
           ['Paid Social generated $187k of revenue', 'No. It received $187k of *allocated* credit under one rule.'],
           ['Cutting Paid Social would cost us $187k', 'No. That requires a holdout, or at minimum a geo test.'],
           ['Paid Social\'s share of first touches fell 20% this quarter', 'Yes, if the model did not change.'],
@@ -1141,12 +1141,12 @@ ORDER BY ltv_to_cac DESC, s.channel`,
       ),
       key(
         'The analyst\'s job is not to produce numbers. It is to produce numbers somebody can act ' +
-        'on without being lied to — including by accident.',
+        'on without being lied to, including by accident.',
       ),
       h('Tomorrow: the capstone'),
       p(
         'You become Growth Analyst at Northbeam, a mid-market SaaS and e-commerce company running ' +
-        'on this exact warehouse. One hundred business questions across eight sections — data ' +
+        'on this exact warehouse. One hundred business questions across eight sections, data ' +
         'quality, acquisition, funnel, revenue, customers, subscriptions, attribution, and the ' +
         'board deck. Every one of them has a "so what", because that is the part of the job that ' +
         'is not SQL.',
@@ -1163,7 +1163,7 @@ ORDER BY ltv_to_cac DESC, s.channel`,
     examples: [
       {
         title: 'The mix, not the channels',
-        question: 'Which paid channel has the higher AOV — and does the answer hold per device?',
+        question: 'Which paid channel has the higher AOV, and does the answer hold per device?',
         sql: `SELECT device, channel,
        COUNT(*) AS orders,
        ROUND(SUM(gross_revenue), 2) AS revenue,
@@ -1175,7 +1175,7 @@ ORDER BY device, channel`,
         takeaway:
           'Read the pairs within each device before you read the totals. Whenever a ranking is ' +
           'consistent inside every segment but reverses in aggregate, you have found the mix ' +
-          'effect — and the mix is what you should be talking about.',
+          'effect, and the mix is what you should be talking about.',
       },
       {
         title: 'Guard the rate with the volume',
@@ -1191,7 +1191,7 @@ ORDER BY cvr_pct DESC
 LIMIT 10`,
         takeaway:
           'Drop the HAVING and the leaderboard fills with campaigns nobody has heard of. The ' +
-          'threshold is a judgement call, which is exactly why it belongs in the output — ' +
+          'threshold is a judgement call, which is exactly why it belongs in the output, ' +
           '`clicks` sits next to `cvr_pct` so the reader can raise the bar themselves.',
       },
       {
@@ -1205,7 +1205,7 @@ LIMIT 10`,
   (SELECT ROUND(SUM(ecommerce.purchase_revenue), 2)
    FROM ga4_events WHERE event_name = 'purchase') AS from_ga4`,
         takeaway:
-          'Three numbers, three definitions, three legitimate reasons to differ — duplicated ' +
+          'Three numbers, three definitions, three legitimate reasons to differ, duplicated ' +
           'orders inflate the line-item path, discounts and shipping separate orders from items, ' +
           'and GA4 never sees an offline order. Publish the one you can explain.',
       },
@@ -1245,7 +1245,7 @@ ORDER BY revenue DESC`,
         'Allocation is not causation. Only the third sentence is defensible without an experiment.'),
       mcq('d14q4', 'Revenue from `orders` and from `order_items` differ by 3%. What do you do?',
         ['Use the bigger one', 'Average them',
-          'Find the cause — duplicates, discounts, shipping — and then choose', 'Report both and let the reader decide'],
+          'Find the cause, duplicates, discounts, shipping, and then choose', 'Report both and let the reader decide'],
         2,
         'An unexplained gap is a bug you have not found yet. Explain it first; then a single, defended number is worth more than two hedged ones.'),
       order('d14q5', 'Order the steps of publishing a number you will be asked about.',
@@ -1259,13 +1259,13 @@ ORDER BY revenue DESC`,
       timeLimitSec: 1500,
       questions: [
         mcq('d14a1', 'Paid Search beats Paid Social on AOV for every device, but loses overall. What happened?',
-          ['A bug', 'Simpson\'s paradox — the device mix differs between the channels',
+          ['A bug', 'Simpson\'s paradox, the device mix differs between the channels',
             'Rounding', 'The data is wrong'],
           1,
           'The aggregate is describing the mix, not the channels. The segmented view is the true comparison and the mix itself is a finding.'),
         explain('d14a2', 'A stakeholder asks for "conversion rate". What do you ask back?',
           `SAFE_DIVIDE(conversions, ???)`,
-          ['Nothing — use sessions', 'Which denominator: sessions, users, new users or engaged sessions?',
+          ['Nothing. Use sessions', 'Which denominator: sessions, users, new users or engaged sessions?',
             'Use users', 'Use clicks'],
           1,
           'All four are defensible and they differ by multiples. Choosing silently means the next person to compute it will disagree with you.'),
@@ -1290,7 +1290,7 @@ ORDER BY revenue DESC`,
       'Write the sentence you would use to tell a CMO that the number they love is directionally useful and numerically wrong.',
     ],
     project: {
-      title: 'Capstone kickoff — the data-quality memo and the attribution spread',
+      title: 'Capstone kickoff, the data-quality memo and the attribution spread',
       brief:
         'Before you answer a hundred business questions on this warehouse, audit it. Produce the ' +
         'data-quality memo you would send on your first day, and the attribution comparison that ' +
@@ -1316,20 +1316,20 @@ UNION ALL
 SELECT 'customer cities needing normalisation', COUNT(*) FROM customers WHERE city <> INITCAP(TRIM(city))
 ORDER BY rows_affected DESC, check_name`,
           ['A UNION ALL of one-row checks; the first branch names the output columns.',
-            'An orphan is an id with no matching row in any of the three campaign tables — NOT EXISTS three times.',
+            'An orphan is an id with no matching row in any of the three campaign tables, NOT EXISTS three times.',
             'A city is messy if it differs from its own trimmed, title-cased form.',
             'None of these are bugs to fix. They are facts to know before you quote a number.'],
           {
             orderMatters: true,
             note:
               'Every one of these is deliberate, and every one of them will change a number ' +
-              'somebody asks you for. The 391 negative-revenue rows are refunds — include them ' +
+              'somebody asks you for. The 391 negative-revenue rows are refunds, include them ' +
               'and revenue is net, exclude them and it is gross. The 26 duplicate order ids ' +
               'inflate any count that joins through orders. Knowing the list is what lets you ' +
               'answer "why is your number different?" in one sentence.',
           }),
         task('attribution-spread', 'Six attribution models, side by side',
-          'Return `channel` plus `first_touch`, `last_touch`, `last_non_direct`, `linear`, `time_decay` and `position_based` — the revenue each model allocates to each channel across all converting journeys. Order by last-touch credit descending.',
+          'Return `channel` plus `first_touch`, `last_touch`, `last_non_direct`, `linear`, `time_decay` and `position_based`, the revenue each model allocates to each channel across all converting journeys. Order by last-touch credit descending.',
           `WITH t AS (
   SELECT user_pseudo_id AS uid, channel, touch_position AS pos, journey_length AS n,
          conversion_value AS v, touch_ts,
@@ -1364,14 +1364,14 @@ FROM normalised
 GROUP BY channel
 ORDER BY last_touch DESC, channel`,
           ['Every model is a weight per touch; compute all six weights in one CTE, then aggregate once.',
-            'The conversion timestamp is the journey\'s last touch — a window MAX over the journey.',
+            'The conversion timestamp is the journey\'s last touch, a window MAX over the journey.',
             'Last-non-direct needs the highest non-Direct position in the journey, falling back to the last touch when the whole journey is Direct.',
             'Time-decay weights must be normalised to sum to 1 within each journey, or you will allocate more revenue than exists.',
             'Position-based is 40/20/40, with special cases for journeys of length 1 and 2.'],
           {
             orderMatters: true,
             note:
-              'Direct receives $174k under last-touch and $9.8k under last-non-direct — an ' +
+              'Direct receives $174k under last-touch and $9.8k under last-non-direct, an ' +
               'eighteen-fold swing driven entirely by a rule, not by data. Paid Social is worth ' +
               '$187k on first touch and $91k on last. Present this table before anyone picks a ' +
               'model, and the conversation becomes about which rule fits the business rather ' +

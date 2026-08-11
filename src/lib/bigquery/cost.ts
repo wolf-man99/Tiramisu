@@ -8,7 +8,7 @@ import { findTable, type TableDef } from '../warehouse/ddl';
  *
  * It is deliberately not a SQL parser. It reads the query as text well enough to spot
  * which tables are referenced, whether `SELECT *` is in play, which columns are named,
- * and whether a partition filter will prune — the four things that move the bill.
+ * and whether a partition filter will prune, the four things that move the bill.
  */
 
 const BYTES_PER_TB = 1_099_511_627_776;
@@ -56,7 +56,7 @@ function referencedTables(sql: string): TableDef[] {
 
 /** Does the query select every column of some table (a bare or qualified `*`)? */
 function hasStar(sql: string): boolean {
-  // SELECT *  or  SELECT alias.*  — but not COUNT(*).
+  // SELECT *  or  SELECT alias.*, but not COUNT(*).
   return /select\s+(?:[a-z_][a-z0-9_]*\.)?\*/i.test(sql.replace(/count\s*\(\s*\*\s*\)/gi, ''));
 }
 
@@ -95,7 +95,7 @@ function partitionPrune(t: TableDef, sql: string): { pruned: boolean; factor: nu
   const ineq = new RegExp(`\\b${col}\\b\\s*[<>]=?\\s*'[^']+'`, 'i');
   if (ineq.test(lower)) return { pruned: true, factor: 0.5, note: 'Partially pruned by a date bound.' };
 
-  return { pruned: false, factor: 1, note: `No filter on \`${col}\` — the whole table is scanned.` };
+  return { pruned: false, factor: 1, note: `No filter on \`${col}\`. The whole table is scanned.` };
 }
 
 function dayspan(a: string, b: string): number {
