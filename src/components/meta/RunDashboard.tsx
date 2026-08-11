@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { ChevronDown, Plus, SlidersHorizontal, X } from 'lucide-react';
 import {
-  DEMO_BRAND, DEMO_CAMPAIGNS, DEMO_TOTALS, NEW_CUSTOMER_RATE, inr,
-  cpm, cpc, ctr, costPerResult, campaignRoas, estimateReach, funnelFor,
+  DEMO_BRAND, DEMO_CAMPAIGNS, DEMO_TOTALS, DEMO_ADSETS, DEMO_ADS, NEW_CUSTOMER_RATE, inr,
+  cpm, cpc, ctr, costPerResult, campaignRoas, estimateReach, funnelFor, scaleTotals,
   aggregateRange, rangeDayCount, DEMO_DAILY, LATEST_DATE, EARLIEST_DATE, isoDaysBefore,
   type DemoCampaign, type MetricTotals, type FunnelCounts,
 } from '@/lib/simulator/demo-account';
@@ -17,17 +17,34 @@ import {
  * muscle memory for the tool they'll actually use, inside a page that never claims
  * to be the genuine Meta product (see the "Educational simulation" badge below).
  *
- * Every number renders from demo-account.ts's raw counts and daily series — nothing
- * here is a separately-typed, driftable duplicate. Date ranges resum from DEMO_DAILY,
- * created campaigns and column choices persist to localStorage.
+ * Reused on the marketing homepage as the "try it before you sign up" preview —
+ * `storageScope` namespaces localStorage so a visitor's play-around campaigns/
+ * columns there never bleed into their real signed-in Run dashboard state.
  */
 
-const NAV = ['Campaigns', 'Ad sets', 'Ads', 'Audiences', 'Creative', 'Reporting'] as const;
+const NAV_ITEMS = [
+  { key: 'campaigns', label: 'Campaigns' },
+  { key: 'adsets', label: 'Ad sets' },
+  { key: 'ads', label: 'Ads' },
+  { key: 'audiences', label: 'Audiences' },
+  { key: 'creative', label: 'Creative' },
+  { key: 'reporting', label: 'Reporting' },
+] as const;
+type NavKey = (typeof NAV_ITEMS)[number]['key'];
+const DATA_LEVELS = new Set<NavKey>(['campaigns', 'adsets', 'ads']);
+const LEVEL_TITLE: Record<NavKey, string> = {
+  campaigns: 'Campaigns', adsets: 'Ad sets', ads: 'Ads',
+  audiences: 'Audiences', creative: 'Creative', reporting: 'Reporting',
+};
+const LEVEL_NAME_HEADER: Record<string, string> = { campaigns: 'Campaign', adsets: 'Ad set', ads: 'Ad' };
+const NOT_BUILT_COPY: Record<string, string> = {
+  audiences: 'Audience definitions — saved audiences, lookalikes, custom audiences — aren’t modeled in this simulator. The course is about the Campaign → Ad set → Ad decision loop above, not audience-list management.',
+  creative: 'There’s no separate creative library here. Ad-level creative format (image, video, carousel, collection) already shows up as each ad’s subtitle in the Ads tab.',
+  reporting: 'Custom report building isn’t modeled here — every metric across Campaigns, Ad sets, and Ads above is already a live report of the account for whichever date range you pick.',
+};
+
 const FILTERS = ['All', 'Prospecting', 'Retargeting', 'Catalog'] as const;
 type Filter = (typeof FILTERS)[number];
-
-const CAMPAIGNS_KEY = 'tiramisu:meta-run:campaigns:v1';
-const COLUMNS_KEY = 'tiramisu:meta-run:columns:v1';
 
 function pct(n: number, digits = 2): string {
   return `${n.toFixed(digits)}%`;
@@ -70,11 +87,29 @@ function rangeReach(c: DemoCampaign, from: string, to: string, t: MetricTotals, 
 
 // ──────────────────────────────────────────────────────────────── columns ──
 
+/** A campaign-level row: the raw campaign plus its range totals. */
 interface Row {
   c: DemoCampaign;
   t: MetricTotals;
   reach: number;
   funnel: FunnelCounts;
+}
+
+/** A table row at whichever level is on screen (Campaign / Ad set / Ad) — the
+ *  campaign-only fields (delivery, bid strategy, budget) are pre-rendered to text
+ *  here so the same column renderers work at every level. */
+interface DisplayRow {
+  id: string;
+  name: string;
+  subtitle: string;
+  filterType: DemoCampaign['type'];
+  delivery: DemoCampaign['delivery'];
+  bidStrategyText: string;
+  budgetText: string;
+  t: MetricTotals;
+  reach: number;
+  funnel: FunnelCounts;
+  highlight?: boolean;
 }
 
 interface ColumnDef {
@@ -83,13 +118,13 @@ interface ColumnDef {
   group: 'Performance' | 'Funnel';
   defaultOn: boolean;
   numeric: boolean;
-  render: (r: Row) => string;
+  render: (r: DisplayRow) => string;
 }
 
 const COLUMNS: ColumnDef[] = [
-  { id: 'delivery', label: 'Delivery', group: 'Performance', defaultOn: true, numeric: false, render: (r) => r.c.delivery },
-  { id: 'bidStrategy', label: 'Bid strategy', group: 'Performance', defaultOn: true, numeric: false, render: (r) => (r.c.bidStrategy === 'Cost per result goal' ? `Cost per result goal · ${inr(r.c.costPerResultGoal ?? 0)}` : r.c.bidStrategy) },
-  { id: 'budget', label: 'Budget', group: 'Performance', defaultOn: true, numeric: true, render: (r) => `Daily · ${inr(r.c.dailyBudget)}` },
+  { id: 'delivery', label: 'Delivery', group: 'Performance', defaultOn: true, numeric: false, render: (r) => r.delivery },
+  { id: 'bidStrategy', label: 'Bid strategy', group: 'Performance', defaultOn: true, numeric: false, render: (r) => r.bidStrategyText },
+  { id: 'budget', label: 'Budget', group: 'Performance', defaultOn: true, numeric: true, render: (r) => r.budgetText },
   { id: 'results', label: 'Results', group: 'Performance', defaultOn: true, numeric: true, render: (r) => num(r.t.purchases) },
   { id: 'reach', label: 'Reach', group: 'Performance', defaultOn: true, numeric: true, render: (r) => num(r.reach) },
   { id: 'impressions', label: 'Impressions', group: 'Performance', defaultOn: true, numeric: true, render: (r) => num(r.t.impressions) },
@@ -111,6 +146,17 @@ const COLUMNS: ColumnDef[] = [
 ];
 const DEFAULT_COLUMNS = COLUMNS.filter((c) => c.defaultOn).map((c) => c.id);
 const FOOTER_SKIP = new Set(['delivery', 'bidStrategy', 'budget']);
+
+function campaignRowToDisplay(r: Row): DisplayRow {
+  return {
+    id: r.c.name, name: r.c.name, subtitle: r.c.type, filterType: r.c.type,
+    delivery: r.c.delivery,
+    bidStrategyText: r.c.bidStrategy === 'Cost per result goal' ? `Cost per result goal · ${inr(r.c.costPerResultGoal ?? 0)}` : r.c.bidStrategy,
+    budgetText: `Daily · ${inr(r.c.dailyBudget)}`,
+    t: r.t, reach: r.reach, funnel: r.funnel,
+    highlight: r.c.delivery === 'Learning',
+  };
+}
 
 // ─────────────────────────────────────────────────────── create campaign ──
 
@@ -149,7 +195,11 @@ function buildDayOneCampaign(input: CreateCampaignInput): DemoCampaign {
 
 // ──────────────────────────────────────────────────────────────── component ──
 
-export function RunDashboard() {
+export function RunDashboard({ storageScope = 'run' }: { storageScope?: string } = {}) {
+  const campaignsKey = `tiramisu:meta-${storageScope}:campaigns:v1`;
+  const columnsKey = `tiramisu:meta-${storageScope}:columns:v1`;
+
+  const [nav, setNav] = useState<NavKey>('campaigns');
   const [filter, setFilter] = useState<Filter>('All');
 
   const [rangeKey, setRangeKey] = useState<RangeKey>('30d');
@@ -166,21 +216,23 @@ export function RunDashboard() {
 
   useEffect(() => {
     try {
-      const rawCols = localStorage.getItem(COLUMNS_KEY);
+      const rawCols = localStorage.getItem(columnsKey);
       if (rawCols) setEnabledColumns(JSON.parse(rawCols));
-      const rawCamp = localStorage.getItem(CAMPAIGNS_KEY);
+      const rawCamp = localStorage.getItem(campaignsKey);
       if (rawCamp) setCustomCampaigns(JSON.parse(rawCamp));
     } catch {
       // localStorage unavailable or corrupt — fall back to defaults, no need to surface an error
     }
     setHydrated(true);
+    // storageScope is fixed for the lifetime of a given mount (campaigns vs. marketing preview)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
-    if (hydrated) localStorage.setItem(COLUMNS_KEY, JSON.stringify(enabledColumns));
-  }, [enabledColumns, hydrated]);
+    if (hydrated) localStorage.setItem(columnsKey, JSON.stringify(enabledColumns));
+  }, [enabledColumns, hydrated, columnsKey]);
   useEffect(() => {
-    if (hydrated) localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(customCampaigns));
-  }, [customCampaigns, hydrated]);
+    if (hydrated) localStorage.setItem(campaignsKey, JSON.stringify(customCampaigns));
+  }, [customCampaigns, hydrated, campaignsKey]);
 
   const { from, to } = useMemo(() => {
     if (rangeKey === 'custom') return { from: customFrom, to: customTo };
@@ -198,7 +250,39 @@ export function RunDashboard() {
       return { c, t, reach, funnel };
     });
   }, [customCampaigns, from, to, rangeDays]);
-  const rows = allRows.filter((r) => filter === 'All' || r.c.type === filter);
+
+  const campaignDisplayRows = useMemo(() => allRows.map(campaignRowToDisplay), [allRows]);
+  const adSetDisplayRows = useMemo<DisplayRow[]>(() => {
+    return DEMO_ADSETS.flatMap((as) => {
+      const parent = campaignDisplayRows.find((r) => r.id === as.campaignName);
+      if (!parent) return [];
+      const t = scaleTotals(parent.t, as.share);
+      const reach = Math.round(parent.reach * as.share);
+      const funnel = funnelFor(parent.filterType, t.purchases, t.linkClicks);
+      return [{
+        id: as.id, name: as.name, subtitle: as.campaignName, filterType: parent.filterType,
+        delivery: as.delivery, bidStrategyText: parent.bidStrategyText, budgetText: 'Uses campaign budget',
+        t, reach, funnel,
+      }];
+    });
+  }, [campaignDisplayRows]);
+  const adDisplayRows = useMemo<DisplayRow[]>(() => {
+    return DEMO_ADS.flatMap((ad) => {
+      const parent = adSetDisplayRows.find((r) => r.id === ad.adSetId);
+      if (!parent) return [];
+      const t = scaleTotals(parent.t, ad.share);
+      const reach = Math.round(parent.reach * ad.share);
+      const funnel = funnelFor(parent.filterType, t.purchases, t.linkClicks);
+      return [{
+        id: ad.id, name: ad.name, subtitle: ad.format, filterType: parent.filterType,
+        delivery: ad.delivery, bidStrategyText: parent.bidStrategyText, budgetText: 'Uses campaign budget',
+        t, reach, funnel,
+      }];
+    });
+  }, [adSetDisplayRows]);
+
+  const levelRows = nav === 'campaigns' ? campaignDisplayRows : nav === 'adsets' ? adSetDisplayRows : nav === 'ads' ? adDisplayRows : [];
+  const rows = levelRows.filter((r) => filter === 'All' || r.filterType === filter);
   const visibleColumns = COLUMNS.filter((col) => enabledColumns.includes(col.id));
 
   const kpiSpend = allRows.reduce((n, r) => n + r.t.spend, 0);
@@ -218,7 +302,10 @@ export function RunDashboard() {
     addToCart: a.addToCart + r.funnel.addToCart,
     checkoutInitiated: a.checkoutInitiated + r.funnel.checkoutInitiated,
   }), { landingPageViews: 0, addToCart: 0, checkoutInitiated: 0 });
-  const footerRow: Row = { c: rows[0]?.c ?? DEMO_CAMPAIGNS[0], t: footerTotals, reach: footerReach, funnel: footerFunnel };
+  const footerRow: DisplayRow = {
+    id: 'footer', name: '', subtitle: '', filterType: 'Prospecting', delivery: 'Active',
+    bidStrategyText: '', budgetText: '', t: footerTotals, reach: footerReach, funnel: footerFunnel,
+  };
 
   function toggleColumn(id: string) {
     setEnabledColumns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -234,11 +321,17 @@ export function RunDashboard() {
           {DEMO_BRAND.name}
         </div>
         <nav>
-          {NAV.map((item) => (
-            <a key={item} className={item === 'Campaigns' ? 'mb-nav-item mb-nav-on' : 'mb-nav-item'} aria-current={item === 'Campaigns' ? 'page' : undefined}>
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={item.key === nav ? 'mb-nav-item mb-nav-on' : 'mb-nav-item'}
+              aria-current={item.key === nav ? 'page' : undefined}
+              onClick={() => setNav(item.key)}
+            >
               <span className="mb-nav-dot" aria-hidden />
-              {item}
-            </a>
+              {item.label}
+            </button>
           ))}
         </nav>
       </aside>
@@ -246,7 +339,7 @@ export function RunDashboard() {
       <div className="mb-main">
         <div className="mb-topbar">
           <div>
-            <h1>Campaigns</h1>
+            <h1>{LEVEL_TITLE[nav]}</h1>
             <p className="mb-breadcrumb">{DEMO_BRAND.name} · {DEMO_BRAND.category}</p>
           </div>
           <div className="mb-topbar-right">
@@ -292,86 +385,97 @@ export function RunDashboard() {
           <Kpi label="Purchase ROAS" value={kpiSpend > 0 ? `${kpiRoas.toFixed(2)}x` : '–'} />
         </div>
 
-        <div className="mb-toolbar">
-          <div className="mb-filters">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                aria-pressed={filter === f}
-                onClick={() => setFilter(f)}
-                className={filter === f ? 'mb-filter mb-filter-on' : 'mb-filter'}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-          <div className="mb-actions">
-            <div className="mb-cols-wrap">
-              <button type="button" className="mb-toolbtn" onClick={() => { setRangeOpen(false); setColumnsOpen((o) => !o); }}>
-                <SlidersHorizontal size={13} /> Columns
-              </button>
-              {columnsOpen && (
-                <div className="mb-cols-panel">
-                  <div className="mb-cols-head">
-                    <span>Customize columns</span>
-                    <button type="button" className="mb-cols-reset" onClick={() => setEnabledColumns(DEFAULT_COLUMNS)}>Reset to default</button>
-                  </div>
-                  {(['Performance', 'Funnel'] as const).map((group) => (
-                    <div key={group} className="mb-cols-group">
-                      <div className="mb-cols-group-label">{group}</div>
-                      {COLUMNS.filter((c) => c.group === group).map((c) => (
-                        <label key={c.id} className="mb-cols-item">
-                          <input type="checkbox" checked={enabledColumns.includes(c.id)} onChange={() => toggleColumn(c.id)} />
-                          {c.label}
-                        </label>
+        {DATA_LEVELS.has(nav) ? (
+          <>
+            <div className="mb-toolbar">
+              <div className="mb-filters">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    aria-pressed={filter === f}
+                    onClick={() => setFilter(f)}
+                    className={filter === f ? 'mb-filter mb-filter-on' : 'mb-filter'}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+              <div className="mb-actions">
+                <div className="mb-cols-wrap">
+                  <button type="button" className="mb-toolbtn" onClick={() => { setRangeOpen(false); setColumnsOpen((o) => !o); }}>
+                    <SlidersHorizontal size={13} /> Columns
+                  </button>
+                  {columnsOpen && (
+                    <div className="mb-cols-panel">
+                      <div className="mb-cols-head">
+                        <span>Customize columns</span>
+                        <button type="button" className="mb-cols-reset" onClick={() => setEnabledColumns(DEFAULT_COLUMNS)}>Reset to default</button>
+                      </div>
+                      {(['Performance', 'Funnel'] as const).map((group) => (
+                        <div key={group} className="mb-cols-group">
+                          <div className="mb-cols-group-label">{group}</div>
+                          {COLUMNS.filter((c) => c.group === group).map((c) => (
+                            <label key={c.id} className="mb-cols-item">
+                              <input type="checkbox" checked={enabledColumns.includes(c.id)} onChange={() => toggleColumn(c.id)} />
+                              {c.label}
+                            </label>
+                          ))}
+                        </div>
                       ))}
+                      <button type="button" className="mb-btn-primary mb-cols-done" onClick={() => setColumnsOpen(false)}>Done</button>
                     </div>
-                  ))}
-                  <button type="button" className="mb-btn-primary mb-cols-done" onClick={() => setColumnsOpen(false)}>Done</button>
+                  )}
                 </div>
-              )}
+                {nav === 'campaigns' && (
+                  <button type="button" className="mb-btn-primary" onClick={() => setCreateOpen(true)}>
+                    <Plus size={14} /> Create
+                  </button>
+                )}
+              </div>
             </div>
-            <button type="button" className="mb-btn-primary" onClick={() => setCreateOpen(true)}>
-              <Plus size={14} /> Create
-            </button>
+
+            <div className="mb-table-wrap">
+              <table className="mb-table">
+                <thead>
+                  <tr>
+                    <th className="mb-col-toggle" aria-label="Delivery on/off" />
+                    <th>{LEVEL_NAME_HEADER[nav]}</th>
+                    {visibleColumns.map((col) => (
+                      <th key={col.id} className={col.numeric ? 'num' : undefined}>{col.label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => <TableRow key={r.id} row={r} columns={visibleColumns} />)}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={2}>{filter === 'All' ? `All ${LEVEL_TITLE[nav].toLowerCase()}` : `${filter} ${LEVEL_TITLE[nav].toLowerCase()}`}</td>
+                    {visibleColumns.map((col) => (
+                      <td key={col.id} className={col.numeric ? 'num' : undefined}>
+                        {FOOTER_SKIP.has(col.id) ? '' : col.render(footerRow)}
+                      </td>
+                    ))}
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <p className="mb-footnote">
+              A fictional account built for teaching. These are not real Meta results and not
+              performance benchmarks. Cost per result in the table is spend ÷ purchases; the
+              account-level Cost per result KPI at the top is cost per <em>new customer</em> instead,
+              which is why the two numbers don&apos;t match — the same gap the SQL course teaches you
+              to notice, holding across whatever date range or level (campaign, ad set, ad) you view.
+            </p>
+          </>
+        ) : (
+          <div className="mb-notbuilt">
+            <div className="mb-notbuilt-title">Not part of this simulator</div>
+            <p>{NOT_BUILT_COPY[nav]}</p>
           </div>
-        </div>
-
-        <div className="mb-table-wrap">
-          <table className="mb-table">
-            <thead>
-              <tr>
-                <th className="mb-col-toggle" aria-label="Delivery on/off" />
-                <th>Campaign</th>
-                {visibleColumns.map((col) => (
-                  <th key={col.id} className={col.numeric ? 'num' : undefined}>{col.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => <CampaignRow key={r.c.name} row={r} columns={visibleColumns} />)}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={2}>{filter === 'All' ? 'All campaigns' : `${filter} campaigns`}</td>
-                {visibleColumns.map((col) => (
-                  <td key={col.id} className={col.numeric ? 'num' : undefined}>
-                    {FOOTER_SKIP.has(col.id) ? '' : col.render(footerRow)}
-                  </td>
-                ))}
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <p className="mb-footnote">
-          A fictional account built for teaching. These are not real Meta results and not
-          performance benchmarks. Cost per result in the table is spend ÷ purchases; the
-          account-level Cost per result KPI at the top is cost per <em>new customer</em> instead,
-          which is why the two numbers don&apos;t match — the same gap the SQL course teaches you
-          to notice, holding across whatever date range you pick above.
-        </p>
+        )}
       </div>
 
       {createOpen && <CreateCampaignModal onClose={() => setCreateOpen(false)} onCreate={(input) => { setCustomCampaigns((prev) => [buildDayOneCampaign(input), ...prev]); setCreateOpen(false); }} />}
@@ -407,12 +511,15 @@ export function RunDashboard() {
         .mb-logo { display: flex; align-items: center; gap: 9px; padding: 4px 8px 18px; font-weight: 700; font-size: 15px; }
         .mb-logo-mark { width: 24px; height: 24px; border-radius: 6px; background: var(--m-blue); display: inline-block; }
         .mb-nav-item {
-          display: flex; align-items: center; gap: 10px;
-          padding: 9px 10px; border-radius: 6px; font-size: 13.5px; font-weight: 500;
-          color: var(--m-muted); margin-bottom: 2px; cursor: default;
+          display: flex; align-items: center; gap: 10px; width: 100%;
+          padding: 9px 10px; border-radius: 6px; font: 500 13.5px/1 inherit;
+          color: var(--m-muted); margin-bottom: 2px; cursor: pointer;
+          background: none; border: none; text-align: left;
         }
+        .mb-nav-item:hover { background: #f2f3f5; }
         .mb-nav-dot { width: 16px; height: 16px; border-radius: 4px; background: var(--m-line); flex-shrink: 0; }
         .mb-nav-on { background: var(--m-blue-soft); color: var(--m-blue); font-weight: 700; }
+        .mb-nav-on:hover { background: var(--m-blue-soft); }
         .mb-nav-on .mb-nav-dot { background: var(--m-blue); }
 
         .mb-main { padding: 22px 26px 28px; min-width: 0; position: relative; }
@@ -512,6 +619,10 @@ export function RunDashboard() {
 
         .mb-footnote { margin-top: 14px; font-size: 12px; color: var(--m-faint); max-width: 74ch; }
 
+        .mb-notbuilt { background: var(--m-card); border: 1px dashed var(--m-line); border-radius: 8px; padding: 36px 24px; text-align: center; }
+        .mb-notbuilt-title { font-size: 13.5px; font-weight: 700; color: var(--m-ink); margin-bottom: 6px; }
+        .mb-notbuilt p { max-width: 48ch; margin: 0 auto; font-size: 12.5px; line-height: 1.65; color: var(--m-muted); }
+
         .mb-modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
         .mb-modal { width: 100%; max-width: 420px; background: var(--m-card); border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
         .mb-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--m-line); }
@@ -547,13 +658,13 @@ function Kpi({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CampaignRow({ row, columns }: { row: Row; columns: ColumnDef[] }) {
+function TableRow({ row, columns }: { row: DisplayRow; columns: ColumnDef[] }) {
   return (
-    <tr className={row.c.delivery === 'Learning' ? 'mb-row-new' : undefined}>
+    <tr className={row.highlight ? 'mb-row-new' : undefined}>
       <td><span className="mb-toggle" role="img" aria-label="Delivery on" /></td>
       <td>
-        <span className="mb-campaign-name">{row.c.name}</span>
-        <span className="mb-campaign-type">{row.c.type}</span>
+        <span className="mb-campaign-name">{row.name}</span>
+        <span className="mb-campaign-type">{row.subtitle}</span>
       </td>
       {columns.map((col) => (
         <td key={col.id} className={col.numeric ? 'num' : undefined}>{col.render(row)}</td>

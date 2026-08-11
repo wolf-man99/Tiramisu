@@ -6,7 +6,7 @@ import { Button, Card } from '@/components/ui/primitives';
 import { SiteHeader, SiteFooter } from '@/components/marketing/SiteChrome';
 import { MethodStack } from '@/components/marketing/MethodStack';
 import { StackCard } from '@/components/marketing/StackCard';
-import { SimulatorDemo } from '@/components/marketing/SimulatorDemo';
+import { RunDashboard } from '@/components/meta/RunDashboard';
 import { RealityEvents } from '@/components/marketing/RealityEvents';
 
 export const runtime = 'nodejs';
@@ -157,11 +157,12 @@ export default async function LandingPage() {
           <div className="eyebrow mb-1">Inside the simulator</div>
           <h2 className="text-3xl font-extrabold tracking-tight">A virtual Meta Ads account</h2>
           <p className="mt-1 max-w-2xl text-[var(--text-muted)]">
-            You are handed a brand, a budget and a target. Everything below is a teaching
-            simulation — invented data, not real Meta results.
+            You are handed a brand, a budget and a target. Everything below is the actual
+            simulator, live — try the date range, the columns, even create a campaign.
+            It&apos;s invented data, not real Meta results, but the tool itself is the real one.
           </p>
         </div>
-        <SimulatorDemo />
+        <RunDashboard storageScope="preview" />
       </section>
 
       {/* ─── 6. Then reality hits ────────────────────────────────────────── */}

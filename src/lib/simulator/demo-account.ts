@@ -287,6 +287,70 @@ export function funnelFor(type: DemoCampaign['type'], purchases: number, linkCli
   return { landingPageViews, addToCart, checkoutInitiated };
 }
 
+// ───────────────────────────────────────────────── ad sets & ads (hierarchy) ──
+//
+// Meta's real structure is Campaign > Ad set > Ad. Each level below Campaign is
+// defined as a fixed share of its parent's totals rather than its own daily series
+// — shares always sum to 1 within a parent, so every level reconciles to the
+// campaign figures above it at any date range, with no extra reconciliation work.
+
+export interface DemoAdSet {
+  id: string;
+  campaignName: string;
+  name: string;
+  share: number;
+  delivery: DemoCampaign['delivery'];
+}
+
+export const DEMO_ADSETS: DemoAdSet[] = [
+  { id: 'as-1', campaignName: 'Prospecting — Advantage+ Broad', name: 'Advantage+ audience — 18–34', share: 0.58, delivery: 'Active' },
+  { id: 'as-2', campaignName: 'Prospecting — Advantage+ Broad', name: 'Advantage+ audience — 35–54', share: 0.42, delivery: 'Active' },
+  { id: 'as-3', campaignName: 'Prospecting — Interest Stack', name: 'Streetwear & sneakerhead interests', share: 0.64, delivery: 'Active' },
+  { id: 'as-4', campaignName: 'Prospecting — Interest Stack', name: 'Fashion lookalike 3%', share: 0.36, delivery: 'Active' },
+  { id: 'as-5', campaignName: 'Retargeting — Add-to-Cart 7D', name: 'Cart abandoners — 7 day', share: 1, delivery: 'Active' },
+  { id: 'as-6', campaignName: 'Retargeting — IG Engagers 30D', name: 'IG engagers — 30 day', share: 0.7, delivery: 'Active' },
+  { id: 'as-7', campaignName: 'Retargeting — IG Engagers 30D', name: 'Video viewers 75%+ — 30 day', share: 0.3, delivery: 'Learning' },
+  { id: 'as-8', campaignName: 'Catalog Sales — DPA', name: 'Dynamic — viewed or added to cart', share: 0.55, delivery: 'Active' },
+  { id: 'as-9', campaignName: 'Catalog Sales — DPA', name: 'Dynamic — broad catalog audience', share: 0.45, delivery: 'Active' },
+];
+
+export interface DemoAd {
+  id: string;
+  adSetId: string;
+  name: string;
+  format: 'Image' | 'Video' | 'Carousel' | 'Collection';
+  share: number;
+  delivery: DemoCampaign['delivery'];
+}
+
+export const DEMO_ADS: DemoAd[] = [
+  { id: 'ad-1', adSetId: 'as-1', name: 'UGC — "Why I switched"', format: 'Video', share: 0.55, delivery: 'Active' },
+  { id: 'ad-2', adSetId: 'as-1', name: 'Carousel — Bestsellers', format: 'Carousel', share: 0.45, delivery: 'Active' },
+  { id: 'ad-3', adSetId: 'as-2', name: 'Static — Founder story', format: 'Image', share: 1, delivery: 'Active' },
+  { id: 'ad-4', adSetId: 'as-3', name: 'UGC — Street styling', format: 'Video', share: 0.6, delivery: 'Active' },
+  { id: 'ad-5', adSetId: 'as-3', name: 'Carousel — New drop', format: 'Carousel', share: 0.4, delivery: 'Active' },
+  { id: 'ad-6', adSetId: 'as-4', name: 'Static — Lookbook grid', format: 'Image', share: 1, delivery: 'Active' },
+  { id: 'ad-7', adSetId: 'as-5', name: 'Dynamic — "Still thinking it over?"', format: 'Image', share: 0.5, delivery: 'Active' },
+  { id: 'ad-8', adSetId: 'as-5', name: 'Video — 10% off reminder', format: 'Video', share: 0.5, delivery: 'Active' },
+  { id: 'ad-9', adSetId: 'as-6', name: 'Collection — Shop the collection', format: 'Collection', share: 1, delivery: 'Active' },
+  { id: 'ad-10', adSetId: 'as-7', name: 'Video — Behind the drop', format: 'Video', share: 1, delivery: 'Learning' },
+  { id: 'ad-11', adSetId: 'as-8', name: 'Dynamic catalog — carousel', format: 'Carousel', share: 0.65, delivery: 'Active' },
+  { id: 'ad-12', adSetId: 'as-8', name: 'Dynamic catalog — single image', format: 'Image', share: 0.35, delivery: 'Active' },
+  { id: 'ad-13', adSetId: 'as-9', name: 'Dynamic catalog — collection', format: 'Collection', share: 1, delivery: 'Active' },
+];
+
+/** Scales a totals object by a fixed share — derives ad-set/ad-level totals from a
+ *  parent's already range-aggregated totals, so date ranges flow down for free. */
+export function scaleTotals(t: MetricTotals, share: number): MetricTotals {
+  return {
+    spend: Math.round(t.spend * share),
+    revenue: Math.round(t.revenue * share),
+    purchases: Math.round(t.purchases * share),
+    impressions: Math.round(t.impressions * share),
+    linkClicks: Math.round(t.linkClicks * share),
+  };
+}
+
 /**
  * Headline account figures. Spend/revenue/purchases are the campaign sums.
  *
