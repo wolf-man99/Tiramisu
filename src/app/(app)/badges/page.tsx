@@ -22,7 +22,7 @@ export default async function BadgesPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-8 md:px-8">
-      <PageHeader title="Badges" subtitle={`${earned} of ${s.badges.length} earned — proof of the habits, not just the hours.`} icon={<Award size={20} />} />
+      <PageHeader title="Badges" subtitle={`${earned} of ${s.badges.length} earned: proof of the habits, not just the hours.`} icon={<Award size={20} />} />
 
       <div className="space-y-8">
         {BADGE_TIER_ORDER.map((tier) => {

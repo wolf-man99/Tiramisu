@@ -3,7 +3,7 @@ import type { CompareResult } from '../grading/compare';
 /**
  * The deterministic core of the coach. It reads the learner's SQL, the grading result
  * and (optionally) the exercise metadata, and produces a diagnosis plus mentor-style
- * notes. It never reveals the reference solution — it points at the shape of the
+ * notes. It never reveals the reference solution, it points at the shape of the
  * mistake and asks the question that unlocks it.
  *
  * Every detector is a pure function of the inputs, so the coach is fast, free and
@@ -119,7 +119,7 @@ function detectUnsafeDivide(n: string): CoachNote | null {
     return {
       tone: 'style',
       title: 'Guard your division',
-      body: 'A plain `/` throws or returns infinity when the denominator is zero — and marketing denominators (clicks, impressions) hit zero constantly. `SAFE_DIVIDE(a, b)` returns NULL instead.',
+      body: 'A plain `/` throws or returns infinity when the denominator is zero: and marketing denominators (clicks, impressions) hit zero constantly. `SAFE_DIVIDE(a, b)` returns NULL instead.',
     };
   }
   return null;
@@ -181,17 +181,17 @@ export function analyze(input: AnalyzeInput): Analysis {
       { tone: 'praise', title: 'Correct', body: 'Your result matched the reference exactly.' },
       ...styleNotes(sql, n, input.concepts),
     ];
-    return { diagnosis: 'ok', headline: 'Correct — and here is how to make it cleaner.', notes };
+    return { diagnosis: 'ok', headline: 'Correct: and here is how to make it cleaner.', notes };
   }
 
   // Failed but ran: use the comparison to target the coaching.
   const notes: CoachNote[] = [];
   let diagnosis: DiagnosisCode = 'generic-mismatch';
-  let headline = 'Close — the result does not match yet.';
+  let headline = 'Close. The result does not match yet.';
 
   const code = compare?.code;
 
-  // Structural, concept-driven hints first — they explain *why*.
+  // Structural, concept-driven hints first, they explain *why*.
   const leftJoin = detectLeftJoinFilter(sql, n);
   const avgRate = detectAverageOfRate(n);
   const having = detectHavingWithoutGroup(n);
@@ -219,7 +219,7 @@ export function analyze(input: AnalyzeInput): Analysis {
     notes.push({
       tone: 'warn',
       title: 'Wrong number of columns',
-      body: `Expected ${compare?.expectedColumnCount} column(s), got ${compare?.actualColumnCount}. Re-read the prompt for exactly which fields — and which names — it asks for.`,
+      body: `Expected ${compare?.expectedColumnCount} column(s), got ${compare?.actualColumnCount}. Re-read the prompt for exactly which fields, and which names, it asks for.`,
     });
   } else if (code === 'extra-rows') {
     diagnosis = 'extra-rows';
@@ -236,7 +236,7 @@ export function analyze(input: AnalyzeInput): Analysis {
     notes.push({
       tone: 'hint',
       title: 'Too few rows',
-      body: 'The reference has rows you do not. An over-strict filter or an INNER JOIN dropping unmatched rows is the usual cause — check whether you need a LEFT JOIN.',
+      body: 'The reference has rows you do not. An over-strict filter or an INNER JOIN dropping unmatched rows is the usual cause. Check whether you need a LEFT JOIN.',
     });
     if (leftJoin) notes.push(leftJoin);
   } else if (code === 'wrong-values') {

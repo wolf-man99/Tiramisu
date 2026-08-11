@@ -5,7 +5,7 @@ import type { Lab } from './types';
  *
  * Labs differ from exercises in that they teach *cost and shape* rather than answers.
  * Steps marked `measure` render the dry-run estimator so the learner sees bytes
- * scanned change as they edit — which is the only way the partitioning lesson lands.
+ * scanned change as they edit, which is the only way the partitioning lesson lands.
  */
 export const LABS: Lab[] = [
   {
@@ -29,8 +29,8 @@ ORDER BY events DESC`,
       {
         title: 'Two traps in the column types',
         body:
-          '`event_date` is a STRING formatted YYYYMMDD — not a DATE. `event_timestamp` is in ' +
-          'MICROseconds — not seconds or milliseconds. Both are deliberate: the string date is ' +
+          '`event_date` is a STRING formatted YYYYMMDD, not a DATE. `event_timestamp` is in ' +
+          'MICROseconds, not seconds or milliseconds. Both are deliberate: the string date is ' +
           'the partitioning column and compares cheaply, and microseconds preserve event ordering ' +
           'within a single millisecond.',
         sql: `SELECT event_date,
@@ -43,7 +43,7 @@ LIMIT 5`,
       {
         title: 'STRUCT columns need a dot',
         body:
-          '`device`, `geo`, `traffic_source` and `ecommerce` are STRUCTs — a single nested ' +
+          '`device`, `geo`, `traffic_source` and `ecommerce` are STRUCTs, a single nested ' +
           'record each. Reach into them with a dot. No UNNEST, because there is only one value.',
         sql: `SELECT device.category, device.operating_system, geo.country, geo.city
 FROM ga4_events
@@ -52,7 +52,7 @@ LIMIT 10`,
       {
         title: 'ARRAY columns need UNNEST',
         body:
-          '`event_params` and `items` are repeated — an array per row. Flattening them multiplies ' +
+          '`event_params` and `items` are repeated, an array per row. Flattening them multiplies ' +
           'your row count by the array length, which is why you filter before you UNNEST.',
         sql: `SELECT ep.key AS param_key, COUNT(*) AS occurrences
 FROM ga4_events e, UNNEST(e.event_params) AS ep
@@ -143,7 +143,7 @@ WHERE e.event_name = 'page_view'
 ORDER BY e.event_date, e.event_timestamp
 LIMIT 10`,
           hints: ['One subquery per parameter.',
-            'engagement_time_msec is an integer parameter — read int_value, not string_value.'],
+            'engagement_time_msec is an integer parameter. Read int_value, not string_value.'],
           orderMatters: true,
         },
       },
@@ -164,7 +164,7 @@ ORDER BY ep.key`,
         title: 'UNNEST an array literal',
         body:
           'UNNEST works on any array, not just table columns. `GENERATE_ARRAY` and ' +
-          '`GENERATE_DATE_ARRAY` are the cheapest date spine in BigQuery — no table, no bytes.',
+          '`GENERATE_DATE_ARRAY` are the cheapest date spine in BigQuery: no table, no bytes.',
         sql: `SELECT d AS day FROM UNNEST(GENERATE_DATE_ARRAY('2024-03-01', '2024-03-10')) AS d ORDER BY day`,
       },
     ],
@@ -181,7 +181,7 @@ ORDER BY ep.key`,
       {
         title: 'Nested is not repeated',
         body:
-          'A STRUCT is one record with named fields — nested. An ARRAY is many values — repeated. ' +
+          'A STRUCT is one record with named fields, nested. An ARRAY is many values, repeated. ' +
           'An ARRAY<STRUCT<...>> is many records, which is what `event_params` and `items` are. ' +
           'The schema panel shows the full type; read it before you write.',
         sql: `SELECT device.category AS device_category, COUNT(*) AS events
@@ -192,7 +192,7 @@ FROM ga4_events GROUP BY device_category ORDER BY events DESC`,
         body:
           'BigQuery has no indexes and joins are expensive at scale. Nesting the related data ' +
           'inside the row means the join has already happened at write time. It is the same ' +
-          'trade you make when you denormalise a warehouse table — paid once, saved forever.',
+          'trade you make when you denormalise a warehouse table: paid once, saved forever.',
         sql: `SELECT i.item_category, SUM(i.quantity) AS units, SUM(i.price * i.quantity) AS revenue
 FROM ga4_events e, UNNEST(e.items) AS i
 WHERE e.event_name = 'purchase'
@@ -215,7 +215,7 @@ LIMIT 10`,
         title: 'Building a STRUCT',
         body:
           'You can construct nested output too. `STRUCT(a AS x, b AS y)` builds a record, and ' +
-          '`ARRAY_AGG` collects rows into an array — useful when you are writing a table that ' +
+          '`ARRAY_AGG` collects rows into an array. Useful when you are writing a table that ' +
           'something else will read.',
         sql: `SELECT customer_id, ARRAY_LENGTH(ARRAY_AGG(channel)) AS touches
 FROM attribution_touchpoints
@@ -228,7 +228,7 @@ LIMIT 10`,
         body:
           'Locally, ARRAY and STRUCT columns are stored as JSON text and UNNEST compiles to ' +
           'SQLite\'s `json_each`. The SQL you write is valid BigQuery and the semantics match ' +
-          'for everything this course teaches — see docs/ARCHITECTURE.md §5 for the exact ' +
+          'for everything this course teaches. See docs/ARCHITECTURE.md §5 for the exact ' +
           'boundary of the emulation.',
       },
     ],
@@ -245,7 +245,7 @@ LIMIT 10`,
       {
         title: 'What a partition is',
         body:
-          'A partitioned table is physically split by the partitioning column — usually a date. ' +
+          'A partitioned table is physically split by the partitioning column, usually a date. ' +
           'A filter on that column lets BigQuery skip whole partitions without reading them. ' +
           '`google_ads_daily` is partitioned by `date`; `ga4_events` by `event_date`.',
         sql: `SELECT COUNT(*) AS rows_in_one_day FROM google_ads_daily WHERE date = '2024-06-14'`,
@@ -260,7 +260,7 @@ LIMIT 10`,
       {
         title: 'The filter that breaks pruning',
         body:
-          'Any function applied to the partitioning column defeats pruning — BigQuery cannot ' +
+          'Any function applied to the partitioning column defeats pruning, BigQuery cannot ' +
           'know which partitions satisfy `FORMAT_DATE(...) = ...` without reading them all. ' +
           'Transform the constant, never the column.',
         sql: `SELECT
@@ -278,7 +278,7 @@ WHERE event_name = 'purchase'
 GROUP BY event_date
 ORDER BY event_date`,
           hints: ['`event_date` is a STRING in YYYYMMDD form.',
-            'Compare it to string literals in the same format — no PARSE_DATE needed.',
+            'Compare it to string literals in the same format, no PARSE_DATE needed.',
             'YYYYMMDD sorts correctly as text, so BETWEEN works.'],
           orderMatters: true,
         },
@@ -318,7 +318,7 @@ GROUP BY campaign_id`,
         title: 'Order matters',
         body:
           'Cluster columns are used left to right, like a composite index. Clustering by ' +
-          '(event_name, user_pseudo_id) helps a filter on event_name alone, or on both — but not ' +
+          '(event_name, user_pseudo_id) helps a filter on event_name alone, or on both, but not ' +
           'on user_pseudo_id alone.',
         sql: `SELECT event_name, COUNT(*) AS events
 FROM ga4_events
@@ -360,7 +360,7 @@ GROUP BY campaign_id`,
         title: 'Bytes scanned is the whole bill',
         body:
           'On-demand BigQuery charges per byte *scanned*, not per row returned. `LIMIT 10` does ' +
-          'not reduce the scan. Neither does `WHERE` on an unpartitioned, unclustered column — ' +
+          'not reduce the scan. Neither does `WHERE` on an unpartitioned, unclustered column, ' +
           'the filter is applied after the read.',
         sql: `SELECT * FROM ga4_events LIMIT 10`,
         measure: true,
@@ -428,7 +428,7 @@ LIMIT 10`,
         body:
           'Joining two large fact tables and then aggregating makes the engine materialise the ' +
           'fanned-out product. Aggregating each side to a common grain first keeps both inputs ' +
-          'small — and removes the fan-out bug at the same time.',
+          'small, and removes the fan-out bug at the same time.',
         sql: `WITH s AS (SELECT campaign_id, SUM(cost) AS spend FROM google_ads_daily GROUP BY campaign_id),
 r AS (SELECT campaign_id, SUM(gross_revenue) AS revenue FROM orders
       WHERE status = 'completed' AND campaign_id IS NOT NULL GROUP BY campaign_id)
@@ -466,7 +466,7 @@ LIMIT 5`,
         title: 'What not to bother with',
         body:
           'Reordering your JOINs by hand, adding hints, or rewriting a subquery as a CTE will not ' +
-          'change your bill — BigQuery plans that for you and CTEs are not materialised. The ' +
+          'change your bill, BigQuery plans that for you and CTEs are not materialised. The ' +
           'levers that matter are columns read, partitions pruned, and rows produced before a join.',
       },
     ],
@@ -494,7 +494,7 @@ LIMIT 10`,
         measure: true,
       },
       {
-        title: 'Edit 1 — prune the partition',
+        title: 'Edit 1 - prune the partition',
         body: 'December only. This is the single biggest saving available.',
         sql: `SELECT ep.value.string_value AS page, COUNT(*) AS views
 FROM ga4_events e, UNNEST(e.event_params) AS ep
@@ -506,7 +506,7 @@ LIMIT 10`,
         measure: true,
       },
       {
-        title: 'Edit 2 — filter on the cluster key too',
+        title: 'Edit 2 - filter on the cluster key too',
         body:
           'The question was about page views specifically. Adding the event_name filter uses the ' +
           'clustering and cuts the rows entering the UNNEST by about two thirds.',
@@ -537,7 +537,7 @@ LIMIT 10`,
         },
       },
       {
-        title: 'Edit 3 — stop selecting what you do not need',
+        title: 'Edit 3 - stop selecting what you do not need',
         body:
           'The original had no `SELECT *`, but plenty of real queries do. Naming columns is free ' +
           'and often halves the bill on a wide table like this one.',
@@ -628,7 +628,7 @@ LIMIT 10`,
         title: 'Reconcile',
         body:
           'Compare your rebuild to `ga4_sessions`. They agree here. Against the real GA4 UI they ' +
-          'would not, by 1–3% — the UI applies its own engagement rules, thresholding and ' +
+          'would not, by 1–3%: the UI applies its own engagement rules, thresholding and ' +
           'sampling. The job is to know the size and the cause of the gap, not to eliminate it.',
         sql: `SELECT
   (SELECT COUNT(DISTINCT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING))) FROM ga4_events) AS rebuilt,

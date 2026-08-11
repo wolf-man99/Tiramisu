@@ -2,7 +2,7 @@
  * Ambient types for Node's built-in `node:sqlite` (stable in Node 22+).
  *
  * `@types/node@20` predates this module, so we declare the surface the warehouse
- * engine actually uses. When we move to `@types/node@22`, delete this file — the
+ * engine actually uses. When we move to `@types/node@22`, delete this file, the
  * upstream types supersede it.
  */
 declare module 'node:sqlite' {

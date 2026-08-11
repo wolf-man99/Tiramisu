@@ -5,7 +5,7 @@ import { FREE_MODULE_COUNT } from '../payments/pricing';
 /**
  * The Learn -> Run gate. A course opts in by adding a checker here; courses with no
  * entry have no Run tier yet and are simply never unlockable. Accepts either the
- * top-level `prisma` client or a `$transaction` callback's `tx` — both expose the
+ * top-level `prisma` client or a `$transaction` callback's `tx`, both expose the
  * same `.attempt.findMany` shape, so the same checker works whether it's called from
  * inside `recordAttempt`'s transaction (the normal path) or as a live fallback read
  * (see `checkAndUnlockRun`).
@@ -32,20 +32,20 @@ export async function isLearnComplete(db: Db, profileId: string, courseId: strin
   return checker(db, profileId);
 }
 
-/** True for any course with a Run tier defined — used to decide whether to show a Run section at all. */
+/** True for any course with a Run tier defined. Used to decide whether to show a Run section at all. */
 export function hasRunTier(courseId: string): boolean {
   return courseId in LEARN_COMPLETE_CHECKERS;
 }
 
 /**
  * Reads the cached unlock state, falling back to a live check for enrollments that
- * finished Learn before this gate existed (or before `recordAttempt` last ran) — and
+ * finished Learn before this gate existed (or before `recordAttempt` last ran), and
  * persisting the result so the fast path (`runUnlockedAt` already set) applies from
  * then on. Safe to call on every Run-page load; the live check only runs on the
  * still-locked path, and only for courses with a Run tier at all.
  *
  * Requires BOTH the progress gate (every Learn lesson passed) and the payment gate
- * (`runPurchasedAt`, set by a verified 'run' or 'bundle' purchase) — finishing the
+ * (`runPurchasedAt`, set by a verified 'run' or 'bundle' purchase), finishing the
  * lessons doesn't skip paying, and paying doesn't skip finishing the lessons.
  */
 export async function isRunUnlocked(profileId: string, courseId: string): Promise<boolean> {

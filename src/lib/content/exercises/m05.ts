@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 5 — JOINs (days 6 and 7).
+ * Module 5, JOINs (days 6 and 7).
  *
  * 50 exercises. Two ideas carry the whole module: a filter on the right-hand table of
  * a LEFT JOIN silently converts it to an INNER JOIN, and joining across a grain change
@@ -101,7 +101,7 @@ LIMIT 10`,
 
   ex('5.8', 6, 'medium',
     'LEFT JOIN keeps everything on the left',
-    'Return `product_id`, `product_name` and `units` — total quantity sold — for every product, including products that never sold. Order by units ascending then product_id.',
+    'Return `product_id`, `product_name` and `units`, total quantity sold, for every product, including products that never sold. Order by units ascending then product_id.',
     ['products', 'order_items'], ['left-join', 'group-by', 'null-handling'],
     `SELECT p.product_id, p.product_name, COALESCE(SUM(i.quantity), 0) AS units
 FROM products p
@@ -112,7 +112,7 @@ ORDER BY units, p.product_id`,
       'A product with no matching line items gets NULLs from the right-hand table.',
       'COALESCE turns the NULL sum into a 0, which is what a stakeholder expects.'],
     { orderMatters: true,
-      explanation: 'The difference between INNER and LEFT here is the difference between "products that sold" and "all products, with their sales". The second answers "what is not selling?" — a question the first cannot even represent.' }),
+      explanation: 'The difference between INNER and LEFT here is the difference between "products that sold" and "all products, with their sales". The second answers "what is not selling?", a question the first cannot even represent.' }),
 
   ex('5.9', 6, 'medium',
     'Campaigns with no orders attributed',
@@ -127,7 +127,7 @@ ORDER BY c.campaign_id`,
       'Filtering `WHERE o.campaign_id IS NULL` keeps exactly the unmatched ones.',
       'This pattern is called an anti-join.'],
     { orderMatters: true,
-      explanation: 'Two campaigns come back: the video and display *prospecting* campaigns. They have real spend and zero last-click orders, because upper-funnel prospecting is bought on view-through — their credit lives in `view_through_conversions`, not in `orders`. An INNER JOIN would have hidden them, and with them the argument for why they exist at all.' }),
+      explanation: 'Two campaigns come back: the video and display *prospecting* campaigns. They have real spend and zero last-click orders, because upper-funnel prospecting is bought on view-through: their credit lives in `view_through_conversions`, not in `orders`. An INNER JOIN would have hidden them, and with them the argument for why they exist at all.' }),
 
   ex('5.10', 6, 'hard',
     'The filter that breaks your LEFT JOIN',
@@ -146,8 +146,8 @@ ORDER BY c.campaign_id`,
       'A NULL status can never equal \'completed\'.'],
     {
       explanation:
-        'Putting the condition in WHERE destroys the LEFT JOIN. Unmatched campaigns come through with `o.status = NULL`, the WHERE test on them is UNKNOWN, and they are dropped — turning your LEFT JOIN into an INNER JOIN without a word of warning. Conditions on the right-hand table of an outer join belong in ON. Conditions on the left-hand table belong in WHERE.',
-      trap: 'The single most common JOIN bug in existence, and it fails silently — the query runs, the number is just wrong.',
+        'Putting the condition in WHERE destroys the LEFT JOIN. Unmatched campaigns come through with `o.status = NULL`, the WHERE test on them is UNKNOWN, and they are dropped, turning your LEFT JOIN into an INNER JOIN without a word of warning. Conditions on the right-hand table of an outer join belong in ON. Conditions on the left-hand table belong in WHERE.',
+      trap: 'The single most common JOIN bug in existence, and it fails silently. The query runs, the number is just wrong.',
     }),
 
   ex('5.11', 6, 'medium',
@@ -160,7 +160,7 @@ LEFT JOIN orders o ON o.campaign_id = c.campaign_id AND o.status = 'completed'
 GROUP BY c.campaign_name
 ORDER BY completed_orders DESC, c.campaign_name`,
     ['Put the status condition in the ON clause so unmatched campaigns survive.',
-      'Use COUNT(o.order_id), not COUNT(*) — COUNT(*) would count the NULL row as 1.'],
+      'Use COUNT(o.order_id), not COUNT(*). COUNT(*) would count the NULL row as 1.'],
     { orderMatters: true,
       trap: 'COUNT(*) on the outer side of a LEFT JOIN reports 1 for groups that have nothing.' }),
 
@@ -193,7 +193,7 @@ LEFT JOIN (SELECT campaign_id, SUM(gross_revenue) AS revenue FROM orders
        ON r.campaign_id = c.campaign_id
 ORDER BY spend DESC, c.campaign_name
 LIMIT 15`,
-    ['Do not join the two fact tables directly to each other — you would fan out.',
+    ['Do not join the two fact tables directly to each other. You would fan out.',
       'Aggregate each side to campaign grain *first*, then join the two summaries.',
       'This "aggregate then join" shape is the fix for almost every fan-out problem.'],
     { orderMatters: true,
@@ -222,7 +222,7 @@ JOIN salesforce_accounts a ON a.account_id = o.account_id
 WHERE o.is_won = 1
 GROUP BY a.tier
 ORDER BY total_arr DESC`,
-    ['`is_won = 1` keeps only won deals — note it excludes the open ones, whose is_won is NULL.',
+    ['`is_won = 1` keeps only won deals. Note it excludes the open ones, whose is_won is NULL.',
       'Group by the account tier.'],
     { orderMatters: true }),
 
@@ -254,7 +254,7 @@ JOIN landing_pages lp ON lp.page_path = s.landing_page
 WHERE s.source != 'internal-qa'
 GROUP BY lp.template
 ORDER BY sessions DESC, lp.template`,
-    ['The join key is the page path — a text column, not an id.',
+    ['The join key is the page path: a text column, not an id.',
       'Any column can be a join key as long as the values match.'],
     { orderMatters: true }),
 
@@ -275,10 +275,10 @@ WHERE o.campaign_id IS NOT NULL
 ORDER BY o.order_id
 LIMIT 20`,
     ['Three LEFT JOINs, one per platform.',
-      'An orphan is a row that matched none of them — all three right-hand keys are NULL.',
+      'An orphan is a row that matched none of them. All three right-hand keys are NULL.',
       'Do not forget to exclude orders that simply have no campaign at all.'],
     { orderMatters: true,
-      explanation: 'These are orders attributed to campaigns that no longer exist — deleted in the ad platform but still referenced in your warehouse. Every real warehouse has them, and every naive INNER JOIN silently deletes their revenue from your reporting.' }),
+      explanation: 'These are orders attributed to campaigns that no longer exist, deleted in the ad platform but still referenced in your warehouse. Every real warehouse has them, and every naive INNER JOIN silently deletes their revenue from your reporting.' }),
 
   ex('5.19', 6, 'medium',
     'Support tickets by customer segment',
@@ -290,7 +290,7 @@ JOIN customers c ON c.customer_id = t.customer_id
 GROUP BY c.segment
 ORDER BY tickets DESC`,
     ['Join tickets to customers, group by segment.',
-      'COUNT(*) for tickets and AVG(csat) for the score — AVG skips the unsurveyed ones.'],
+      'COUNT(*) for tickets and AVG(csat) for the score, AVG skips the unsurveyed ones.'],
     { orderMatters: true }),
 
   ex('5.20', 6, 'hard',
@@ -303,13 +303,13 @@ WHERE status = 'succeeded'
   AND subscription_id IS NULL
 ORDER BY amount DESC, charge_id
 LIMIT 20`,
-    ['No join needed — the absence is expressed by a NULL foreign key.',
+    ['No join needed. The absence is expressed by a NULL foreign key.',
       'Recognising when you do *not* need a join is part of the skill.'],
     { orderMatters: true }),
 
   ex('5.21', 6, 'hard',
     'Two joins, two grains, one report',
-    'Per `first_touch_channel`, return `customers`, `orders` and `revenue` — including channels whose customers never ordered. Order by revenue descending.',
+    'Per `first_touch_channel`, return `customers`, `orders` and `revenue`, including channels whose customers never ordered. Order by revenue descending.',
     ['customers', 'orders'], ['left-join', 'group-by', 'count', 'distinct'],
     `SELECT c.first_touch_channel,
        COUNT(DISTINCT c.customer_id) AS customers,
@@ -319,7 +319,7 @@ FROM customers c
 LEFT JOIN orders o ON o.customer_id = c.customer_id AND o.status = 'completed'
 GROUP BY c.first_touch_channel
 ORDER BY revenue DESC`,
-    ['After the join, one customer appears once per order — so a plain COUNT would overcount customers.',
+    ['After the join, one customer appears once per order. So a plain COUNT would overcount customers.',
       'COUNT(DISTINCT c.customer_id) fixes the customer count.',
       'COUNT(o.order_id) skips the NULL rows from unmatched customers.'],
     { orderMatters: true,
@@ -369,7 +369,7 @@ JOIN meta_ads_campaigns c ON c.campaign_id = d.campaign_id
 GROUP BY c.objective
 ORDER BY spend DESC`,
     ['Join, group by objective, derive ROAS from the sums.',
-      'ROAS is SUM(purchase_value) / SUM(spend) — sums first, then divide.'],
+      'ROAS is SUM(purchase_value) / SUM(spend): sums first, then divide.'],
     { orderMatters: true }),
 
   ex('5.25', 6, 'hard',
@@ -390,7 +390,7 @@ ORDER BY first_order_revenue DESC`,
 
   ex('5.26', 6, 'expert',
     'The spend-to-revenue bridge',
-    'How much revenue can we actually attribute? Return one row: `total_revenue` from completed orders, `attributed_revenue` where campaign_id matches a real Google/Meta/LinkedIn campaign, and `unattributed_revenue` — the rest.',
+    'How much revenue can we actually attribute? Return one row: `total_revenue` from completed orders, `attributed_revenue` where campaign_id matches a real Google/Meta/LinkedIn campaign, and `unattributed_revenue`, the rest.',
     ['orders', 'google_ads_campaigns', 'meta_ads_campaigns', 'linkedin_ads_campaigns'],
     ['left-join', 'conditional-aggregation', 'attribution', 'null-handling'],
     `SELECT SUM(o.gross_revenue) AS total_revenue,
@@ -414,7 +414,7 @@ WHERE o.status = 'completed'`,
   // ── day 7: the rest of the family ──
   ex('5.27', 7, 'medium',
     'RIGHT JOIN',
-    'Using a RIGHT JOIN from `orders` to `customers`, return `segment` and `customers` — a count of distinct customers — including customers with no orders. Order by segment.',
+    'Using a RIGHT JOIN from `orders` to `customers`, return `segment` and `customers`, a count of distinct customers, including customers with no orders. Order by segment.',
     ['orders', 'customers'], ['right-join', 'group-by'],
     `SELECT c.segment, COUNT(DISTINCT c.customer_id) AS customers
 FROM orders o
@@ -422,13 +422,13 @@ RIGHT JOIN customers c ON c.customer_id = o.customer_id
 GROUP BY c.segment
 ORDER BY c.segment`,
     ['RIGHT JOIN keeps everything from the *second* table.',
-      'It is the mirror of LEFT JOIN — and you can always rewrite it as one by swapping the tables.'],
+      'It is the mirror of LEFT JOIN, and you can always rewrite it as one by swapping the tables.'],
     { orderMatters: true,
       explanation: 'RIGHT JOIN is legal and rare. Most teams standardise on LEFT because reading top-to-bottom, "keep everything I started with" is easier to hold in your head than "keep everything I am about to mention".' }),
 
   ex('5.28', 7, 'medium',
     'FULL OUTER JOIN',
-    'Some campaign_ids appear in Google, some in Meta. Return `total_ids` — the count of distinct campaign_ids appearing in either table — using a FULL OUTER JOIN.',
+    'Some campaign_ids appear in Google, some in Meta. Return `total_ids`, the count of distinct campaign_ids appearing in either table, using a FULL OUTER JOIN.',
     ['google_ads_campaigns', 'meta_ads_campaigns'], ['full-join'],
     `SELECT COUNT(*) AS total_ids
 FROM (
@@ -442,7 +442,7 @@ FROM (
 
   ex('5.29', 7, 'medium',
     'Reconcile two platforms',
-    'Return `in_google`, `in_meta` and `in_both` — counts of campaign_ids present in each and in both — using one FULL OUTER JOIN.',
+    'Return `in_google`, `in_meta` and `in_both`, counts of campaign_ids present in each and in both, using one FULL OUTER JOIN.',
     ['google_ads_campaigns', 'meta_ads_campaigns'], ['full-join', 'conditional-aggregation'],
     `SELECT COUNTIF(g.campaign_id IS NOT NULL) AS in_google,
        COUNTIF(m.campaign_id IS NOT NULL) AS in_meta,
@@ -495,13 +495,13 @@ FROM (SELECT DISTINCT category FROM products) c
 CROSS JOIN (SELECT DISTINCT device FROM orders) d
 ORDER BY c.category, d.device`,
     ['CROSS JOIN pairs every row on the left with every row on the right.',
-      'It has no ON clause — that is what makes it a cross join.',
+      'It has no ON clause. That is what makes it a cross join.',
       '5 × 3 = 15 rows.'],
     { orderMatters: true }),
 
   ex('5.33', 7, 'hard',
     'Date spine with CROSS JOIN',
-    'Build a complete daily report for every combination of date in January 2024 and platform. Return `date`, `platform`, `spend` — zero where there was none. Chronological, then platform.',
+    'Build a complete daily report for every combination of date in January 2024 and platform. Return `date`, `platform`, `spend`. Zero where there was none. Chronological, then platform.',
     ['date_dim', 'ad_spend_daily'], ['cross-join', 'left-join', 'date-spine'],
     `SELECT d.date, p.platform, COALESCE(SUM(a.spend), 0) AS spend
 FROM date_dim d
@@ -514,11 +514,11 @@ ORDER BY d.date, p.platform`,
       'LEFT JOIN the actual spend onto that grid, matching on both columns.',
       'COALESCE fills the holes with zero.'],
     { orderMatters: true,
-      explanation: 'A spine is a CROSS JOIN of every dimension you want guaranteed, with the facts LEFT JOINed on. It is the only reliable way to get "zero" instead of "missing" in a time series — and the difference matters enormously to a line chart.' }),
+      explanation: 'A spine is a CROSS JOIN of every dimension you want guaranteed, with the facts LEFT JOINed on. It is the only reliable way to get "zero" instead of "missing" in a time series, and the difference matters enormously to a line chart.' }),
 
   ex('5.34', 7, 'expert',
     'Fan-out: double your revenue by accident',
-    'Demonstrate the trap. Return `correct_revenue` — SUM of gross_revenue over completed orders — and `inflated_revenue` — the same SUM after joining to order_items. Then look at the ratio.',
+    'Demonstrate the trap. Return `correct_revenue`. SUM of gross_revenue over completed orders, and `inflated_revenue`, the same SUM after joining to order_items. Then look at the ratio.',
     ['orders', 'order_items'], ['join-fanout', 'inner-join', 'grain'],
     `SELECT
   (SELECT SUM(gross_revenue) FROM orders WHERE status = 'completed') AS correct_revenue,
@@ -531,13 +531,13 @@ ORDER BY d.date, p.platform`,
       'Two scalar subqueries put both numbers side by side.'],
     {
       explanation:
-        'The inflated number is 2.19× the correct one. Note that this is *higher* than the 1.64 average line items per order, because bigger orders tend to have more lines — so the fan-out is weighted towards exactly the rows that hurt most. Nothing errors, nothing warns you. This is the fan-out trap, and it is why the grain question comes before the SQL question. If you must join to a finer grain, either aggregate the fine side first, or sum a column that genuinely lives at the fine grain (like `i.quantity * i.unit_price`).',
+        'The inflated number is 2.19× the correct one. Note that this is *higher* than the 1.64 average line items per order, because bigger orders tend to have more lines. So the fan-out is weighted towards exactly the rows that hurt most. Nothing errors, nothing warns you. This is the fan-out trap, and it is why the grain question comes before the SQL question. If you must join to a finer grain, either aggregate the fine side first, or sum a column that genuinely lives at the fine grain (like `i.quantity * i.unit_price`).',
       trap: 'Summing a coarse-grain column after joining to a finer grain.',
     }),
 
   ex('5.35', 7, 'hard',
     'Fan-out, fixed two ways',
-    'Return `by_dedup` — revenue computed with COUNT(DISTINCT)-style dedup via a subquery — and `by_line_items` — revenue summed from the line items themselves. They should be in the same ballpark.',
+    'Return `by_dedup`. Revenue computed with COUNT(DISTINCT)-style dedup via a subquery, and `by_line_items`, revenue summed from the line items themselves. They should be in the same ballpark.',
     ['orders', 'order_items'], ['join-fanout', 'grain', 'sum'],
     `SELECT
   (SELECT SUM(gross_revenue)
@@ -586,21 +586,21 @@ LEFT JOIN (SELECT campaign_id, SUM(gross_revenue) AS revenue
            FROM orders WHERE status = 'completed' GROUP BY campaign_id) r
   ON r.campaign_id = c.campaign_id
 ORDER BY roas DESC, c.campaign_name`,
-    ['Put the spend threshold in the subquery\'s HAVING — it is a property of the aggregate.',
+    ['Put the spend threshold in the subquery\'s HAVING. It is a property of the aggregate.',
       'INNER JOIN the spend (we only want campaigns that spent) but LEFT JOIN the revenue.',
       'ROAS is revenue / spend.'],
     { orderMatters: true }),
 
   ex('5.38', 7, 'hard',
     'Journeys with their first touch',
-    'Return `channel` (the first touch) and `journeys` — the number of converted journeys that started on that channel. Order by journeys descending.',
+    'Return `channel` (the first touch) and `journeys`, the number of converted journeys that started on that channel. Order by journeys descending.',
     ['attribution_touchpoints'], ['inner-join', 'self-join', 'attribution', 'group-by'],
     `SELECT t.channel, COUNT(*) AS journeys
 FROM attribution_touchpoints t
 WHERE t.touch_position = 1 AND t.converted = 1
 GROUP BY t.channel
 ORDER BY journeys DESC, t.channel`,
-    ['Position 1 is the first touch by definition — no join required.',
+    ['Position 1 is the first touch by definition, no join required.',
       'Recognising when the data already encodes what you need saves a join.'],
     { orderMatters: true }),
 
@@ -701,7 +701,7 @@ GROUP BY s.subscription_id, s.mrr
 ORDER BY charged DESC, s.subscription_id
 LIMIT 20`,
     ['LEFT JOIN so subscriptions with no charges survive.',
-      'Filter the charge status inside the aggregate with CASE, not in WHERE — a WHERE would drop the unmatched rows.'],
+      'Filter the charge status inside the aggregate with CASE, not in WHERE. A WHERE would drop the unmatched rows.'],
     { orderMatters: true,
       explanation: 'Conditional aggregation is the third way to filter an outer join safely, alongside putting the condition in ON. Both preserve the left side; a WHERE would not.' }),
 
@@ -742,7 +742,7 @@ WHERE status = 'completed'
 GROUP BY channel
 ORDER BY gross_profit DESC`,
     ['Gross profit is revenue minus COGS, both summed first.',
-      'Margin percentage divides the profit by the revenue — again, sums before division.'],
+      'Margin percentage divides the profit by the revenue: again, sums before division.'],
     { orderMatters: true,
       explanation: 'Ranking channels by revenue and by gross profit gives different orders, because AOV and product mix differ by channel. Media budgets should follow profit, not revenue.' }),
 
@@ -778,13 +778,13 @@ WHERE n.month_number BETWEEN 0 AND 11
 ORDER BY m.cohort_month, n.month_number`,
     ['You need two lists: the 12 cohort months, and the numbers 0–11.',
       'The months come from `date_dim.month_start`.',
-      'The numbers can be built from any table that yields 12 distinct values — or with UNNEST(GENERATE_ARRAY(0, 11)) once you reach day 11.'],
+      'The numbers can be built from any table that yields 12 distinct values: or with UNNEST(GENERATE_ARRAY(0, 11)) once you reach day 11.'],
     { orderMatters: true,
-      explanation: 'A cohort table is a CROSS JOIN scaffold with actuals LEFT JOINed on. Building the scaffold separately is what guarantees the triangle has no holes — and holes in a cohort chart are indistinguishable from zeros unless you built the grid.' }),
+      explanation: 'A cohort table is a CROSS JOIN scaffold with actuals LEFT JOINed on. Building the scaffold separately is what guarantees the triangle has no holes, and holes in a cohort chart are indistinguishable from zeros unless you built the grid.' }),
 
   ex('5.49', 7, 'expert',
     'The join type decision table',
-    'One row, four numbers, four join types against the same pair of tables. Return `inner_rows`, `left_rows`, `right_rows` and `full_rows` — the row count produced by joining `google_ads_campaigns` to `orders` on campaign_id with each join type.',
+    'One row, four numbers, four join types against the same pair of tables. Return `inner_rows`, `left_rows`, `right_rows` and `full_rows`. The row count produced by joining `google_ads_campaigns` to `orders` on campaign_id with each join type.',
     ['google_ads_campaigns', 'orders'], ['inner-join', 'left-join', 'right-join', 'full-join'],
     `SELECT
   (SELECT COUNT(*) FROM google_ads_campaigns c JOIN orders o ON o.campaign_id = c.campaign_id) AS inner_rows,
@@ -823,5 +823,5 @@ ORDER BY revenue DESC, c.first_touch_channel`,
       'Then LEFT JOIN that summary onto the customer table and count customers distinctly.',
       'Both derived rates come from columns already in the row.'],
     { orderMatters: true,
-      explanation: 'Orders per customer is the metric this report exists for. Revenue tells you which channel is biggest; orders-per-customer tells you which one brings people who come back — and those are rarely the same channel.' }),
+      explanation: 'Orders per customer is the metric this report exists for. Revenue tells you which channel is biggest; orders-per-customer tells you which one brings people who come back, and those are rarely the same channel.' }),
 ];

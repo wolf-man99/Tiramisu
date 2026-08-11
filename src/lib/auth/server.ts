@@ -5,7 +5,7 @@ import { SESSION_COOKIE, SESSION_MAX_AGE, createSessionToken, verifySessionToken
 
 /**
  * Server-only helpers for reading and writing the session. Import these in server
- * components, route handlers and server actions — never in client code.
+ * components, route handlers and server actions, never in client code.
  */
 
 /** The authenticated profile id, or null. */

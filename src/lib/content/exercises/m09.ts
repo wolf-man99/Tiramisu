@@ -1,17 +1,17 @@
 import { ex } from './helpers';
 
 /**
- * Module 9 — BigQuery in anger (day 11).
+ * Module 9, BigQuery in anger (day 11).
  *
  * 14 exercises. The distinguishing skill of a BigQuery analyst is not syntax, it is
  * knowing what a query costs and why. Everything here is about bytes scanned, nested
- * data, and the two structural decisions — partitioning and clustering — that decide
+ * data, and the two structural decisions, partitioning and clustering, that decide
  * whether a table is cheap or ruinous to query.
  */
 export const M09 = [
   ex('9.1', 11, 'easy',
     'Select only what you need',
-    'The habit that saves the most money: return `date`, `campaign_id` and `cost` from `google_ads_daily` for June 2024, ordered by date then campaign_id, limit 20 — never `SELECT *`.',
+    'The habit that saves the most money: return `date`, `campaign_id` and `cost` from `google_ads_daily` for June 2024, ordered by date then campaign_id, limit 20, never `SELECT *`.',
     ['google_ads_daily'], ['cost-optimisation'],
     `SELECT date, campaign_id, cost
 FROM google_ads_daily
@@ -20,13 +20,13 @@ ORDER BY date, campaign_id, ad_group_id
 LIMIT 20`,
     ['BigQuery is columnar: it reads only the columns you name.',
       'Three columns out of nine costs a third of the bytes.',
-      'LIMIT does not reduce cost — the scan happens before the limit.'],
+      'LIMIT does not reduce cost, the scan happens before the limit.'],
     { orderMatters: true,
       explanation: 'On-demand BigQuery bills for bytes *scanned*, not rows returned. `SELECT *` with a `LIMIT 10` scans the entire table and charges you for all of it. This is the single most expensive habit a new BigQuery user brings with them.' }),
 
   ex('9.2', 11, 'easy',
     'Partition pruning',
-    'Return `days` and `total_cost` from `google_ads_daily` for a single partition — 2024-06-14 — by filtering on the partitioning column.',
+    'Return `days` and `total_cost` from `google_ads_daily` for a single partition, 2024-06-14, by filtering on the partitioning column.',
     ['google_ads_daily'], ['partitioning', 'cost-optimisation'],
     `SELECT COUNT(DISTINCT date) AS days, SUM(cost) AS total_cost
 FROM google_ads_daily
@@ -38,7 +38,7 @@ WHERE date = '2024-06-14'`,
 
   ex('9.3', 11, 'medium',
     'The filter that breaks pruning',
-    'Return `pruned_rows` and `unpruned_rows` — both counting June 2024 rows in google_ads_daily, one filtering on the raw date column and one wrapping it in FORMAT_DATE. The answers match; the cost does not.',
+    'Return `pruned_rows` and `unpruned_rows`: both counting June 2024 rows in google_ads_daily, one filtering on the raw date column and one wrapping it in FORMAT_DATE. The answers match; the cost does not.',
     ['google_ads_daily'], ['partitioning', 'cost-optimisation'],
     `SELECT
   (SELECT COUNT(*) FROM google_ads_daily
@@ -65,11 +65,11 @@ WHERE date BETWEEN '2024-06-01' AND '2024-06-30'
 GROUP BY campaign_id`,
     ['Filter the partition first, then the cluster key.',
       'Clustering sorts data within each partition, so a filter on the cluster key skips blocks.'],
-    { explanation: 'Partitioning eliminates whole partitions; clustering eliminates blocks within the partitions that survive. Clustering only helps if you filter or aggregate on the cluster key — otherwise it is free but useless.' }),
+    { explanation: 'Partitioning eliminates whole partitions; clustering eliminates blocks within the partitions that survive. Clustering only helps if you filter or aggregate on the cluster key. Otherwise it is free but useless.' }),
 
   ex('9.5', 11, 'medium',
     'Aggregate rather than export',
-    'Return `campaign_id` and `spend` per campaign for 2024 — 24 rows instead of 19,000. Order by spend descending.',
+    'Return `campaign_id` and `spend` per campaign for 2024, 24 rows instead of 19,000. Order by spend descending.',
     ['google_ads_daily'], ['cost-optimisation', 'group-by'],
     `SELECT campaign_id, SUM(cost) AS spend
 FROM google_ads_daily
@@ -90,14 +90,14 @@ GROUP BY param_key
 ORDER BY occurrences DESC, param_key
 LIMIT 10`,
     ['`FROM table, UNNEST(array) AS alias` flattens the array into rows.',
-      'The comma is an implicit CROSS JOIN — each event becomes one row per parameter.',
+      'The comma is an implicit CROSS JOIN. Each event becomes one row per parameter.',
       'Alias the unnested value so you can reach its fields.'],
     { orderMatters: true,
       explanation: 'UNNEST multiplies your row count by the array length. 56,000 events with ~7 params each become ~390,000 rows. That is fine when you filter first and fatal when you do not.' }),
 
   ex('9.7', 11, 'hard',
     'Pull one parameter out',
-    'Return `page` and `views` — the 10 most-viewed `page_location` values from page_view events.',
+    'Return `page` and `views`, the 10 most-viewed `page_location` values from page_view events.',
     ['ga4_events'], ['unnest', 'ga4-params'],
     `SELECT
   (SELECT ep.value.string_value FROM UNNEST(e.event_params) AS ep WHERE ep.key = 'page_location') AS page,
@@ -109,9 +109,9 @@ ORDER BY views DESC, page
 LIMIT 10`,
     ['A scalar subquery over UNNEST pulls out exactly one parameter without fanning out the outer query.',
       'Read the sub-field that matches the parameter\'s type: string_value, int_value or double_value.',
-      'This is the standard GA4 idiom — learn it by heart.'],
+      'This is the standard GA4 idiom. Learn it by heart.'],
     { orderMatters: true,
-      explanation: 'The scalar-subquery form keeps the outer query at one row per event. The alternative — UNNEST in the FROM and filter on key — also works but changes the grain, which matters the moment you need two parameters at once.' }),
+      explanation: 'The scalar-subquery form keeps the outer query at one row per event. The alternative, UNNEST in the FROM and filter on key, also works but changes the grain, which matters the moment you need two parameters at once.' }),
 
   ex('9.8', 11, 'hard',
     'Two parameters at once',
@@ -140,7 +140,7 @@ FROM ga4_events
 GROUP BY device_category, country
 ORDER BY events DESC, device_category, country
 LIMIT 10`,
-    ['A STRUCT is a nested record — reach into it with a dot.',
+    ['A STRUCT is a nested record, reach into it with a dot.',
       'No UNNEST needed: a STRUCT is one value, not a repeated one.'],
     { orderMatters: true,
       explanation: 'STRUCT (nested, one value) and ARRAY (repeated, many values) are different things and need different treatment. `device` is a STRUCT so `device.category` just works; `event_params` is an ARRAY so it needs UNNEST.' }),
@@ -157,7 +157,7 @@ WHERE e.event_name = 'purchase'
 GROUP BY item_category
 ORDER BY revenue DESC, item_category`,
     ['`items` is a repeated STRUCT, so UNNEST it and read its fields.',
-      'Filter to purchase events first — every other event has an empty items array.'],
+      'Filter to purchase events first. Every other event has an empty items array.'],
     { orderMatters: true }),
 
   ex('9.11', 11, 'hard',
@@ -177,7 +177,7 @@ ORDER BY day`,
 
   ex('9.12', 11, 'hard',
     'Rebuild a session from raw events',
-    'Return `sessions` — the count of distinct sessions in `ga4_events`, identified by user_pseudo_id plus ga_session_id — and `events`.',
+    'Return `sessions`. The count of distinct sessions in `ga4_events`, identified by user_pseudo_id plus ga_session_id, and `events`.',
     ['ga4_events'], ['ga4-schema', 'distinct', 'string-functions'],
     `SELECT COUNT(DISTINCT CONCAT(user_pseudo_id, '-', CAST(ga_session_id AS STRING))) AS sessions,
        COUNT(*) AS events
@@ -197,14 +197,14 @@ WHERE event_name = 'purchase'
 GROUP BY event_date
 ORDER BY event_date`,
     ['`event_date` is a STRING in YYYYMMDD form, and it is the partitioning column.',
-      'Compare it to string literals in the same format — no PARSE_DATE needed.',
+      'Compare it to string literals in the same format, no PARSE_DATE needed.',
       'YYYYMMDD sorts correctly as text, so BETWEEN works.'],
     { orderMatters: true,
       explanation: 'This is why the GA4 export stores dates as YYYYMMDD strings: the format sorts and ranges correctly as text, so you get partition pruning without a single conversion. `WHERE PARSE_DATE(\'%Y%m%d\', event_date) BETWEEN …` returns the same rows and scans the whole table.' }),
 
   ex('9.14', 11, 'expert',
     'Filter before you UNNEST',
-    'Return `param_key` and `occurrences` for parameters on purchase events in December 2024 only — filtering on the partition column *and* the event name before the UNNEST does its damage. Top 10.',
+    'Return `param_key` and `occurrences` for parameters on purchase events in December 2024 only, filtering on the partition column *and* the event name before the UNNEST does its damage. Top 10.',
     ['ga4_events'], ['unnest', 'cost-optimisation', 'partitioning'],
     `SELECT ep.key AS param_key, COUNT(*) AS occurrences
 FROM ga4_events e, UNNEST(e.event_params) AS ep

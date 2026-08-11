@@ -30,7 +30,7 @@ function mulberry32(seed: number) {
 }
 
 async function main() {
-  // Flashcards (content — replace wholesale so edits propagate).
+  // Flashcards (content, replace wholesale so edits propagate).
   for (const f of FLASHCARDS) {
     await prisma.flashcard.upsert({
       where: { id: f.id },
@@ -39,7 +39,7 @@ async function main() {
     });
   }
 
-  // Rivals — deterministic curves so the board is stable across reseeds.
+  // Rivals. Deterministic curves so the board is stable across reseeds.
   const rng = mulberry32(424242);
   for (let i = 0; i < RIVAL_NAMES.length; i++) {
     const [name, country] = RIVAL_NAMES[i];

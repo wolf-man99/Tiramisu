@@ -22,7 +22,7 @@ export const DAYS_01_05: DayContent[] = [
         'That repetition is the problem a database exists to solve.',
       ),
       p(
-        'A spreadsheet has exactly one grain — one row per whatever the export happened to be. ' +
+        'A spreadsheet has exactly one grain, one row per whatever the export happened to be. ' +
         'A warehouse has one grain *per table*, and the whole skill of analysis is keeping track ' +
         'of which one you are standing on.',
       ),
@@ -33,8 +33,8 @@ export const DAYS_01_05: DayContent[] = [
       h('Facts and dimensions'),
       p(
         'Warehouse tables come in two flavours. **Facts** measure events: they are tall, narrow ' +
-        'and append-only — `orders`, `google_ads_daily`, `ga4_events`. **Dimensions** describe ' +
-        'things: short, wide and slow-changing — `products`, `customers`, `google_ads_campaigns`.',
+        'and append-only: `orders`, `google_ads_daily`, `ga4_events`. **Dimensions** describe ' +
+        'things: short, wide and slow-changing: `products`, `customers`, `google_ads_campaigns`.',
       ),
       p(
         'Almost every analytical query joins one to the other: a fact for the numbers, a ' +
@@ -45,7 +45,7 @@ export const DAYS_01_05: DayContent[] = [
         [
           ['`google_ads_campaigns`', 'dimension', 'one row per campaign'],
           ['`google_ads_daily`', 'fact', 'one row per date × ad group'],
-          ['`orders`', 'fact', 'one row per order (allegedly — check it)'],
+          ['`orders`', 'fact', 'one row per order (allegedly. Check it)'],
           ['`order_items`', 'fact', 'one row per order × product'],
           ['`ga4_events`', 'fact', 'one row per event'],
           ['`products`', 'dimension', 'one row per product'],
@@ -55,13 +55,13 @@ export const DAYS_01_05: DayContent[] = [
       h('Keys'),
       p(
         'A **primary key** uniquely identifies a row. A **foreign key** is a column holding ' +
-        'values that exist as keys in another table. That is the whole idea — there is no magic, ' +
+        'values that exist as keys in another table. That is the whole idea. There is no magic, ' +
         'and in BigQuery there is no enforcement either.',
       ),
       call(
         'trap',
         'Never assume a column named *_id is unique',
-        'BigQuery does not enforce primary keys. In this warehouse `orders.order_id` repeats — ' +
+        'BigQuery does not enforce primary keys. In this warehouse `orders.order_id` repeats, ' +
         'a webhook replayed and duplicated 26 orders. Every revenue figure computed without ' +
         'deduplicating is overstated. Check with COUNT(*) vs COUNT(DISTINCT id) before you trust it.',
       ),
@@ -70,7 +70,7 @@ export const DAYS_01_05: DayContent[] = [
         'Splitting repeated data into its own table is called normalisation. It exists so that ' +
         'renaming a campaign is one edit instead of fourteen thousand, and so that a campaign ' +
         'with no spend yet still exists somewhere. The cost is that you have to join things back ' +
-        'together — which is what days 6 and 7 are about.',
+        'together, which is what days 6 and 7 are about.',
       ),
       call(
         'engine',
@@ -84,7 +84,7 @@ export const DAYS_01_05: DayContent[] = [
       kind: 'normalization',
       title: 'From flat export to normalised warehouse',
       caption:
-        'Watch a 40-column ad export split into campaigns, ad groups and daily metrics — and ' +
+        'Watch a 40-column ad export split into campaigns, ad groups and daily metrics, and ' +
         'watch every redundant cell disappear as it does.',
     },
     examples: [
@@ -95,7 +95,7 @@ export const DAYS_01_05: DayContent[] = [
   (SELECT COUNT(*) FROM google_ads_campaigns) AS campaigns,
   (SELECT COUNT(*) FROM google_ads_daily) AS campaign_day_rows`,
         takeaway:
-          'Both are COUNT(*), and they mean completely different things — because the two tables ' +
+          'Both are COUNT(*), and they mean completely different things, because the two tables ' +
           'have different grains. The function did not change; the table did.',
       },
       {
@@ -106,7 +106,7 @@ export const DAYS_01_05: DayContent[] = [
 FROM google_ads_daily`,
         takeaway:
           'The two numbers match, so the grain is confirmed. The separator in the concatenation ' +
-          'is not decoration — without it, ("2024-01-1","23") and ("2024-01-12","3") would collide.',
+          'is not decoration: without it, ("2024-01-1","23") and ("2024-01-12","3") would collide.',
       },
       {
         title: 'The grain ladder',
@@ -145,13 +145,13 @@ FROM subscriptions`,
           'Because it is nullable',
           'Because it is also a foreign key'],
         1,
-        'BigQuery enforces nothing. A webhook replay duplicated 26 orders, so COUNT(*) exceeds COUNT(DISTINCT order_id) — and every naive SUM is overstated.'),
+        'BigQuery enforces nothing. A webhook replay duplicated 26 orders, so COUNT(*) exceeds COUNT(DISTINCT order_id), and every naive SUM is overstated.'),
       predict('d1q3', 'What will this return?',
         `SELECT COUNT(*) AS a, COUNT(DISTINCT campaign_id) AS b FROM google_ads_daily`,
         ['a and b are equal',
           'a is much larger than b',
           'b is larger than a',
-          'It errors — you cannot mix COUNT(*) and COUNT(DISTINCT)'],
+          'It errors. You cannot mix COUNT(*) and COUNT(DISTINCT)'],
         1,
         'The table has one row per date per ad group, so each campaign appears on hundreds of rows. a counts rows; b counts campaigns.'),
       mcq('d1q4', 'Which of these is a dimension table?',
@@ -164,7 +164,7 @@ FROM subscriptions`,
       timeLimitSec: 600,
       questions: [
         mcq('d1a1', 'A table has 6,610 rows and 6,584 distinct order_ids. What do you conclude?',
-          ['The table is fine — ids can repeat',
+          ['The table is fine. Ids can repeat',
             '26 orders are duplicated and any SUM over this table is overstated',
             'There are 26 orders missing',
             'order_id is a foreign key'],
@@ -197,7 +197,7 @@ FROM subscriptions`,
         'where the data quality problems are.',
       tasks: [
         task('audit-counts', 'Row counts across the warehouse',
-          'Return `customers`, `orders`, `order_items`, `sessions` and `events` — one row of counts.',
+          'Return `customers`, `orders`, `order_items`, `sessions` and `events`. One row of counts.',
           `SELECT
   (SELECT COUNT(*) FROM customers)     AS customers,
   (SELECT COUNT(*) FROM orders)        AS orders,
@@ -205,7 +205,7 @@ FROM subscriptions`,
   (SELECT COUNT(*) FROM ga4_sessions)  AS sessions,
   (SELECT COUNT(*) FROM ga4_events)    AS events`,
           ['Five scalar subqueries in one SELECT.',
-            'Each is independent — no FROM clause on the outer query.']),
+            'Each is independent, no FROM clause on the outer query.']),
         task('audit-keys', 'Key uniqueness check',
           'Return `order_rows`, `distinct_orders`, `customer_rows` and `distinct_customers` so you can see which keys are trustworthy.',
           `SELECT
@@ -241,8 +241,8 @@ FROM subscriptions`,
       ),
       h('Projection: choosing columns'),
       p(
-        'Listing columns after SELECT is called projection. You can also compute new ones — ' +
-        'arithmetic, string operations, conditionals — and they exist only in the output, ' +
+        'Listing columns after SELECT is called projection. You can also compute new ones, ' +
+        'arithmetic, string operations, conditionals: and they exist only in the output, ' +
         'stored nowhere.',
       ),
       sql(
@@ -264,13 +264,13 @@ FROM products`,
       h('Aliases'),
       p(
         '`AS` renames a column in the output. Aliases with spaces or punctuation need double ' +
-        'quotes. Crucially, an alias exists only in the output — `WHERE` cannot see it, because ' +
+        'quotes. Crucially, an alias exists only in the output: `WHERE` cannot see it, because ' +
         'WHERE runs before SELECT. `ORDER BY` can, because it runs after.',
       ),
       h('ORDER BY and LIMIT'),
       p(
         'Sorting takes a list of columns, each with its own direction. `LIMIT` slices *after* ' +
-        'the sort — the database orders everything, then hands you the top n.',
+        'the sort: the database orders everything, then hands you the top n.',
       ),
       call(
         'trap',
@@ -283,7 +283,7 @@ FROM products`,
       h('DISTINCT'),
       p(
         '`SELECT DISTINCT` removes duplicate rows across the *whole* select list. ' +
-        '`SELECT DISTINCT a, b` gives distinct pairs — not distinct a alongside distinct b. ' +
+        '`SELECT DISTINCT a, b` gives distinct pairs, not distinct a alongside distinct b. ' +
         'Running it on a column before you filter on it is the cheapest way to avoid an hour ' +
         'lost to `WHERE channel_type = \'Search\'` returning nothing because the data says `SEARCH`.',
       ),
@@ -345,7 +345,7 @@ LIMIT 15`,
     practice: ['2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '2.7', '2.8', '2.9', '2.10', '2.11', '2.12'],
     quiz: [
       mcq('d2q1', 'Why does `SELECT * FROM ga4_events LIMIT 10` cost as much as reading the whole table?',
-        ['It does not — LIMIT reduces the scan',
+        ['It does not - LIMIT reduces the scan',
           'Because BigQuery bills bytes scanned, and the scan happens before the limit',
           'Because ga4_events has no index',
           'Because LIMIT is applied on the client'],
@@ -372,7 +372,7 @@ WHERE monthly_budget > 5000`,
           'An error',
           'Distinct campaign_ids and separately distinct names'],
         1,
-        'DISTINCT applies to the whole select list. If a campaign was ever renamed, its id appears twice — which is exercise 2.14.'),
+        'DISTINCT applies to the whole select list. If a campaign was ever renamed, its id appears twice, which is exercise 2.14.'),
     ],
     assessment: {
       passScore: 0.7,
@@ -397,7 +397,7 @@ ORDER BY daily_budget DESC LIMIT 5`,
             'ROUND(clicks / impressions, 2)',
             'AVG(clicks / impressions)'],
           1,
-          'SAFE_DIVIDE returns NULL rather than erroring on a zero denominator. Option 4 is also the wrong metric — never average a rate.'),
+          'SAFE_DIVIDE returns NULL rather than erroring on a zero denominator. Option 4 is also the wrong metric, never average a rate.'),
       ],
       exerciseIds: ['2.13', '2.15'],
     },
@@ -449,7 +449,7 @@ ORDER BY creative_format, adset_name`,
     theory: [
       h('WHERE runs first'),
       p(
-        '`WHERE` filters rows before anything else happens — before grouping, before SELECT. ' +
+        '`WHERE` filters rows before anything else happens: before grouping, before SELECT. ' +
         'That is why it cannot see aggregates or aliases, and why it is the cheapest place to ' +
         'cut data.',
       ),
@@ -463,25 +463,25 @@ ORDER BY creative_format, adset_name`,
         "WHERE channel_type = 'SEARCH'\n  AND country = 'US'\n   OR country = 'GB'",
         'What it means',
         "WHERE (channel_type = 'SEARCH'\n       AND country = 'US')\n   OR country = 'GB'",
-        'Every UK campaign of every channel type comes back. When AND and OR appear together, bracket — even when you are sure.',
+        'Every UK campaign of every channel type comes back. When AND and OR appear together, bracket. Even when you are sure.',
       ),
       h('Shorthands'),
       list([
-        '`col IN (a, b, c)` — the same plan as a chain of ORs, but harder to bracket wrongly.',
-        '`col BETWEEN a AND b` — **inclusive on both ends**. `BETWEEN \'2024-03-01\' AND \'2024-04-01\'` includes a day of April.',
-        '`col LIKE \'pattern\'` — `%` matches any run of characters, `_` matches exactly one.',
+        '`col IN (a, b, c)`: the same plan as a chain of ORs, but harder to bracket wrongly.',
+        '`col BETWEEN a AND b`, **inclusive on both ends**. `BETWEEN \'2024-03-01\' AND \'2024-04-01\'` includes a day of April.',
+        '`col LIKE \'pattern\'`: `%` matches any run of characters, `_` matches exactly one.',
       ]),
       call(
         'trap',
         'The underscore in LIKE is a wildcard',
-        '`LIKE \'GB_%\'` does not mean "starts with GB underscore" — it means "starts with GB, ' +
+        '`LIKE \'GB_%\'` does not mean "starts with GB underscore". It means "starts with GB, ' +
         'then any character, then anything". A literal underscore needs escaping: ' +
         "`LIKE 'GB\\_%' ESCAPE '\\'`.",
       ),
       h('NULL is not a value'),
       p(
         'NULL is the *absence* of a value. It is not zero, not empty string, and not equal to ' +
-        'anything — including itself. Every comparison involving NULL evaluates to UNKNOWN, and ' +
+        'anything, including itself. Every comparison involving NULL evaluates to UNKNOWN, and ' +
         '`WHERE` keeps only rows that are TRUE.',
       ),
       table(
@@ -518,7 +518,7 @@ ORDER BY creative_format, adset_name`,
       kind: 'truth-table',
       title: 'Three-valued logic, live',
       caption:
-        'Toggle A, B and NULL and watch AND, OR and NOT resolve — with the live row count from ' +
+        'Toggle A, B and NULL and watch AND, OR and NOT resolve, with the live row count from ' +
         '`orders` updating underneath so you can see what each choice costs you.',
     },
     examples: [
@@ -637,8 +637,8 @@ WHERE channel_type = 'SEARCH' AND country = 'US' OR country = 'GB'`,
     project: {
       title: 'Wasted-spend finder',
       brief:
-        'Find the money Northbeam burned in 2024 — campaign-days with real spend and nothing to ' +
-        'show for it — with every filter defensible out loud.',
+        'Find the money Northbeam burned in 2024, campaign-days with real spend and nothing to ' +
+        'show for it, with every filter defensible out loud.',
       tasks: [
         task('waste-list', 'The offender list',
           'Return `date`, `campaign_id`, `cost`, `impressions` and `clicks` for campaign-days with cost above 30, zero conversions, impressions above zero, on or before 2024-12-29. Highest cost first, top 25.',
@@ -651,7 +651,7 @@ LIMIT 25`,
             'Each one should be defensible to a sceptical stakeholder.'],
           { orderMatters: true }),
         task('waste-total', 'The headline number',
-          'Return `wasted_spend` and `wasted_days` — the total across all those campaign-days.',
+          'Return `wasted_spend` and `wasted_days`, the total across all those campaign-days.',
           `SELECT SUM(cost) AS wasted_spend, COUNT(*) AS wasted_days
 FROM google_ads_daily
 WHERE cost > 30 AND conversions = 0 AND impressions > 0 AND date <= '2024-12-29'`,
@@ -666,7 +666,7 @@ WHERE cost > 30 AND conversions = 0 AND impressions > 0 AND date <= '2024-12-29'
     day: 4,
     module: 4,
     moduleTitle: 'Aggregation',
-    title: 'COUNT, SUM, AVG — and never averaging a rate',
+    title: 'COUNT, SUM, AVG - and never averaging a rate',
     subtitle: 'The single most valuable idea in the course',
     objective:
       'Compute correct rate metrics, and explain why the naive version can be seven times wrong.',
@@ -695,13 +695,13 @@ FROM ga4_events`,
         'trap',
         'COUNT(column) looks like COUNT(*) and is not',
         'It silently skips NULLs. If you write "users" in a report, be able to say which of the ' +
-        'three you meant — and check whether the column you counted has NULLs in it.',
+        'three you meant, and check whether the column you counted has NULLs in it.',
       ),
       h('The rule that matters most'),
       key('A rate is a ratio of sums, never a mean of ratios.'),
       p(
         'Averaging per-row CTR gives a campaign-day with 12 impressions exactly as much weight ' +
-        'as one with 40,000. In this warehouse that produces 6.6% instead of the true 0.96% — a ' +
+        'as one with 40,000. In this warehouse that produces 6.6% instead of the true 0.96%, a ' +
         'factor of seven, from the same data, with no error message.',
       ),
       compare(
@@ -714,8 +714,8 @@ FROM ga4_events`,
       h('AVG and NULLs'),
       p(
         '`AVG` skips NULLs, which shrinks the denominator without telling you. Sometimes that is ' +
-        'right — an unsurveyed support ticket should not count as a zero CSAT. Sometimes it is ' +
-        'catastrophic — a missing discount really does mean zero. Decide, do not default.',
+        'right. An unsurveyed support ticket should not count as a zero CSAT. Sometimes it is ' +
+        'catastrophic. A missing discount really does mean zero. Decide, do not default.',
       ),
       h('GROUP BY'),
       p(
@@ -726,7 +726,7 @@ FROM ga4_events`,
       call(
         'info',
         'COUNTIF is your friend',
-        '`COUNTIF(condition)` counts rows matching a condition — BigQuery shorthand for ' +
+        '`COUNTIF(condition)` counts rows matching a condition, BigQuery shorthand for ' +
         '`COUNT(CASE WHEN cond THEN 1 END)`. It returns 0 rather than NULL on empty input, ' +
         'which `SUM(CASE …)` would not.',
       ),
@@ -735,7 +735,7 @@ FROM ga4_events`,
       kind: 'grain',
       title: 'Weighted vs unweighted, side by side',
       caption:
-        'Two campaign-days — one with 12 impressions, one with 40,000 — and the two CTR ' +
+        'Two campaign-days, one with 12 impressions, one with 40,000, and the two CTR ' +
         'calculations racing each other. Drag the volume slider and watch them diverge.',
     },
     examples: [
@@ -780,7 +780,7 @@ FROM google_ads_daily`,
     playground: {
       prompt:
         'Compute CTR both ways for a single campaign, then for the whole account. The gap grows ' +
-        'as the volume distribution gets more uneven — try to find the campaign where the two ' +
+        'as the volume distribution gets more uneven. Try to find the campaign where the two ' +
         'numbers disagree most.',
       starter: `SELECT campaign_id,
        SAFE_DIVIDE(SUM(clicks), SUM(impressions)) AS weighted_ctr,
@@ -813,7 +813,7 @@ LIMIT 10`,
         ['All of them',
           'Every non-aggregated column in the SELECT list',
           'Only the first column',
-          'None — it is optional'],
+          'None. It is optional'],
         1,
         'Otherwise the database cannot know which of the many bucketed values to show for that column.'),
     ],
@@ -842,7 +842,7 @@ LIMIT 10`,
             'The average of each campaign\'s open rate',
             'Click-to-open rate'],
           1,
-          'Delivered is the right denominator — a bounced email never had a chance to be opened. And the ratio-of-sums weights big sends properly.'),
+          'Delivered is the right denominator. A bounced email never had a chance to be opened. And the ratio-of-sums weights big sends properly.'),
       ],
       exerciseIds: ['4.9', '4.17'],
     },
@@ -888,7 +888,7 @@ FROM ad_spend_daily
 GROUP BY platform
 ORDER BY spend DESC`,
           ['The view already unions all three platforms.',
-            'Remember a LinkedIn "conversion" is a lead, not a purchase — the columns are not comparable.'],
+            'Remember a LinkedIn "conversion" is a lead, not a purchase. The columns are not comparable.'],
           { orderMatters: true }),
       ],
     },
@@ -929,7 +929,7 @@ ORDER BY spend DESC`,
       h('HAVING vs WHERE'),
       p(
         'They do the same job at different stages. WHERE filters rows before grouping; HAVING ' +
-        'filters groups after. Both can appear in the same query, and usually should — filter ' +
+        'filters groups after. Both can appear in the same query, and usually should. Filter ' +
         'rows as early as possible, then filter the groups.',
       ),
       compare(
@@ -941,7 +941,7 @@ ORDER BY spend DESC`,
       ),
       h('Grouping by an expression'),
       p(
-        'You can GROUP BY anything you can SELECT — a CASE, a date truncation, a cleaned string. ' +
+        'You can GROUP BY anything you can SELECT: a CASE, a date truncation, a cleaned string. ' +
         'The catch is that the *same* expression must appear in both places, or the groups will ' +
         'not collapse the way the output suggests.',
       ),
@@ -956,7 +956,7 @@ ORDER BY spend DESC`,
       p(
         'Any rate computed on a small denominator is noise. A keyword with four clicks and no ' +
         'conversions has an infinite CPA and tells you nothing. HAVING is where you impose the ' +
-        'floor — and you should choose the threshold before you look at the results, then state ' +
+        'floor: and you should choose the threshold before you look at the results, then state ' +
         'it in the report.',
       ),
     ],
@@ -964,7 +964,7 @@ ORDER BY spend DESC`,
       kind: 'execution-order',
       title: 'The pipeline, one clause at a time',
       caption:
-        'Step through a query clause by clause and watch the row count change after each stage — ' +
+        'Step through a query clause by clause and watch the row count change after each stage, ' +
         'from 19,341 raw rows down to the five that reach the output.',
     },
     examples: [
@@ -1041,7 +1041,7 @@ FROM google_ads_daily
 WHERE SUM(cost) > 20000
 GROUP BY campaign_id`,
         ['SUM needs a GROUP BY first',
-          'WHERE runs before GROUP BY, so the aggregate does not exist yet — use HAVING',
+          'WHERE runs before GROUP BY, so the aggregate does not exist yet. Use HAVING',
           'The alias should be quoted',
           'campaign_id must be aggregated'],
         1,
@@ -1049,7 +1049,7 @@ GROUP BY campaign_id`,
       mcq('d5q3', 'You group by `city` but clean it only in SELECT. What happens?',
         ['The query errors',
           'The output looks clean but London still appears four times',
-          'Nothing — SQL cleans it in both places',
+          'Nothing - SQL cleans it in both places',
           'The rows merge correctly'],
         1,
         'Grouping used the four dirty values. The display is cosmetic; the grouping is what counts.'),

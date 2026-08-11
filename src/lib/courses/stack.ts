@@ -1,11 +1,11 @@
 /**
- * The performance-marketing skill stack — four layers that together make a complete
+ * The performance-marketing skill stack. Four layers that together make a complete
  * performance marketer. This is the *positioning* view of the catalog: the homepage
  * shows the four layers as cards, /courses expands each into its full tool list.
  *
  * Individual shipped courses still live in registry.ts; this file references them by
  * slug so a course that goes live is a one-line status change here, not a rewrite.
- * Layer accents reuse Tiramisu's existing six-colour system — no new hues.
+ * Layer accents reuse Tiramisu's existing six-colour system, no new hues.
  */
 
 export type StackItemStatus = 'live' | 'coming-next' | 'coming-soon';
@@ -47,7 +47,7 @@ export const STACK: StackLayer[] = [
     index: '02',
     slug: 'tracking-measurement',
     title: 'Tracking & Measurement',
-    tagline: 'Know what actually happened — before you optimise it.',
+    tagline: 'Know what actually happened, before you optimise it.',
     accent: 'var(--teal)',
     items: [
       { label: 'Google Tag Manager', status: 'coming-soon' },
@@ -83,7 +83,7 @@ export const STACK: StackLayer[] = [
     index: '04',
     slug: 'growth-optimization',
     title: 'Growth & Optimization',
-    tagline: 'Compound the wins — test, convert, automate.',
+    tagline: 'Compound the wins. Test, convert, automate.',
     accent: 'var(--amber)',
     items: [
       { label: 'CRO', status: 'coming-soon' },
@@ -118,7 +118,7 @@ export interface MethodLayer {
 export const METHOD_LAYERS: MethodLayer[] = [
   {
     name: 'Strategy',
-    summary: 'Decide what a win looks like — before you spend.',
+    summary: 'Decide what a win looks like, before you spend.',
     detail:
       'Who you are selling to, what you are offering them, and the number that tells you it worked. Every layer below inherits these answers, so getting them wrong is expensive in nine different ways.',
     skills: ['Positioning', 'ICP', 'Offer design', 'Budget planning'],
@@ -134,7 +134,7 @@ export const METHOD_LAYERS: MethodLayer[] = [
     name: 'Creative',
     summary: 'The single biggest lever in paid media.',
     detail:
-      'Targeting has largely been automated away. What you say and how you show it is the variable you still control — and the one that moves CAC the most.',
+      'Targeting has largely been automated away. What you say and how you show it is the variable you still control, and the one that moves CAC the most.',
     skills: ['Hooks & angles', 'Ad formats', 'Creative testing', 'Iteration'],
   },
   {
@@ -174,7 +174,7 @@ export const METHOD_LAYERS: MethodLayer[] = [
   },
   {
     name: 'Growth',
-    summary: 'Compound it — beyond the campaign.',
+    summary: 'Compound it, beyond the campaign.',
     detail:
       'Retention, LTV, lifecycle and the loops that keep paying after the ad stops. Where a good performance marketer turns into a growth owner.',
     skills: ['LTV', 'Lifecycle', 'Retention', 'Experimentation'],

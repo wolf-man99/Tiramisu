@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 4 — Aggregation, GROUP BY and HAVING (days 4 and 5).
+ * Module 4: Aggregation, GROUP BY and HAVING (days 4 and 5).
  *
  * 40 exercises. The load-bearing idea is *never average a rate*: a weighted rate and
  * an average of rates are different numbers, and the second one is almost always
@@ -51,7 +51,7 @@ FROM ga4_events`,
 
   ex('4.5', 4, 'easy',
     'How long is our data?',
-    'Return `first_date` and `last_date` — the earliest and latest `order_date` in `orders`.',
+    'Return `first_date` and `last_date`, the earliest and latest `order_date` in `orders`.',
     ['orders'], ['min-max'],
     'SELECT MIN(order_date) AS first_date, MAX(order_date) AS last_date FROM orders',
     ['MIN/MAX on an ISO date string gives the chronological extremes.',
@@ -97,7 +97,7 @@ WHERE status = 'completed'
 GROUP BY channel
 ORDER BY revenue DESC`,
     ['AOV is total revenue divided by order count.',
-      'You can compute it as SUM/COUNT rather than AVG — they agree here, and SUM/COUNT is the habit that generalises.'],
+      'You can compute it as SUM/COUNT rather than AVG: they agree here, and SUM/COUNT is the habit that generalises.'],
     { orderMatters: true }),
 
   ex('4.9', 4, 'hard',
@@ -109,7 +109,7 @@ ORDER BY revenue DESC`,
 FROM google_ads_daily`,
     ['The weighted version divides the totals.',
       'The naive version averages the per-row rates.',
-      'Both are one line each — the lesson is in the difference, not the syntax.'],
+      'Both are one line each. The lesson is in the difference, not the syntax.'],
     {
       explanation:
         'The two numbers are not close. Averaging per-row CTR gives a campaign-day with 12 impressions exactly as much weight as one with 40,000. The rule: **a rate is a ratio of sums, never a mean of ratios.** This single mistake is responsible for more wrong marketing dashboards than any other.',
@@ -133,10 +133,10 @@ JOIN google_ads_campaigns c ON c.campaign_id = d.campaign_id
 GROUP BY c.channel_type
 ORDER BY spend DESC`,
     ['Every rate is SUM(numerator) / SUM(denominator).',
-      'Wrap each division in SAFE_DIVIDE — some channels have zero conversions.',
+      'Wrap each division in SAFE_DIVIDE. Some channels have zero conversions.',
       'One GROUP BY, many aggregates.'],
     { orderMatters: true,
-      explanation: 'This shape — dimension, then volumes, then rates derived from those volumes — is the backbone of nearly every paid-media report you will ever write.' }),
+      explanation: 'This shape, dimension, then volumes, then rates derived from those volumes, is the backbone of nearly every paid-media report you will ever write.' }),
 
   ex('4.11', 4, 'medium',
     'COUNTIF for conditional counts',
@@ -151,7 +151,7 @@ FROM google_ads_daily`,
 
   ex('4.12', 4, 'medium',
     'Distinct customers who bought',
-    'Return `buyers` — the number of distinct customers with at least one completed order — and `orders`, the number of completed orders.',
+    'Return `buyers`, the number of distinct customers with at least one completed order, and `orders`, the number of completed orders.',
     ['orders'], ['count', 'distinct'],
     `SELECT COUNT(DISTINCT customer_id) AS buyers, COUNT(*) AS orders
 FROM orders
@@ -205,7 +205,7 @@ LIMIT 10`,
 
   ex('4.16', 4, 'medium',
     'Revenue per country, cleaned',
-    'Return `country` and `revenue` from completed orders, but normalise `city`-style messiness by trimming and title-casing nothing — country is clean, so just group. Order by revenue descending.',
+    'Return `country` and `revenue` from completed orders, but normalise `city`-style messiness by trimming and title-casing nothing. Country is clean, so just group. Order by revenue descending.',
     ['orders'], ['group-by', 'sum'],
     `SELECT country, SUM(gross_revenue) AS revenue
 FROM orders
@@ -223,7 +223,7 @@ ORDER BY revenue DESC, country`,
     `SELECT SUM(conversions) AS raw_conversions,
        SUM(CAST(conversions AS INT64)) AS truncated_conversions
 FROM google_ads_daily`,
-    ['`CAST(x AS INT64)` truncates towards zero — it does not round.',
+    ['`CAST(x AS INT64)` truncates towards zero. It does not round.',
       'Apply the cast per row, inside the SUM.'],
     {
       explanation:
@@ -233,7 +233,7 @@ FROM google_ads_daily`,
 
   ex('4.18', 4, 'medium',
     'Group by a computed expression',
-    'Bucket products into `price_band` — `budget` under 50, `mid` from 50 to 149, `premium` at 150 and above — and return the band with `products` and `avg_margin`. Order by avg_margin descending.',
+    'Bucket products into `price_band`: `budget` under 50, `mid` from 50 to 149, `premium` at 150 and above, and return the band with `products` and `avg_margin`. Order by avg_margin descending.',
     ['products'], ['group-by', 'case-when', 'avg'],
     `SELECT CASE WHEN list_price < 50 THEN 'budget'
             WHEN list_price < 150 THEN 'mid'
@@ -258,7 +258,7 @@ ORDER BY avg_margin DESC`,
 FROM email_campaigns
 GROUP BY segment
 ORDER BY open_rate DESC`,
-    ['Open rate is opens over *delivered*, not over sent — bounces never had a chance to open.',
+    ['Open rate is opens over *delivered*, not over sent. Bounces never had a chance to open.',
       'Click-to-open rate uses opens as the denominator.'],
     { orderMatters: true,
       explanation: 'Which denominator you choose changes the story. Click rate over *sent* measures the whole programme; click rate over *opens* measures the creative. Report the wrong one and you will optimise the wrong thing.' }),
@@ -291,7 +291,7 @@ FROM meta_ads_daily
 GROUP BY creative_format
 ORDER BY spend DESC`,
     ['Four aggregates and three derived rates from one GROUP BY.',
-      'ROAS is revenue divided by spend — a multiple, not a percentage.'],
+      'ROAS is revenue divided by spend: a multiple, not a percentage.'],
     { orderMatters: true }),
 
   ex('4.22', 4, 'hard',
@@ -309,7 +309,7 @@ GROUP BY channel
 ORDER BY total_revenue DESC`,
     ['Put the CASE *inside* the SUM, not outside it.',
       'Each CASE contributes the revenue only for its own device and 0 otherwise.',
-      'This turns rows into columns — a pivot, written by hand.'],
+      'This turns rows into columns: a pivot, written by hand.'],
     { orderMatters: true,
       explanation: 'SUM(CASE WHEN …) is the single most useful pattern in analytical SQL. Anything you would build with a spreadsheet pivot table is this, plus a GROUP BY.' }),
 
@@ -326,7 +326,7 @@ ORDER BY spend DESC`,
     ['WHERE filters rows before grouping; HAVING filters groups after.',
       'You cannot put an aggregate in WHERE.'],
     { orderMatters: true,
-      trap: '`WHERE SUM(cost) > 20000` is an error — at WHERE time the sum does not exist yet.' }),
+      trap: '`WHERE SUM(cost) > 20000` is an error, at WHERE time the sum does not exist yet.' }),
 
   ex('4.24', 5, 'medium',
     'WHERE and HAVING together',
@@ -344,7 +344,7 @@ HAVING SUM(d.clicks) > 500
 ORDER BY clicks DESC, d.campaign_id`,
     ['Row-level conditions (channel, date) go in WHERE.',
       'Group-level conditions (total clicks) go in HAVING.',
-      'Both can appear in the same query — they do different jobs.'],
+      'Both can appear in the same query. They do different jobs.'],
     { orderMatters: true }),
 
   ex('4.25', 5, 'medium',
@@ -357,7 +357,7 @@ WHERE status = 'completed'
 GROUP BY country, device
 ORDER BY revenue DESC, country, device
 LIMIT 15`,
-    ['GROUP BY takes a list — the groups become every distinct combination.',
+    ['GROUP BY takes a list. The groups become every distinct combination.',
       'Both grouped columns must appear in SELECT if you want to see them.'],
     { orderMatters: true }),
 
@@ -378,7 +378,7 @@ LIMIT 20`,
 
   ex('4.27', 5, 'medium',
     'Keywords worth looking at',
-    'Return `keyword_id`, `clicks`, `cost` and `cpa` for keywords with at least 100 clicks and at least one conversion. Order by cpa descending, top 20 — the worst offenders first.',
+    'Return `keyword_id`, `clicks`, `cost` and `cpa` for keywords with at least 100 clicks and at least one conversion. Order by cpa descending, top 20, the worst offenders first.',
     ['google_ads_keyword_daily'], ['group-by', 'having', 'safe-divide', 'rate-metrics'],
     `SELECT keyword_id,
        SUM(clicks) AS clicks,
@@ -455,13 +455,13 @@ FROM support_tickets
 GROUP BY category
 ORDER BY tickets DESC, category`,
     ['COUNTIF for the conditional count.',
-      'AVG(csat) skips the NULLs automatically — which is what you want here, since an unsurveyed ticket has no score.'],
+      'AVG(csat) skips the NULLs automatically: which is what you want here, since an unsurveyed ticket has no score.'],
     { orderMatters: true,
       explanation: 'AVG ignoring NULLs is usually right and occasionally catastrophic. Here it is right: an unsurveyed ticket should not count as a zero. For a metric like "average discount" it would be wrong, because a missing discount really is zero.' }),
 
   ex('4.32', 5, 'hard',
     'Lifecycle funnel counts',
-    'From `hubspot_contacts`, return one row with `contacts`, `mqls`, `sqls` and `customers` — counting contacts that reached each stage by their stage dates, not their current label.',
+    'From `hubspot_contacts`, return one row with `contacts`, `mqls`, `sqls` and `customers`: counting contacts that reached each stage by their stage dates, not their current label.',
     ['hubspot_contacts'], ['count', 'countif', 'null-handling', 'funnel'],
     `SELECT COUNT(*) AS contacts,
        COUNTIF(mql_date IS NOT NULL) AS mqls,
@@ -490,7 +490,7 @@ FROM hubspot_contacts`,
 
   ex('4.34', 5, 'hard',
     'Spend concentration',
-    'What share of Google spend goes to the top campaigns? Return `campaign_id`, `spend`, and `pct_of_total` — each campaign\'s share of all Google spend. Order by spend descending, top 10.',
+    'What share of Google spend goes to the top campaigns? Return `campaign_id`, `spend`, and `pct_of_total`, each campaign\'s share of all Google spend. Order by spend descending, top 10.',
     ['google_ads_daily'], ['group-by', 'subquery', 'rate-metrics', 'percent-of-total'],
     `SELECT campaign_id,
        SUM(cost) AS spend,
@@ -535,7 +535,7 @@ ORDER BY spend DESC`,
     ['One GROUP BY over the unioned view.',
       'Note that a LinkedIn "conversion" is a lead and a Meta one is a purchase.'],
     { orderMatters: true,
-      trap: 'Comparing cost_per_conversion across platforms as though the conversions were the same thing. They are not — LinkedIn counts lead-form fills, Meta counts purchases on a 7-day-click window, Google counts last-click conversions.' }),
+      trap: 'Comparing cost_per_conversion across platforms as though the conversions were the same thing. They are not. LinkedIn counts lead-form fills, Meta counts purchases on a 7-day-click window, Google counts last-click conversions.' }),
 
   ex('4.37', 5, 'hard',
     'Which cities actually matter',
@@ -556,7 +556,7 @@ ORDER BY revenue DESC, city`,
 
   ex('4.38', 5, 'hard',
     'Products that never sold',
-    'Return `product_id` and `units` for products in `order_items`, ordered by units ascending, bottom 10 — the slowest movers.',
+    'Return `product_id` and `units` for products in `order_items`, ordered by units ascending, bottom 10, the slowest movers.',
     ['order_items'], ['group-by', 'sum', 'order-by'],
     `SELECT product_id, SUM(quantity) AS units
 FROM order_items
@@ -566,7 +566,7 @@ LIMIT 10`,
     ['Aggregate quantity per product.',
       'Ascending order puts the worst first.'],
     { orderMatters: true,
-      explanation: 'This finds the slowest *sellers*, not products that never sold at all — a product absent from order_items has no row here to be counted. Finding true zeroes needs a LEFT JOIN from products, which is day 6.' }),
+      explanation: 'This finds the slowest *sellers*, not products that never sold at all. A product absent from order_items has no row here to be counted. Finding true zeroes needs a LEFT JOIN from products, which is day 6.' }),
 
   ex('4.39', 5, 'expert',
     'Weighted vs unweighted, per campaign',
@@ -582,7 +582,7 @@ ORDER BY ABS(SAFE_DIVIDE(SUM(clicks), SUM(impressions)) - AVG(SAFE_DIVIDE(clicks
          campaign_id
 LIMIT 15`,
     ['Compute both rates per campaign, then subtract.',
-      'ORDER BY can contain an aggregate expression — including ABS() around one.'],
+      'ORDER BY can contain an aggregate expression, including ABS() around one.'],
     { orderMatters: true,
       explanation: 'The gap is largest for campaigns whose daily volume is most uneven, because that is exactly when equal-weighting each day distorts the most. Steady campaigns barely differ; bursty ones differ enormously.' }),
 

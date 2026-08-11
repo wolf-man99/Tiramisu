@@ -62,7 +62,7 @@ const DIAGRAMS: Record<DiagramVariant, () => React.ReactElement> = {
       {box(225, 34, 82, 32, 'Ad quality', C, 'relevance')}
       {arrow(160, 66, 160, 86, A)}
       {box(90, 88, 140, 34, 'Total Value', A, 'highest wins')}
-      <text x="160" y="146" textAnchor="middle" fontSize="9.5" fill="var(--text-subtle)">Great creative lifts the blue + green boxes —</text>
+      <text x="160" y="146" textAnchor="middle" fontSize="9.5" fill="var(--text-subtle)">Great creative lifts the blue + green boxes, </text>
       <text x="160" y="159" textAnchor="middle" fontSize="9.5" fill="var(--accent-text)">so you win while bidding less.</text>
     </svg>
   ),
@@ -77,7 +77,7 @@ const DIAGRAMS: Record<DiagramVariant, () => React.ReactElement> = {
       {box(238, 20, 74, 30, 'Purchase', C, 'CPA')}
       {box(84, 78, 152, 34, 'ROAS = revenue ÷ spend', A, 'the whole chain in one number')}
       {arrow(160, 50, 160, 78, A)}
-      <text x="160" y="134" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">A weak final number is caused by a weak link earlier — diagnose top-down.</text>
+      <text x="160" y="134" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">A weak final number is caused by a weak link earlier, diagnose top-down.</text>
     </svg>
   ),
   'pixel-flow': () => (
@@ -89,7 +89,7 @@ const DIAGRAMS: Record<DiagramVariant, () => React.ReactElement> = {
       {box(20, 90, 90, 34, 'Your server', C, 'same events')}
       {arrow(110, 100, 205, 60)}
       <text x="150" y="92" textAnchor="middle" fontSize="8" fill="var(--text-subtle)">CAPI (server)</text>
-      <text x="160" y="146" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">Run both, deduplicated — CAPI recovers events the browser drops.</text>
+      <text x="160" y="146" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">Run both, deduplicated. CAPI recovers events the browser drops.</text>
     </svg>
   ),
   audiences: () => (
@@ -139,7 +139,7 @@ const DIAGRAMS: Record<DiagramVariant, () => React.ReactElement> = {
       {box(90, 30, 70, 100, 'Story', W, '9:16 full')}
       {box(168, 55, 64, 50, 'Image', B, '1:1')}
       {box(240, 40, 68, 80, 'Carousel', C, 'swipe')}
-      <text x="160" y="150" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">Vertical video is native to feeds and cheapest to reach — start there.</text>
+      <text x="160" y="150" textAnchor="middle" fontSize="9" fill="var(--text-subtle)">Vertical video is native to feeds and cheapest to reach. Start there.</text>
     </svg>
   ),
   'learning-phase': () => (

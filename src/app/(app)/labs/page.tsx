@@ -4,12 +4,12 @@ import { LABS } from '@/lib/content/labs';
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, Chip } from '@/components/ui/primitives';
 
-export const metadata = { title: 'BigQuery Labs — Tiramisu' };
+export const metadata = { title: 'BigQuery Labs - Tiramisu' };
 
 export default function LabsPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 md:px-8">
-      <PageHeader title="BigQuery labs" subtitle="Hands-on labs on cost, partitioning, clustering, nested data and query optimisation — each with a real before/after." icon={<FlaskConical size={20} />} />
+      <PageHeader title="BigQuery labs" subtitle="Hands-on labs on cost, partitioning, clustering, nested data and query optimisation, each with a real before/after." icon={<FlaskConical size={20} />} />
       <div className="grid gap-3 md:grid-cols-2">
         {LABS.map((l) => (
           <Link key={l.slug} href={`/labs/${l.slug}`}>

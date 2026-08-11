@@ -36,7 +36,7 @@ export function LessonPlayer({ lesson, nextSlug }: { lesson: MetaLesson; nextSlu
 
   const next = async () => {
     if (i + 1 < total) { setI(i + 1); return; }
-    // Finished — record completion.
+    // Finished, record completion.
     setSaving(true);
     try {
       const res = await fetch('/api/progress/attempt', {
@@ -71,7 +71,7 @@ export function LessonPlayer({ lesson, nextSlug }: { lesson: MetaLesson; nextSlu
               <div className="text-xs text-[var(--text-subtle)]">checks correct</div>
             </div>
           </div>
-          {awarded === 0 && <p className="mt-3 text-xs text-[var(--text-faint)]">You’d already completed this one — no new XP, but great review.</p>}
+          {awarded === 0 && <p className="mt-3 text-xs text-[var(--text-faint)]">You’d already completed this one: no new XP, but great review.</p>}
           <div className="mt-8 flex items-center justify-center gap-3">
             <Link href="/courses/meta-ads"><Button variant="secondary" size="lg">Back to course</Button></Link>
             {nextSlug

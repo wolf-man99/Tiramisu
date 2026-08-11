@@ -5,7 +5,7 @@ import { getProfileId } from '@/lib/auth/server';
 export const runtime = 'nodejs';
 
 /**
- * Record a non-SQL graded event — a quiz answer, an assessment result, a completed
+ * Record a non-SQL graded event: a quiz answer, an assessment result, a completed
  * flashcard drill. SQL exercises go through /api/sql/grade instead.
  */
 export async function POST(req: Request) {
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'itemType and itemId are required.' }, { status: 400 });
   }
 
-  // The real gate — this is the only code path that grants XP for a lesson pass, so
+  // The real gate. This is the only code path that grants XP for a lesson pass, so
   // checking here (not just hiding the UI) is what actually stops a paywall bypass.
   if (body.courseId === 'meta-ads' && body.itemType === 'lesson') {
     const unlocked = await isMetaLessonUnlocked(profileId, body.itemId);

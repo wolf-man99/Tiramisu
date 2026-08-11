@@ -1,7 +1,7 @@
 /**
  * Data sanity checks.
  *
- * The warehouse's whole value is that its numbers are defensible — a marketer must be
+ * The warehouse's whole value is that its numbers are defensible. A marketer must be
  * able to look at any answer and recognise their own world. These assertions pin the
  * economics (CAC, ROAS, CTR, CVR, churn) into realistic bands, and pin the deliberate
  * data-quality defects that the curriculum teaches against.

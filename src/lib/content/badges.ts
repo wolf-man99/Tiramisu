@@ -56,7 +56,7 @@ export const BADGES: Badge[] = [
   {
     id: 'streak-14',
     name: 'The Fortnight',
-    description: 'Fourteen days, unbroken — the whole curriculum, one day at a time.',
+    description: 'Fourteen days, unbroken: the whole curriculum, one day at a time.',
     icon: 'flame',
     tier: 'gold',
     criterion: 'Reach a 14-day streak',
@@ -140,7 +140,7 @@ export const BADGES: Badge[] = [
   {
     id: 'day-1-done',
     name: 'Day One',
-    description: 'The first day, start to finish — theory, practice, project and reflection.',
+    description: 'The first day, start to finish: theory, practice, project and reflection.',
     icon: 'sunrise',
     tier: 'bronze',
     criterion: 'Complete every section of day 1',
@@ -290,7 +290,7 @@ export const BADGES: Badge[] = [
   {
     id: 'blind-mode',
     name: 'No Peeking',
-    description: 'You passed an exercise in blind mode — no expected output, no hints.',
+    description: 'You passed an exercise in blind mode: no expected output, no hints.',
     icon: 'eye-off',
     tier: 'gold',
     criterion: 'Pass an exercise in blind mode',

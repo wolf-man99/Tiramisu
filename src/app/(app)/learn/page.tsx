@@ -41,7 +41,7 @@ export default async function LearnPage() {
                     <h2 className="truncate font-semibold">{d.title}</h2>
                     <Chip>{d.moduleTitle}</Chip>
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-sm text-[var(--text-muted)]">{d.subtitle} — {d.objective}</p>
+                  <p className="mt-0.5 line-clamp-1 text-sm text-[var(--text-muted)]">{d.subtitle}, {d.objective}</p>
                   <div className="mt-1.5 flex items-center gap-3 text-xs text-[var(--text-subtle)]">
                     <span className="flex items-center gap-1"><Clock size={12} /> ~{d.estimatedMinutes} min</span>
                     <span>{d.practice.length} exercises</span>

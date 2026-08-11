@@ -75,7 +75,7 @@ export function titleForLevel(level: number): string {
 /**
  * XP for a graded pass. Full value on a clean first-try pass; reduced by hints used
  * and later attempts; a floor so effort always pays something. A revealed solution
- * earns nothing — you did not solve it.
+ * earns nothing. You did not solve it.
  */
 export function xpForPass(opts: {
   difficulty: Difficulty;

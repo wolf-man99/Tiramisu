@@ -63,7 +63,7 @@ function RoasCalc() {
     </>}>
       <Row label="Ad spend"><Num value={spend} onChange={setSpend} prefix="$" step={100} /></Row>
       <Row label="Revenue from ads"><Num value={revenue} onChange={setRevenue} prefix="$" step={100} /></Row>
-      <p className="pt-2 text-[11px] text-[var(--text-faint)]">*Revenue minus spend only — before product cost. See break-even ROAS next.</p>
+      <p className="pt-2 text-[11px] text-[var(--text-faint)]">*Revenue minus spend only, before product cost. See break-even ROAS next.</p>
     </Shell>
   );
 }
@@ -120,7 +120,7 @@ function LearningBudgetCalc() {
       <Result label="Budget / day" value={`$${Math.round(daily).toLocaleString()}`} tone="var(--info)" />
     </>}>
       <Row label="Target cost per conversion"><Num value={cpa} onChange={setCpa} prefix="$" /></Row>
-      <p className="pt-2 text-[11px] text-[var(--text-faint)]">An ad set needs ~50 conversions/week to exit learning. Below this budget, it never stabilises — so consolidate ad sets or optimise for a cheaper event.</p>
+      <p className="pt-2 text-[11px] text-[var(--text-faint)]">An ad set needs ~50 conversions/week to exit learning. Below this budget, it never stabilises, so consolidate ad sets or optimise for a cheaper event.</p>
     </Shell>
   );
 }
@@ -134,7 +134,7 @@ function FrequencyCalc() {
     <Shell results={<Result label="Frequency" value={`${freq.toFixed(1)}×`} tone={hot ? 'var(--danger)' : 'var(--success)'} />}>
       <Row label="Impressions"><Num value={impressions} onChange={setImpressions} step={5000} /></Row>
       <Row label="Reach (unique people)"><Num value={reach} onChange={setReach} step={5000} /></Row>
-      <p className="pt-2 text-[11px] text-[var(--text-faint)]">Frequency = impressions ÷ reach. Past ~3× on cold audiences, fatigue sets in — CTR falls and CPMs rise. Refresh creative or widen the audience.</p>
+      <p className="pt-2 text-[11px] text-[var(--text-faint)]">Frequency = impressions ÷ reach. Past ~3× on cold audiences, fatigue sets in. CTR falls and CPMs rise. Refresh creative or widen the audience.</p>
     </Shell>
   );
 }

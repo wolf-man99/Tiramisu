@@ -17,7 +17,7 @@ const COURSE_LOGO: Record<string, IconType> = {
 
 /**
  * Renders in ink rather than each brand's own colour so it sits cleanly on
- * any of the six course-accent tints — the badge behind it already carries
+ * any of the six course-accent tints. The badge behind it already carries
  * the course's identity colour, the mark just needs to be legible on it.
  */
 export function CourseLogo({

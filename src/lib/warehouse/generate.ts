@@ -22,7 +22,7 @@ export interface Dataset {
 const SEED = 20240614;
 const DAY_MS = 86_400_000;
 const START_MS = Date.UTC(2024, 0, 1);
-const DAYS = 366; // 2024 is a leap year — on purpose.
+const DAYS = 366; // 2024 is a leap year, on purpose.
 
 const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const isoTs = (ms: number) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
@@ -219,18 +219,18 @@ export function generateWarehouse(): Dataset[] {
 
   // ──────────────────────────────────────────────────── landing_pages ──
   const LP_SPECS: Array<[string, string, string, number]> = [
-    ['/', 'Northbeam — Run Further', 'product', 0],
+    ['/', 'Northbeam - Run Further', 'product', 0],
     ['/lp/run-faster', 'Run Faster in 30 Days', 'long-form', 1],
     ['/lp/trail-collection', 'The Trail Collection', 'short-form', 1],
     ['/lp/free-shipping', 'Free Shipping This Week', 'short-form', 1],
-    ['/lp/gps-watch', 'GPS Watch Pro — Pre-order', 'product', 1],
+    ['/lp/gps-watch', 'GPS Watch Pro - Pre-order', 'product', 1],
     ['/lp/black-friday', 'Black Friday: Up to 40% Off', 'long-form', 1],
     ['/collections/footwear', 'Footwear', 'category', 0],
     ['/collections/apparel', 'Apparel', 'category', 0],
     ['/collections/nutrition', 'Nutrition', 'category', 0],
     ['/products/velocity-trail-runner', 'Velocity Trail Runner', 'product', 0],
     ['/products/gps-watch-pro', 'GPS Watch Pro', 'product', 0],
-    ['/pricing', 'Northbeam Analytics — Pricing', 'pricing', 0],
+    ['/pricing', 'Northbeam Analytics - Pricing', 'pricing', 0],
     ['/lp/analytics-demo', 'Book a Demo', 'long-form', 1],
     ['/lp/analytics-trial', 'Start Your Free Trial', 'short-form', 1],
     ['/blog/marathon-training-plan', '16-Week Marathon Plan', 'blog', 0],
@@ -334,7 +334,7 @@ export function generateWarehouse(): Dataset[] {
       gAdGroups.push({
         ad_group_id: agId++,
         campaign_id: c.campaign_id,
-        ad_group_name: `${theme} — ${suffix}`,
+        ad_group_name: `${theme}, ${suffix}`,
         status: c.status === 'PAUSED' ? 'PAUSED' : rng.chance(0.9) ? 'ENABLED' : 'PAUSED',
         default_cpc_bid: round2(c.cpc * rng.float(0.9, 1.4)),
       });
@@ -343,7 +343,7 @@ export function generateWarehouse(): Dataset[] {
   ds('google_ads_ad_groups', ['ad_group_id', 'campaign_id', 'ad_group_name', 'status', 'default_cpc_bid'],
     gAdGroups.map((a) => [a.ad_group_id, a.campaign_id, a.ad_group_name, a.status, a.default_cpc_bid]));
 
-  // google_ads_daily — date × ad group
+  // google_ads_daily, date × ad group
   {
     const rows: unknown[][] = [];
     const byCampaign = new Map(gCampaigns.map((c) => [c.campaign_id, c]));
@@ -380,7 +380,7 @@ export function generateWarehouse(): Dataset[] {
         const clicks = impressions === 0 || noClicks ? 0 : Math.max(0, rng.poisson(impressions * c.ctr));
         const cost = round2(clicks * c.cpc * rng.float(0.85, 1.18));
         // Conversions are whole events drawn from a Poisson, then fractionally
-        // attributed — which is how Google reports them, and why a campaign-day with
+        // attributed: which is how Google reports them, and why a campaign-day with
         // real spend and exactly zero conversions is completely normal.
         const conversions = round2(rng.poisson(clicks * c.cvr) * rng.float(0.72, 1.0));
         const convValue = round2(conversions * c.aov * rng.float(0.75, 1.35));
@@ -431,7 +431,7 @@ export function generateWarehouse(): Dataset[] {
           campaign_id: c.campaign_id,
           keyword_text: stem,
           match_type: matchType,
-          // NULL quality score for low-traffic keywords — a deliberate NULL lesson
+          // NULL quality score for low-traffic keywords, a deliberate NULL lesson
           quality_score: lowTraffic ? null : rng.int(isBrandKw ? 8 : 3, isBrandKw ? 10 : 9),
           ctr: c.ctr * rng.float(0.55, 1.7),
           cpc: c.cpc * rng.float(0.7, 1.5),
@@ -522,7 +522,7 @@ export function generateWarehouse(): Dataset[] {
       const adsets = rng.int(1, 3);
       for (let a = 0; a < adsets; a++) {
         const adsetId = c.campaign_id * 100 + a;
-        const adsetName = `${c.name.split(' | ').slice(1).join(' | ')} — AS${a + 1}`;
+        const adsetName = `${c.name.split(' | ').slice(1).join(' | ')}, AS${a + 1}`;
         const creatives = rng.int(1, 3);
         for (let cr = 0; cr < creatives; cr++) {
           const creativeId = adsetId * 10 + cr;
@@ -635,7 +635,7 @@ export function generateWarehouse(): Dataset[] {
    * Last-click order attribution is concentrated, not uniform.
    *
    * Search and shopping close orders; upper-funnel prospecting on video, display and
-   * Meta's awareness objective does not close anything on a last-click model — those
+   * Meta's awareness objective does not close anything on a last-click model, those
    * campaigns are bought and judged on view-through, and `view_through_conversions`
    * is where their credit lives. So they are excluded from last-click attribution
    * entirely, which leaves several campaigns with real spend and zero attributed
@@ -899,7 +899,7 @@ export function generateWarehouse(): Dataset[] {
     const becameCust = becameSql && rng.chance(0.31);
     const cust = becameCust ? sqlD! + rng.int(5, 60) : null;
     // A stage date beyond the data window has not happened yet, so the contact must
-    // not be *labelled* with that stage either — otherwise lifecycle_stage and the
+    // not be *labelled* with that stage either, otherwise lifecycle_stage and the
     // stage dates contradict each other and every funnel query disagrees with itself.
     const inWindow = (d: number | null) => d !== null && d < DAYS;
     const stage = inWindow(cust) ? 'customer'
@@ -941,7 +941,7 @@ export function generateWarehouse(): Dataset[] {
         const won = isOpen ? null : (rng.chance(0.28) ? 1 : 0);
         rows.push([
           dealId++, c.contact_id,
-          `${rng.pick(COMPANY_WORDS_A)}${rng.pick(COMPANY_WORDS_B)} — ${rng.pick(['New Business', 'Expansion', 'Renewal'])}`,
+          `${rng.pick(COMPANY_WORDS_A)}${rng.pick(COMPANY_WORDS_B)}: ${rng.pick(['New Business', 'Expansion', 'Renewal'])}`,
           rng.weighted(['New Business', 'Expansion'], [78, 22]),
           isOpen ? rng.pick(STAGES) : won ? 'closed_won' : 'closed_lost',
           round2(rng.logNormal(8.1, 0.95)),
@@ -977,7 +977,7 @@ export function generateWarehouse(): Dataset[] {
           isOpen ? rng.pick(SF_STAGES) : won ? 'Closed Won' : 'Closed Lost',
           round2(arr * rng.float(1.0, 2.4)), arr,
           dayIso(created), isOpen ? null : dayIso(closeDay), won, source,
-          // Roughly a third of opportunities have no campaign — the attribution gap.
+          // Roughly a third of opportunities have no campaign, the attribution gap.
           source === 'Paid Search' ? rng.pick(paidGoogleIds)
             : source === 'Paid Social' ? rng.pick([...paidMetaIds, ...liIds])
               : rng.chance(0.12) ? rng.pick(liIds) : null,
@@ -1254,7 +1254,7 @@ export function generateWarehouse(): Dataset[] {
     const rows: unknown[][] = [];
     const SEGMENTS = ['All Subscribers', 'Recent Buyers', 'Lapsed 90d', 'Cart Abandoners', 'Trial Users', 'VIP', 'Newsletter'];
     const SUBJECTS = [
-      'Your cart is waiting 🛒', 'New drop: the Velocity Trail Runner', '40% off — 48 hours only',
+      'Your cart is waiting 🛒', 'New drop: the Velocity Trail Runner', '40% off, 48 hours only',
       'How Priya cut her CAC by 38%', 'Your monthly running report', 'We saved your size',
       "You're 1 step from activation", 'Black Friday starts now', 'Free shipping ends tonight',
       '3 reports every growth team should build', 'Back in stock: GPS Watch Pro',
@@ -1270,7 +1270,7 @@ export function generateWarehouse(): Dataset[] {
       const opens = Math.round(delivered * openRate);
       const clicks = Math.round(opens * rng.float(0.06, 0.24));
       rows.push([
-        900 + i, `${MONTH_NAMES[new Date(dayMs(day)).getUTCMonth()].slice(0, 3)} — ${rng.pick(['Promo', 'Newsletter', 'Lifecycle', 'Winback', 'Product'])} ${i + 1}`,
+        900 + i, `${MONTH_NAMES[new Date(dayMs(day)).getUTCMonth()].slice(0, 3)}: ${rng.pick(['Promo', 'Newsletter', 'Lifecycle', 'Winback', 'Product'])} ${i + 1}`,
         dayIso(day), segment, rng.pick(SUBJECTS), sent, delivered, opens, clicks,
         Math.round(delivered * rng.float(0.0004, 0.0038)),
         sent - delivered,

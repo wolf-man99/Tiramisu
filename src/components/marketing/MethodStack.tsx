@@ -16,11 +16,11 @@ const COUNT = METHOD_LAYERS.length;
  *
  * Layout trick: the detail panel is a *single* element rendered immediately after
  * the open slab. On mobile the container is a flex column, so it lands inline like
- * an accordion — the detail appears right under the thing you tapped. On lg+ the
+ * an accordion, the detail appears right under the thing you tapped. On lg+ the
  * container becomes a grid and the panel's inline grid-column/grid-row pin it to a
  * sticky sidebar regardless of its DOM position. Flex containers ignore grid-*
  * placement, so the same inline style is inert on mobile and load-bearing on
- * desktop — one element, no duplicated content for screen readers.
+ * desktop: one element, no duplicated content for screen readers.
  *
  * Slabs render in their final state by default, so the section is complete before
  * hydration and without JS; the build-in animation is layered on once it scrolls in.
@@ -73,7 +73,7 @@ export function MethodStack() {
     >
       {METHOD_LAYERS.map((l, i) => {
         const open = i === active;
-        // Deepening amber down the stack — light sponge at the top, rich base below.
+        // Deepening amber down the stack: light sponge at the top, rich base below.
         const tint = `color-mix(in srgb, var(--amber) ${12 + (i / (COUNT - 1)) * 52}%, white)`;
         return (
           <Fragment key={l.name}>

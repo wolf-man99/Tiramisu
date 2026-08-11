@@ -2,7 +2,7 @@ import { Trophy } from 'lucide-react';
 import { PageHeader } from '@/components/app/PageHeader';
 import { LeaderboardTable } from '@/components/app/LeaderboardTable';
 
-export const metadata = { title: 'Leaderboard — Tiramisu' };
+export const metadata = { title: 'Leaderboard - Tiramisu' };
 
 export default function LeaderboardPage() {
   return (

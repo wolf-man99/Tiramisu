@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Button, type ButtonProps } from '@/components/ui/primitives';
+import { track } from '@/lib/analytics/events';
 import type { Product } from '@/lib/payments/pricing';
 
 /**
@@ -44,7 +45,7 @@ function loadRazorpayScript(): Promise<void> {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Could not load the checkout — check your connection and try again.'));
+      script.onerror = () => reject(new Error('Could not load the checkout. Check your connection and try again.'));
       document.body.appendChild(script);
     });
   }
@@ -76,6 +77,11 @@ export function CheckoutButton({
       const order = await orderRes.json();
       if (!orderRes.ok) throw new Error(order.error ?? 'Could not start checkout.');
 
+      track('checkout_started', {
+        courseId: 'meta-ads', product, orderId: order.orderId,
+        value: order.amount / 100, currency: order.currency,
+      });
+
       await loadRazorpayScript();
       if (!window.Razorpay) throw new Error('Checkout failed to load.');
 
@@ -84,10 +90,15 @@ export function CheckoutButton({
         amount: order.amount,
         currency: order.currency,
         order_id: order.orderId,
-        name: 'Tiramisu — Meta Ads Mastery',
+        name: 'Tiramisu - Meta Ads Mastery',
         description: label,
         theme: { color: '#045099' },
-        modal: { ondismiss: () => setBusy(false) },
+        modal: {
+          ondismiss: () => {
+            setBusy(false);
+            track('checkout_dismissed', { courseId: 'meta-ads', product, orderId: order.orderId });
+          },
+        },
         handler: async (response) => {
           try {
             const verifyRes = await fetch('/api/payments/verify', {
@@ -97,9 +108,16 @@ export function CheckoutButton({
             });
             const result = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(result.error ?? 'Payment verification failed.');
+            track('purchase_completed', {
+              courseId: 'meta-ads', product, orderId: order.orderId,
+              paymentId: response.razorpay_payment_id,
+              value: order.amount / 100, currency: order.currency,
+            });
             router.refresh();
           } catch (e) {
-            setError(e instanceof Error ? e.message : 'Payment verification failed — contact support with your payment ID.');
+            const reason = e instanceof Error ? e.message : 'unknown';
+            track('purchase_failed', { courseId: 'meta-ads', product, orderId: order.orderId, reason });
+            setError(e instanceof Error ? e.message : 'Payment verification failed. Contact support with your payment ID.');
           } finally {
             setBusy(false);
           }

@@ -10,7 +10,7 @@ import { LEARNING_GOALS, HEARD_FROM_OPTIONS } from '@/lib/auth/onboarding';
 import { cn } from '@/lib/utils';
 
 const ERRORS: Record<string, string> = {
-  google_unconfigured: 'Google sign-in isn’t configured on this deployment yet — use email and password.',
+  google_unconfigured: 'Google sign-in isn’t configured on this deployment yet. Use email and password.',
   oauth_state: 'That Google sign-in link expired. Please try again.',
   oauth: 'Google sign-in failed. Please try again or use email.',
 };
@@ -42,7 +42,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const goToStep2 = (e: React.FormEvent) => {
     e.preventDefault();
     if (!displayName.trim() || !phone.trim() || !email.trim() || password.length < 8) {
-      setError('Fill in every field — password needs at least 8 characters.');
+      setError('Fill in every field. Password needs at least 8 characters.');
       return;
     }
     setError(null);
@@ -66,7 +66,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       }).then((r) => r.json());
       if (res.ok) { router.push(next); router.refresh(); }
       else { setError(res.error ?? 'Please check your details.'); if (mode === 'signup') setStep(1); }
-    } catch { setError('Network error — please try again.'); }
+    } catch { setError('Network error. Please try again.'); }
     setLoading(false);
   };
 
@@ -90,7 +90,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
                 ? 'Sign in to pick up where you left off.'
                 : showingStep2
                   ? 'A few quick picks so we can point you the right way.'
-                  : 'Start learning in a couple of minutes — your progress saves automatically.'}
+                  : 'Start learning in a couple of minutes. Your progress saves automatically.'}
             </p>
           </div>
           {mode === 'signup' && (
@@ -188,7 +188,7 @@ function Field({ label, value, onChange, placeholder, type, required }: { label:
   );
 }
 
-/** A single-select group of chip buttons — used for the step-2 onboarding picks. */
+/** A single-select group of chip buttons, used for the step-2 onboarding picks. */
 function ChipGroup({
   label, options, value, onChange,
 }: {

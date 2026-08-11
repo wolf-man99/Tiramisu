@@ -3,7 +3,7 @@
  *
  * This is a token-level rewriter, not a full parser. It is deliberately scoped to the
  * dialect surface the curriculum teaches (docs/ARCHITECTURE.md §5). Everything it
- * cannot rewrite, it leaves alone so SQLite can produce its own error — and where an
+ * cannot rewrite, it leaves alone so SQLite can produce its own error, and where an
  * unsupported construct would fail confusingly, it throws a message that explains the
  * emulation boundary instead.
  */
@@ -69,7 +69,7 @@ type TokType = 'ws' | 'comment' | 'string' | 'dquote' | 'backtick' | 'ident' | '
 interface Tok {
   t: TokType;
   v: string;
-  /** Uppercased value for identifiers — cached because we compare it constantly. */
+  /** Uppercased value for identifiers, cached because we compare it constantly. */
   u: string;
 }
 
@@ -266,7 +266,7 @@ function passQualifiedNames(toks: Tok[]): Tok[] {
   return out;
 }
 
-/** Typed literals — `DATE '2024-01-01'`, `TIMESTAMP '…'` — drop the type keyword. */
+/** Typed literals: `DATE '2024-01-01'`, `TIMESTAMP '…'`. Drop the type keyword. */
 function passTypedLiterals(toks: Tok[]): Tok[] {
   const TYPES = new Set(['DATE', 'DATETIME', 'TIMESTAMP', 'TIME', 'NUMERIC', 'BIGNUMERIC', 'JSON']);
   const out: Tok[] = [];
@@ -818,7 +818,7 @@ function passQualify(toks: Tok[]): Tok[] {
 
     // A QUALIFY whose predicate contains a window function has to materialise it as a
     // column first, because SQLite forbids window functions in WHERE. A QUALIFY that
-    // merely references a select alias can filter the subquery directly — and that form
+    // merely references a select alias can filter the subquery directly, and that form
     // needs no column-name bookkeeping, so prefer it whenever it applies.
     const hasWindow = /\bOVER\s*[(A-Za-z_]/i.test(cond);
     const rebuilt = hasWindow
@@ -874,7 +874,7 @@ function selectOutputNames(toks: Tok[], start: number, stop: number): string[] {
     if (!code.length) throw new TranspileError('Could not read the SELECT list around QUALIFY.');
     if (code.some((t) => t.t === 'punct' && t.v === '*')) {
       throw new TranspileError(
-        'QUALIFY with SELECT * is not supported by the local engine — list the columns ' +
+        'QUALIFY with SELECT * is not supported by the local engine, list the columns ' +
         'you want, or move the window filter into a subquery.',
       );
     }
@@ -882,7 +882,7 @@ function selectOutputNames(toks: Tok[], start: number, stop: number): string[] {
     if (asPos !== -1 && code[asPos + 1]) return quoteName(code[asPos + 1].v);
     const last = code[code.length - 1];
     const beforeLast = code[code.length - 2];
-    // `col alias` — an implicit alias
+    // `col alias`, an implicit alias
     if (code.length >= 2 && last.t === 'ident' && beforeLast && beforeLast.t === 'ident'
       && beforeLast.v !== '.' && !isKeyword(beforeLast.u)) {
       return quoteName(last.v);
@@ -1014,7 +1014,7 @@ export function transpile(input: string): TranspileResult {
   if (/\bUNNEST\b/i.test(input)) {
     notes.push(
       'Repeated fields are stored as JSON locally, so UNNEST runs as json_each. ' +
-      'The SQL you wrote is valid BigQuery — see docs/ARCHITECTURE.md §5.',
+      'The SQL you wrote is valid BigQuery. See docs/ARCHITECTURE.md §5.',
     );
   }
   return { sql, notes };

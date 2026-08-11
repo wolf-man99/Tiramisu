@@ -1,5 +1,5 @@
 /**
- * Content validator — the Phase 4 gate from docs/ROADMAP.md.
+ * Content validator, the Phase 4 gate from docs/ROADMAP.md.
  *
  * Executes every reference solution in the platform against the warehouse. A course
  * whose "correct" answers do not run is worse than no course, so this fails the build.
@@ -156,13 +156,13 @@ function main(): void {
         continue;
       }
       if (r.truncated) {
-        failures.push(`${item.kind} ${item.id}: solution hits the 5000-row cap — add a LIMIT or aggregate`);
+        failures.push(`${item.kind} ${item.id}: solution hits the 5000-row cap. Add a LIMIT or aggregate`);
         continue;
       }
       ok++;
     } catch (e) {
       const err = e as QueryError;
-      failures.push(`${item.kind} ${item.id}: ${err.kind ?? 'error'} — ${err.message}`);
+      failures.push(`${item.kind} ${item.id}: ${err.kind ?? 'error'}, ${err.message}`);
     }
   }
 

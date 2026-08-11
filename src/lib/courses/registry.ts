@@ -1,17 +1,17 @@
 /**
  * The course catalog. Tiramisu is now a multi-course platform; "SQL for
- * Marketers" is the first live course. Adding a course later — Meta Ads content, then
- * Google Ads, then the rest — is a data change here plus its content, not a rebuild.
+ * Marketers" is the first live course. Adding a course later: Meta Ads content, then
+ * Google Ads, then the rest: is a data change here plus its content, not a rebuild.
  *
  * `price`/`bundleEligible` here are display-only leftovers from before real payments
- * existed — Meta Ads' actual per-tier pricing (Learn/Run/Bundle) lives in
+ * existed, Meta Ads' actual per-tier pricing (Learn/Run/Bundle) lives in
  * `src/lib/payments/pricing.ts` instead, since one course needs three prices, a
  * shape this single `price` field can't hold. Entitlements live on `Enrollment`
  * (`learnPurchasedAt`/`runPurchasedAt`), granted by a verified Razorpay payment.
  *
  * Each course's `accent` is one slot in Tiramisu's six-colour system (see the
  * comment atop globals.css): every course owns exactly one hue, and no two
- * courses share one — purple/SQL, blue/Meta, green/Google, teal/LinkedIn,
+ * courses share one: purple/SQL, blue/Meta, green/Google, teal/LinkedIn,
  * red/Reddit, amber/Snapchat. Blue and purple additionally carry a
  * non-course job (the flagship platform action colour, and AI-coach
  * features) but that only shows up outside the catalog.
@@ -35,7 +35,7 @@ export interface Course {
   duration: string;
   lessons: number;
   highlights: string[];
-  /** Future monetisation — unused until payments ship. */
+  /** Future monetisation, unused until payments ship. */
   price?: number;
   bundleEligible?: boolean;
 }
@@ -47,7 +47,7 @@ export const COURSES: Course[] = [
     title: 'SQL for Marketers',
     tagline: 'Zero to marketing analyst in 14 days',
     description:
-      'Learn BigQuery SQL on a real marketing warehouse — a real editor, an AI coach, and 300 graded exercises. Answer the questions a growth team actually argues about.',
+      'Learn BigQuery SQL on a real marketing warehouse: a real editor, an AI coach, and 300 graded exercises. Answer the questions a growth team actually argues about.',
     status: 'live',
     emoji: '🗃️',
     accent: '#6c3bff',
@@ -66,7 +66,7 @@ export const COURSES: Course[] = [
     title: 'Meta Ads Mastery',
     tagline: 'Run Facebook & Instagram ads that actually convert',
     description:
-      'From the pixel to CBO to creative testing — build, launch, and scale Meta campaigns the way a performance marketer does. Interactive, gamified, and hands-on.',
+      'From the pixel to CBO to creative testing. Build, launch, and scale Meta campaigns the way a performance marketer does. Interactive, gamified, and hands-on.',
     status: 'live',
     emoji: '📘',
     accent: '#045099',
@@ -83,7 +83,7 @@ export const COURSES: Course[] = [
     id: 'google-ads',
     slug: 'google-ads',
     title: 'Google Ads',
-    tagline: 'Search, Shopping, PMax — the intent engine',
+    tagline: 'Search, Shopping, PMax, the intent engine',
     description: 'Capture demand where it lives. Search, Shopping and Performance Max, from keyword match types to bidding strategy.',
     status: 'coming-soon',
     emoji: '🔍',
@@ -101,7 +101,7 @@ export const COURSES: Course[] = [
     slug: 'linkedin-ads',
     title: 'LinkedIn Ads',
     tagline: 'B2B demand gen that respects the CAC',
-    description: 'The most expensive clicks in advertising — spent well. Targeting, sponsored content, and lead gen for B2B.',
+    description: 'The most expensive clicks in advertising, spent well. Targeting, sponsored content, and lead gen for B2B.',
     status: 'coming-soon',
     emoji: '💼',
     accent: '#17a398',

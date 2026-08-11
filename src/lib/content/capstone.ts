@@ -4,7 +4,7 @@ import type { CapstoneQuestion, Difficulty } from './types';
  * The capstone: 100 business questions at Northbeam.
  *
  * The learner is the Growth Analyst. Every question is one a real stakeholder asks,
- * and every one carries a `soWhat` naming the decision it feeds — because a number
+ * and every one carries a `soWhat` naming the decision it feeds, because a number
  * without a decision attached is trivia.
  */
 
@@ -84,7 +84,7 @@ WHERE o.campaign_id IS NOT NULL
   AND o.campaign_id NOT IN (SELECT campaign_id FROM meta_ads_campaigns)
   AND o.campaign_id NOT IN (SELECT campaign_id FROM linkedin_ads_campaigns)`,
     ['Three NOT IN subqueries.', 'Exclude orders with no campaign at all first.'],
-    'These orders vanish from any INNER JOIN report — that is revenue nobody sees.'),
+    'These orders vanish from any INNER JOIN report. That is revenue nobody sees.'),
 
   q('C08', S1, 'medium',
     'How dirty is the city column? Return `distinct_raw` and `distinct_cleaned` from completed orders.',
@@ -147,7 +147,7 @@ GROUP BY c.campaign_name
 HAVING SUM(d.cost) >= 5000
 ORDER BY roas DESC, c.campaign_name`,
     ['Join for the campaign name, group, then HAVING on spend.', 'ROAS is revenue over spend.'],
-    'The headline "best campaign" number — and the one most likely to be brand search.', true),
+    'The headline "best campaign" number: and the one most likely to be brand search.', true),
 
   q('C15', S2, 'medium',
     'Which keyword generated the highest revenue? Return `keyword_text`, `match_type`, `clicks`, `cost`, `conversion_value`, top 15, 30+ clicks.',
@@ -158,7 +158,7 @@ GROUP BY k.keyword_text, k.match_type
 HAVING SUM(kd.clicks) >= 30
 ORDER BY conversion_value DESC, k.keyword_text
 LIMIT 15`,
-    ['Group by text and match type — what a stakeholder means by "keyword".', 'Volume floor in HAVING.'],
+    ['Group by text and match type. What a stakeholder means by "keyword".', 'Volume floor in HAVING.'],
     'Where to push bids up.', true),
 
   q('C16', S2, 'medium',
@@ -168,7 +168,7 @@ a AS (SELECT first_touch_channel AS channel, COUNT(*) AS customers FROM customer
 SELECT s.channel, s.spend, a.customers, SAFE_DIVIDE(s.spend, a.customers) AS cac
 FROM s JOIN a USING (channel) ORDER BY cac, s.channel`,
     ['Spend and acquisitions at channel grain, then join.', 'CAC is spend per acquired customer.'],
-    'Where the next marginal dollar should go — subject to headroom.', true),
+    'Where the next marginal dollar should go: subject to headroom.', true),
 
   q('C17', S2, 'medium',
     'How much did we waste on campaign-days with spend and zero conversions? Return `wasted_spend` and `wasted_days`.',
@@ -249,7 +249,7 @@ FROM google_ads_daily d JOIN google_ads_campaigns c USING (campaign_id)
 GROUP BY c.campaign_name
 HAVING SUM(d.cost) >= 10000 AND SUM(d.conversions) < 50
 ORDER BY spend DESC, c.campaign_name`,
-    ['Two conditions in HAVING — both are on aggregates.',
+    ['Two conditions in HAVING. Both are on aggregates.',
       'A four-figure CPA is the signal, not the raw conversion count.'],
     'Both offenders are B2B SaaS search campaigns, where a $600 CPA against a $2k ARR deal may be fine. The shortlist is a question, not a verdict.', true),
 
@@ -294,7 +294,7 @@ FROM ga4_sessions WHERE source != 'internal-qa'`,
 FROM ga4_sessions WHERE source != 'internal-qa'
 GROUP BY channel_group ORDER BY sessions DESC, channel_group`,
     ['Group by channel after filtering QA.', 'Report volume and rate together.'],
-    'Volume and quality are different arguments — this shows both.', true),
+    'Volume and quality are different arguments. This shows both.', true),
 
   q('C29', S3, 'medium',
     'Which landing page converts best? Return `landing_page`, `sessions`, `cvr`, `revenue_per_session` for pages with 150+ sessions, best CVR first.',
@@ -353,7 +353,7 @@ FROM t`,
 SELECT device_category, COUNT(*) AS sessions, SUM(carted) AS carts, SUM(purchased) AS purchases,
        SAFE_DIVIDE(SUM(purchased), COUNT(*)) AS cvr
 FROM s GROUP BY device_category ORDER BY sessions DESC, device_category`,
-    ['device is a STRUCT — dot access, no UNNEST.', 'MAX carries it through the grouping.'],
+    ['device is a STRUCT: dot access, no UNNEST.', 'MAX carries it through the grouping.'],
     'Mobile CVR is usually half desktop; sizing the gap justifies the mobile roadmap.', true),
 
   q('C33', S3, 'medium',
@@ -392,7 +392,7 @@ GROUP BY channel_group ORDER BY sessions DESC, channel_group`,
     `SELECT EXTRACT(HOUR FROM TIMESTAMP_MICROS(event_timestamp)) AS hour, COUNT(*) AS purchases
 FROM ga4_events WHERE event_name = 'purchase'
 GROUP BY hour ORDER BY hour`,
-    ['event_timestamp is microseconds — use TIMESTAMP_MICROS.', 'Then EXTRACT the hour.'],
+    ['event_timestamp is microseconds. Use TIMESTAMP_MICROS.', 'Then EXTRACT the hour.'],
     'Ad scheduling and send-time optimisation both depend on this curve.', true),
 
   q('C37', S3, 'expert',
@@ -435,7 +435,7 @@ FROM orders WHERE status = 'completed'`,
     'AOV × orders is the whole revenue model; moving either moves the business.'),
 
   q('C40', S4, 'medium',
-    'Mean or median — what does a typical order look like? Return `mean_aov` and `median_aov`.',
+    'Mean or median. What does a typical order look like? Return `mean_aov` and `median_aov`.',
     `SELECT AVG(gross_revenue) AS mean_aov, PERCENTILE_CONT(gross_revenue, 0.5) AS median_aov
 FROM orders WHERE status = 'completed'`,
     ['PERCENTILE_CONT at 0.5 is the median.', 'The gap is the skew.'],
@@ -467,7 +467,7 @@ FROM order_items i JOIN products p USING (product_id) JOIN orders o USING (order
 WHERE o.status = 'completed'
 GROUP BY p.category ORDER BY revenue DESC, p.category`,
     ['Work at line-item grain.', 'Never sum orders.gross_revenue after this join.'],
-    'Revenue and profit rank categories differently — that is the merchandising decision.', true),
+    'Revenue and profit rank categories differently. That is the merchandising decision.', true),
 
   q('C44', S4, 'medium',
     'What are the top 15 products by revenue? Return `product_name`, `units`, `revenue`.',
@@ -524,7 +524,7 @@ FROM orders o JOIN date_dim d ON d.date = o.order_date
 WHERE o.status = 'completed' AND d.is_holiday = 1
 GROUP BY d.holiday_name ORDER BY revenue DESC, d.holiday_name`,
     ['Filter to holidays, group by the name.'],
-    'Justifies the Q4 budget concentration — or does not.', true),
+    'Justifies the Q4 budget concentration: or does not.', true),
 
   q('C50', S4, 'expert',
     'Build the revenue bridge. Return `gross_revenue`, `refunds`, `net_revenue`, `discounts`, `cogs`, `gross_profit`.',
@@ -590,7 +590,7 @@ FROM customers c JOIN orders o USING (customer_id)
 WHERE o.status = 'completed'
 GROUP BY c.country HAVING COUNT(DISTINCT c.customer_id) >= 100
 ORDER BY revenue_per_customer DESC, c.country`,
-    ['COUNT DISTINCT the customer — the join fans them out.', 'Volume floor in HAVING.'],
+    ['COUNT DISTINCT the customer: the join fans them out.', 'Volume floor in HAVING.'],
     'Where to open the next market.', true),
 
   q('C57', S5, 'hard',
@@ -658,7 +658,7 @@ v AS (SELECT first_touch_channel AS channel, COUNT(*) AS customers, AVG(lifetime
 SELECT s.channel, SAFE_DIVIDE(s.spend, v.customers) AS cac, v.avg_ltv,
        SAFE_DIVIDE(v.avg_ltv, SAFE_DIVIDE(s.spend, v.customers)) AS ltv_cac_ratio
 FROM s JOIN v USING (channel) ORDER BY ltv_cac_ratio DESC, s.channel`,
-    ['Two CTEs at channel grain.', 'Ratio is LTV over CAC — 3:1 is the conventional floor.'],
+    ['Two CTEs at channel grain.', 'Ratio is LTV over CAC, 3:1 is the conventional floor.'],
     'The number that decides next quarter\'s channel mix.', true),
 
   q('C62', S5, 'expert',
@@ -698,7 +698,7 @@ SELECT m.month, COALESCE(n.new_mrr, 0) AS new_mrr, COALESCE(c.churned_mrr, 0) AS
        COALESCE(n.new_mrr, 0) - COALESCE(c.churned_mrr, 0) AS net_new_mrr
 FROM m LEFT JOIN n USING (month) LEFT JOIN c USING (month) ORDER BY m.month`,
     ['Starts and cancellations are different events on different dates.', 'A month spine keeps quiet months visible.'],
-    'Flat MRR can hide large offsetting movements — this shows them.', true),
+    'Flat MRR can hide large offsetting movements. This shows them.', true),
 
   q('C66', S6, 'medium',
     'What is monthly logo churn? Return `tier`, `subs`, `churned`, `churn_rate`, worst first.',
@@ -723,7 +723,7 @@ GROUP BY cancel_reason ORDER BY lost_mrr DESC, cancel_reason`,
 FROM stripe_charges WHERE status = 'failed'
 GROUP BY failure_code ORDER BY at_risk_amount DESC, failure_code`,
     ['Failed charges carry a failure code.'],
-    'Involuntary churn is the cheapest churn to fix — dunning recovers 30-50%.', true),
+    'Involuntary churn is the cheapest churn to fix: dunning recovers 30-50%.', true),
 
   q('C69', S6, 'hard',
     'What is active MRR month by month? Return `month` and `active_mrr`, chronological.',
@@ -757,7 +757,7 @@ FROM customers c LEFT JOIN a ON a.user_id = c.customer_id
 WHERE c.is_b2b = 1`,
     ['LEFT JOIN so unactivated customers stay in the denominator.',
       'AVG over DATE_DIFF skips the NULLs automatically.'],
-    'Activation is upstream of retention, expansion and referral — and the fastest to move.'),
+    'Activation is upstream of retention, expansion and referral, and the fastest to move.'),
 
   q('C72', S6, 'hard',
     'Does activation predict retention? Return `activated`, `subs`, `avg_days_subscribed`.',
@@ -842,7 +842,7 @@ FROM attribution_touchpoints WHERE converted = 1
 GROUP BY channel ORDER BY position_credit DESC, channel`,
     ['Single-touch journeys must be special-cased or you divide by zero.',
       'The middle 20% is shared among the middle touches.'],
-    'Favours discovery and closing over the middle — which may be what you believe.', true),
+    'Favours discovery and closing over the middle: which may be what you believe.', true),
 
   q('C80', S7, 'hard',
     'What does time-decay attribution say? Return `channel` and `time_decay_credit`, biggest first.',
@@ -854,7 +854,7 @@ GROUP BY channel ORDER BY position_credit DESC, channel`,
 SELECT channel, SUM(credit) AS time_decay_credit
 FROM w GROUP BY channel ORDER BY time_decay_credit DESC, channel`,
     ['Weight each touch by its position within the journey.',
-      'A window function cannot be nested in an aggregate — compute credit in a CTE first.'],
+      'A window function cannot be nested in an aggregate, compute credit in a CTE first.'],
     'Favours the channels closest to the conversion.', true),
 
   q('C81', S7, 'hard',
@@ -868,7 +868,7 @@ FROM (
 GROUP BY channel ORDER BY credit DESC, channel`,
     ['Filter Direct out *before* picking the last touch.',
       'ROW_NUMBER descending by position, then keep row 1.'],
-    'The default in most analytics tools — and the reason Direct looks small in them.', true),
+    'The default in most analytics tools: and the reason Direct looks small in them.', true),
 
   q('C82', S7, 'hard',
     'What are the most common converting paths? Return `path` and `conversions`, top 15.',
@@ -902,7 +902,7 @@ SELECT s.channel, s.spend, COALESCE(c.linear_credit, 0) AS linear_credit,
        SAFE_DIVIDE(c.linear_credit, s.spend) AS linear_roas
 FROM s LEFT JOIN c USING (channel) ORDER BY linear_roas, s.channel`,
     ['Only channels you pay for can be cut.', 'Ascending ROAS puts the weakest first.'],
-    'The recommendation — which must ship with the caveat that this is correlational.', true),
+    'The recommendation: which must ship with the caveat that this is correlational.', true),
 
   // ─────────────── 8. Support, ops & the board deck (16) ──
   q('C85', S8, 'easy',
@@ -925,7 +925,7 @@ FROM support_tickets GROUP BY category ORDER BY tickets DESC, category`,
 FROM support_tickets WHERE first_response_at IS NOT NULL
 GROUP BY priority ORDER BY priority`,
     ['TIMESTAMP_DIFF takes the later timestamp first.', 'Unanswered tickets must be excluded.'],
-    'SLA compliance — and note this metric excludes tickets never answered at all.', true),
+    'SLA compliance: and note this metric excludes tickets never answered at all.', true),
 
   q('C88', S8, 'medium',
     'How many tickets were never answered? Return `unanswered` and `pct_unanswered`.',
@@ -997,7 +997,7 @@ HAVING COUNT(*) >= 100 ORDER BY conversion_rate DESC, original_source`,
 FROM salesforce_opportunities GROUP BY lead_source
 HAVING COUNTIF(is_won IS NOT NULL) >= 10
 ORDER BY win_rate DESC, lead_source`,
-    ['`is_won` is NULL for open opportunities — exclude them from the denominator.'],
+    ['`is_won` is NULL for open opportunities, exclude them from the denominator.'],
     'Counting open deals as losses understates every source\'s win rate.', true),
 
   q('C95', S8, 'hard',
@@ -1009,7 +1009,7 @@ FROM salesforce_opportunities o JOIN salesforce_accounts a USING (account_id)
 WHERE o.is_won = 1
 GROUP BY a.tier ORDER BY avg_cycle_days DESC, a.tier`,
     ['DATE_DIFF from created to close.', 'Won deals only.'],
-    'Sets pipeline coverage targets — a 200-day cycle needs three quarters of pipeline.', true),
+    'Sets pipeline coverage targets. A 200-day cycle needs three quarters of pipeline.', true),
 
   q('C96', S8, 'hard',
     'How much marketing-sourced ARR is there? Return `sourced`, `opportunities`, `arr`.',
@@ -1019,7 +1019,7 @@ GROUP BY a.tier ORDER BY avg_cycle_days DESC, a.tier`,
 FROM salesforce_opportunities
 GROUP BY sourced ORDER BY sourced`,
     ['CASE on whether a campaign is attached.'],
-    'The number marketing is held to at the board — and the one most affected by tracking gaps.', true),
+    'The number marketing is held to at the board: and the one most affected by tracking gaps.', true),
 
   q('C97', S8, 'expert',
     'Is there a Simpson\'s paradox in channel AOV? Return `device`, `channel`, `orders`, `aov` for the two paid channels, ordered by device then channel.',
@@ -1039,7 +1039,7 @@ GROUP BY device, channel ORDER BY device, channel`,
    FROM order_items i JOIN orders o USING (order_id) WHERE o.status = 'completed') AS from_line_items,
   (SELECT SUM(ecommerce.purchase_revenue) FROM ga4_events WHERE event_name = 'purchase') AS from_ga4`,
     ['Three independent paths at three different grains.',
-      'Expect disagreement — the job is to explain its size, not remove it.'],
+      'Expect disagreement. The job is to explain its size, not remove it.'],
     'Publishing one of these without knowing the other two is how analysts get ambushed.'),
 
   q('C99', S8, 'expert',
@@ -1058,7 +1058,7 @@ GROUP BY device, channel ORDER BY device, channel`,
     'The Monday morning email. Every figure must survive being divided by another.'),
 
   q('C100', S8, 'expert',
-    'The final question. Return `channel`, `spend`, `customers`, `cac`, `avg_ltv`, `ltv_cac`, `payback_months` and `verdict` — a CASE label of `scale`, `hold` or `review` based on whether LTV:CAC is above 3, above 1, or below. Order by ltv_cac descending.',
+    'The final question. Return `channel`, `spend`, `customers`, `cac`, `avg_ltv`, `ltv_cac`, `payback_months` and `verdict`: a CASE label of `scale`, `hold` or `review` based on whether LTV:CAC is above 3, above 1, or below. Order by ltv_cac descending.',
     `WITH s AS (SELECT channel, SUM(spend) AS spend FROM ad_spend_daily GROUP BY channel),
 v AS (SELECT first_touch_channel AS channel, COUNT(*) AS customers, AVG(lifetime_revenue) AS avg_ltv
       FROM customer_ltv GROUP BY first_touch_channel),

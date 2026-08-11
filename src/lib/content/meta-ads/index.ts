@@ -7,7 +7,7 @@ import { M5_LESSONS } from './modules/m5-testing';
 import { M6_LESSONS } from './modules/m6-optimising';
 import { M7_LESSONS } from './modules/m7-scaling';
 
-/** The Meta Ads course — all seven modules authored and playable. */
+/** The Meta Ads course, all seven modules authored and playable. */
 export const META_MODULES: MetaModule[] = [
   { slug: 'foundations', index: 1, title: 'Foundations', tagline: 'Structure, the auction, objectives & metrics', emoji: '🧱', status: 'available', lessons: M1_LESSONS },
   { slug: 'audiences', index: 2, title: 'Audiences & the Pixel', tagline: 'How Meta measures, and who you can reach', emoji: '🎯', status: 'available', lessons: M2_LESSONS },

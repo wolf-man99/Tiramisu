@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Meta Ads Mastery — Tiramisu' };
+export const metadata = { title: 'Meta Ads Mastery - Tiramisu' };
 
 export default async function MetaAdsHome() {
   const profileId = await requireProfileId('/courses/meta-ads');
@@ -93,7 +93,7 @@ export default async function MetaAdsHome() {
         {/* Learn */}
         <div className="mt-8 mb-3 flex items-center gap-2">
           <span className="chip bg-[var(--ink)] text-white">Learn</span>
-          <span className="text-xs text-[var(--text-faint)]">Every concept, module by module — finish it all to unlock Run.</span>
+          <span className="text-xs text-[var(--text-faint)]">Every concept, module by module. Finish it all to unlock Run.</span>
         </div>
         <div className="space-y-4">
           {META_MODULES.map((m) => {
@@ -131,7 +131,7 @@ export default async function MetaAdsHome() {
                 </div>
               ) : (
                 <Card className="flex items-center gap-2 border-dashed p-3.5 text-sm text-[var(--text-subtle)]">
-                  <Lock size={14} /> Being authored — you’ll earn XP here soon.
+                  <Lock size={14} /> Being authored, you’ll earn XP here soon.
                 </Card>
               )}
             </div>
@@ -158,13 +158,13 @@ export default async function MetaAdsHome() {
             </span>
             <div className="min-w-0 flex-1">
               <div className="font-extrabold">
-                {runUnlocked ? 'Run is unlocked' : learnComplete ? `Run — ₹${META_ADS_PRICING.run} to unlock` : 'Run — locked until Learn is complete'}
+                {runUnlocked ? 'Run is unlocked' : learnComplete ? `Run, ₹${META_ADS_PRICING.run} to unlock` : 'Run. Locked until Learn is complete'}
               </div>
               <div className="text-sm text-[var(--text-muted)]">
                 {runUnlocked
                   ? 'Step into the account simulator.'
                   : learnComplete
-                    ? 'You finished Learn — pay to step into the account simulator.'
+                    ? 'You finished Learn, pay to step into the account simulator.'
                     : `Finish all ${META_AVAILABLE_LESSONS} Learn lessons to unlock it.`}
               </div>
             </div>

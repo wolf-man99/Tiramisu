@@ -1,7 +1,7 @@
 import type { MetaLesson } from '../types';
 import { p, list, key } from '../types';
 
-/** Module 6 — Reading & optimising: fatigue, top-down diagnosis, and knowing when to leave it alone. */
+/** Module 6: Reading & optimising: fatigue, top-down diagnosis, and knowing when to leave it alone. */
 export const M6_LESSONS: MetaLesson[] = [
   // ─────────────────────────────────────────────────────────── Lesson 6.1 ──
   {
@@ -16,9 +16,9 @@ export const M6_LESSONS: MetaLesson[] = [
       {
         kind: 'teach', id: 'c1', title: 'The same ad gets tired', art: 'fatigue-curve',
         blocks: [
-          p('The more times a person sees the same ad, the less it works. **Frequency** (average times each person saw your ad) creeps up, novelty wears off, CTR falls, and — because engagement is an auction lever — your **CPMs rise**. That’s creative fatigue.'),
+          p('The more times a person sees the same ad, the less it works. **Frequency** (average times each person saw your ad) creeps up, novelty wears off, CTR falls, and, because engagement is an auction lever, your **CPMs rise**. That’s creative fatigue.'),
           p('Watch for the tell-tale pattern: **frequency climbing** + **CTR falling** + **CPA rising**, all on a steady audience. That trio means the creative is worn out, not that the audience is gone.'),
-          key('Fatigue is a creative problem, not a budget problem. Throwing more budget at a tired ad just shows it to the same people *more* — accelerating the decline.'),
+          key('Fatigue is a creative problem, not a budget problem. Throwing more budget at a tired ad just shows it to the same people *more*, accelerating the decline.'),
         ],
       },
       {
@@ -28,7 +28,7 @@ export const M6_LESSONS: MetaLesson[] = [
         prompt: 'On a fixed cold audience, over two weeks: frequency 1.4 → 4.2, CTR 2.1% → 0.9%, CPA up 60%. What’s happening?',
         options: [
           'The pixel broke',
-          'Creative fatigue — the audience has seen the ad too many times',
+          'Creative fatigue. The audience has seen the ad too many times',
           'Meta raised prices',
           'The offer got worse',
         ],
@@ -39,16 +39,16 @@ export const M6_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q2',
         situation: 'A winning ad’s results are sliding and frequency has hit 5×. The team’s instinct is to raise the budget to "push through." Good move?',
         options: [
-          { label: 'Yes — more budget will recover sales', correct: false, feedback: 'More budget on a fatigued ad shows it to the same saturated audience even more. You’d speed up the decline and raise costs.' },
-          { label: 'No — refresh the creative and/or expand the audience', correct: true, feedback: 'Right. Fatigue is fixed with new creative or a bigger/fresher audience, not more spend on the tired ad. Give people something new to see.' },
-          { label: 'Lower the budget and wait', correct: false, feedback: 'Cutting budget slows the bleed but doesn’t fix the cause — the audience still needs fresh creative.' },
+          { label: 'Yes - more budget will recover sales', correct: false, feedback: 'More budget on a fatigued ad shows it to the same saturated audience even more. You’d speed up the decline and raise costs.' },
+          { label: 'No - refresh the creative and/or expand the audience', correct: true, feedback: 'Right. Fatigue is fixed with new creative or a bigger/fresher audience, not more spend on the tired ad. Give people something new to see.' },
+          { label: 'Lower the budget and wait', correct: false, feedback: 'Cutting budget slows the bleed but doesn’t fix the cause. The audience still needs fresh creative.' },
         ],
       },
       {
         kind: 'truefalse', id: 'q3',
         statement: 'A rising CPM on a steady audience and bid is often an early warning of creative fatigue.',
         isTrue: true,
-        explain: 'True — rising CPM with no change to bid or audience usually means engagement (an auction quality signal) is slipping, an early fatigue warning. Treat CPM as a creative scoreboard, not just a media cost.',
+        explain: 'True: rising CPM with no change to bid or audience usually means engagement (an auction quality signal) is slipping, an early fatigue warning. Treat CPM as a creative scoreboard, not just a media cost.',
       },
       {
         kind: 'tip', id: 't1', title: 'Pro tip',
@@ -86,9 +86,9 @@ export const M6_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q1',
         situation: 'CPA is double your target. You check: CPM normal, CTR healthy at 1.8%, but the landing page converts at 0.4% (industry norm ~2%). Where do you spend your effort?',
         options: [
-          { label: 'Make new ad creative', correct: false, feedback: 'The ad is doing its job — CTR is healthy. Rebuilding creative won’t fix a page that fails to convert the clicks you’re already getting.' },
-          { label: 'Fix the landing page / offer (the conversion step)', correct: true, feedback: 'Right. Good CPM + good CTR + terrible CVR isolates the break to *after the click*. Fix page speed, message match, price or checkout — not the ad.' },
-          { label: 'Widen the audience', correct: false, feedback: 'Audience isn’t the issue — people are clicking. The leak is on the page.' },
+          { label: 'Make new ad creative', correct: false, feedback: 'The ad is doing its job. CTR is healthy. Rebuilding creative won’t fix a page that fails to convert the clicks you’re already getting.' },
+          { label: 'Fix the landing page / offer (the conversion step)', correct: true, feedback: 'Right. Good CPM + good CTR + terrible CVR isolates the break to *after the click*. Fix page speed, message match, price or checkout, not the ad.' },
+          { label: 'Widen the audience', correct: false, feedback: 'Audience isn’t the issue. People are clicking. The leak is on the page.' },
         ],
       },
       {
@@ -101,7 +101,7 @@ export const M6_LESSONS: MetaLesson[] = [
           'The offer is bad',
         ],
         answer: 1,
-        explain: 'Healthy CTR and CVR clear the creative and the page. A CPM way above average points to the auction itself — usually an audience that’s too small, or overlap making you bid against yourself.',
+        explain: 'Healthy CTR and CVR clear the creative and the page. A CPM way above average points to the auction itself: usually an audience that’s too small, or overlap making you bid against yourself.',
       },
       {
         kind: 'sort', id: 'q3',
@@ -111,7 +111,7 @@ export const M6_LESSONS: MetaLesson[] = [
       },
       {
         kind: 'tip', id: 't1', title: 'Pro tip',
-        text: 'Before blaming the ads, load the landing page on your own phone over cellular. Slow pages and clunky mobile checkouts quietly destroy CVR — and no amount of ad optimisation can rescue a page that takes 8 seconds to load.',
+        text: 'Before blaming the ads, load the landing page on your own phone over cellular. Slow pages and clunky mobile checkouts quietly destroy CVR, and no amount of ad optimisation can rescue a page that takes 8 seconds to load.',
       },
     ],
   },
@@ -129,7 +129,7 @@ export const M6_LESSONS: MetaLesson[] = [
       {
         kind: 'teach', id: 'c1', title: 'Every edit has a cost',
         blocks: [
-          p('Beginners "optimise" by fiddling daily — nudging budgets, swapping audiences, tweaking copy. But significant edits **reset the learning phase**, throwing away the algorithm’s progress and restarting the erratic, expensive exploration period.'),
+          p('Beginners "optimise" by fiddling daily: nudging budgets, swapping audiences, tweaking copy. But significant edits **reset the learning phase**, throwing away the algorithm’s progress and restarting the erratic, expensive exploration period.'),
           p('The skill is knowing what genuinely needs a change versus what just needs to be *left alone* to finish learning.'),
           key('If it’s learning-limited or clearly losing over a fair sample → change it. If it’s working, or still learning → hands off. Restraint is an optimisation.'),
         ],
@@ -144,7 +144,7 @@ export const M6_LESSONS: MetaLesson[] = [
           'CVR shows the landing page is the bottleneck',
         ],
         answers: [0, 2, 3],
-        explain: 'Learning-limited delivery, genuine fatigue, and a diagnosed page problem are real reasons to act. A day-one lead is noise — changing on it just resets learning for nothing.',
+        explain: 'Learning-limited delivery, genuine fatigue, and a diagnosed page problem are real reasons to act. A day-one lead is noise, changing on it just resets learning for nothing.',
       },
       {
         kind: 'mcq', id: 'q2',
@@ -168,14 +168,14 @@ export const M6_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q4',
         situation: 'A profitable ad set is only two days old and still in "Learning." Its CPA today spiked. The client demands you "do something." What’s the right move?',
         options: [
-          { label: 'Overhaul the audience and creative now', correct: false, feedback: 'It’s still learning — a daily CPA spike is expected noise. Overhauling resets the phase and throws away progress on a set that’s profitable overall.' },
-          { label: 'Hold — it’s still learning; judge it after ~50 events / a few days', correct: true, feedback: 'Right. Learning-phase days swing wildly. If it’s profitable overall and hasn’t finished learning, the disciplined move is to wait and let it stabilise.' },
+          { label: 'Overhaul the audience and creative now', correct: false, feedback: 'It’s still learning. A daily CPA spike is expected noise. Overhauling resets the phase and throws away progress on a set that’s profitable overall.' },
+          { label: 'Hold: it’s still learning; judge it after ~50 events / a few days', correct: true, feedback: 'Right. Learning-phase days swing wildly. If it’s profitable overall and hasn’t finished learning, the disciplined move is to wait and let it stabilise.' },
           { label: 'Pause it for the day', correct: false, feedback: 'Pausing and restarting also disrupts learning. A single noisy day in the learning phase isn’t a reason to intervene.' },
         ],
       },
       {
         kind: 'tip', id: 't1', title: 'Pro tip',
-        text: 'Adopt a change budget: allow yourself one meaningful edit per ad set per few days, and log why. It forces you to act on evidence, not anxiety — and it keeps ad sets out of perpetual learning.',
+        text: 'Adopt a change budget: allow yourself one meaningful edit per ad set per few days, and log why. It forces you to act on evidence, not anxiety, and it keeps ad sets out of perpetual learning.',
       },
     ],
   },

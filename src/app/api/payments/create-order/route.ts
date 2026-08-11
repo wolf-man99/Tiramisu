@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
  * Starts a Razorpay checkout: creates the Order (amount looked up server-side, never
  * trusting the client) and a matching Payment audit row, then hands the client just
  * enough to open Checkout.js. The actual entitlement is granted later, once the
- * payment is verified — see /api/payments/verify and /api/payments/webhook.
+ * payment is verified. See /api/payments/verify and /api/payments/webhook.
  */
 export async function POST(req: Request) {
   const profileId = await getProfileId();
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   const { enrollment } = await ensureEnrollment(profileId, 'meta-ads');
   const hasLearn = Boolean(enrollment.learnPurchasedAt);
   if (!isProductPurchasable(product, hasLearn)) {
-    const reason = product === 'run' ? 'Buy Learn first — Run isn\'t sold on its own.' : 'You already own Learn — buy Run instead of the bundle.';
+    const reason = product === 'run' ? 'Buy Learn first - Run isn\'t sold on its own.' : 'You already own Learn. Buy Run instead of the bundle.';
     return Response.json({ error: reason }, { status: 400 });
   }
 

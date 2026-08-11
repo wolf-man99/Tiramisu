@@ -1,7 +1,7 @@
 import { ex } from './helpers';
 
 /**
- * Module 6 — CASE, dates, strings, math and NULL handling (day 8).
+ * Module 6: CASE, dates, strings, math and NULL handling (day 8).
  *
  * 40 exercises. This is the module that turns a learner from "can write a query" into
  * "can shape data". Most of the real work in marketing SQL is here: parsing campaign
@@ -12,7 +12,7 @@ export const M06 = [
   // ── CASE ──
   ex('6.1', 8, 'easy',
     'Label the brand campaigns',
-    'Return `campaign_name` and `brand_type` — `Brand` when is_brand is 1, otherwise `Non-brand`. Order by campaign_name.',
+    'Return `campaign_name` and `brand_type`: `Brand` when is_brand is 1, otherwise `Non-brand`. Order by campaign_name.',
     ['google_ads_campaigns'], ['case-when'],
     `SELECT campaign_name,
        CASE WHEN is_brand = 1 THEN 'Brand' ELSE 'Non-brand' END AS brand_type
@@ -40,7 +40,7 @@ LIMIT 25`,
 
   ex('6.3', 8, 'easy',
     'Simple CASE on a single column',
-    'Return `priority` and `priority_rank` from `support_tickets` — urgent 1, high 2, normal 3, low 4 — as distinct pairs, ordered by rank.',
+    'Return `priority` and `priority_rank` from `support_tickets`, urgent 1, high 2, normal 3, low 4, as distinct pairs, ordered by rank.',
     ['support_tickets'], ['case-when', 'distinct'],
     `SELECT DISTINCT priority,
        CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END AS priority_rank
@@ -52,7 +52,7 @@ ORDER BY priority_rank`,
 
   ex('6.4', 8, 'medium',
     'CASE inside an aggregate',
-    'Return `channel` and `high_value_orders` — the count of completed orders over 250 — plus `all_orders`. Order by high_value_orders descending.',
+    'Return `channel` and `high_value_orders`, the count of completed orders over 250, plus `all_orders`. Order by high_value_orders descending.',
     ['orders'], ['case-when', 'conditional-aggregation', 'group-by'],
     `SELECT channel,
        COUNT(CASE WHEN gross_revenue > 250 THEN 1 END) AS high_value_orders,
@@ -139,21 +139,21 @@ FROM subscriptions
 WHERE canceled_at IS NOT NULL
 ORDER BY days_subscribed, subscription_id
 LIMIT 20`,
-    ['`DATE_DIFF(later, earlier, DAY)` — the later date comes first.',
+    ['`DATE_DIFF(later, earlier, DAY)`. The later date comes first.',
       'Filter out the still-active subscriptions or the result is NULL.'],
     { orderMatters: true,
       trap: 'DATE_DIFF takes the *end* date first. Swapping them gives negative numbers.' }),
 
   ex('6.10', 8, 'medium',
     'Add an interval',
-    'Return `order_id`, `order_date` and `refund_deadline` — 30 days after the order — for the first 20 completed orders by order_id.',
+    'Return `order_id`, `order_date` and `refund_deadline`, 30 days after the order, for the first 20 completed orders by order_id.',
     ['orders'], ['date-functions'],
     `SELECT order_id, order_date, DATE_ADD(order_date, INTERVAL 30 DAY) AS refund_deadline
 FROM orders
 WHERE status = 'completed'
 ORDER BY order_id
 LIMIT 20`,
-    ['`DATE_ADD(date, INTERVAL n DAY)` — note the INTERVAL keyword.',
+    ['`DATE_ADD(date, INTERVAL n DAY)`. Note the INTERVAL keyword.',
       'DATE_SUB is the mirror image.'],
     { orderMatters: true }),
 
@@ -168,7 +168,7 @@ WHERE status = 'completed'
 GROUP BY month_label, DATE_TRUNC(order_date, MONTH)
 ORDER BY DATE_TRUNC(order_date, MONTH)`,
     ['`FORMAT_DATE(format, date)` renders a date as text. `%b` is the short month, `%Y` the year.',
-      'Sorting by the label would give April, August, December… — sort by the real date instead.'],
+      'Sorting by the label would give April, August, December…, sort by the real date instead.'],
     { orderMatters: true,
       trap: 'Formatting a date to text and then sorting by the text.' }),
 
@@ -185,7 +185,7 @@ ORDER BY day`,
       'The format string mirrors the layout: `%Y%m%d` for `20240614`.',
       'You can still filter on the raw string because YYYYMMDD sorts correctly.'],
     { orderMatters: true,
-      explanation: 'The GA4 export really does store `event_date` as a string. Filtering on the string is cheaper than parsing every row first — and in real BigQuery it is what lets partition pruning work.' }),
+      explanation: 'The GA4 export really does store `event_date` as a string. Filtering on the string is cheaper than parsing every row first, and in real BigQuery it is what lets partition pruning work.' }),
 
   ex('6.13', 8, 'hard',
     'Microsecond timestamps',
@@ -248,7 +248,7 @@ LIMIT 20`,
   // ── strings ──
   ex('6.17', 8, 'medium',
     'Split a campaign name',
-    'Campaign names look like `GB_Search_NonBrand_UK_Exact`. Return `campaign_name`, `market`, `channel` and `brandness` — the first three underscore-separated parts. Order by campaign_name.',
+    'Campaign names look like `GB_Search_NonBrand_UK_Exact`. Return `campaign_name`, `market`, `channel` and `brandness`, the first three underscore-separated parts. Order by campaign_name.',
     ['google_ads_campaigns'], ['split-parse', 'string-functions'],
     `SELECT campaign_name,
        SPLIT(campaign_name, '_')[OFFSET(0)] AS market,
@@ -260,11 +260,11 @@ ORDER BY campaign_name`,
       '`[OFFSET(n)]` reads the nth element, counting from 0.',
       '`[ORDINAL(n)]` counts from 1 if you prefer.'],
     { orderMatters: true,
-      explanation: 'Naming conventions are a schema hiding in a string. Parsing them is how you get dimensions the ad platform never gave you — and why the convention is worth enforcing upstream.' }),
+      explanation: 'Naming conventions are a schema hiding in a string. Parsing them is how you get dimensions the ad platform never gave you, and why the convention is worth enforcing upstream.' }),
 
   ex('6.18', 8, 'medium',
     'Extract with a regex',
-    'Return `campaign_name` and `geo` — the fourth segment of the name — using REGEXP_EXTRACT instead of SPLIT. Order by campaign_name.',
+    'Return `campaign_name` and `geo`, the fourth segment of the name, using REGEXP_EXTRACT instead of SPLIT. Order by campaign_name.',
     ['google_ads_campaigns'], ['regexp', 'string-functions'],
     `SELECT campaign_name,
        REGEXP_EXTRACT(campaign_name, r'^[^_]+_[^_]+_[^_]+_([^_]+)') AS geo
@@ -277,7 +277,7 @@ ORDER BY campaign_name`,
 
   ex('6.19', 8, 'medium',
     'Match a pattern',
-    'Return `keyword_text` for distinct keywords that mention a brand — `northbeam`, `ridgeline` or `summit` — using REGEXP_CONTAINS. Alphabetical.',
+    'Return `keyword_text` for distinct keywords that mention a brand: `northbeam`, `ridgeline` or `summit`, using REGEXP_CONTAINS. Alphabetical.',
     ['google_ads_keywords'], ['regexp'],
     `SELECT DISTINCT keyword_text
 FROM google_ads_keywords
@@ -303,7 +303,7 @@ LIMIT 15`,
 
   ex('6.21', 8, 'medium',
     'Extract an email domain type',
-    'Return `domain_type` — `personal` for gmail/outlook/yahoo/icloud/proton, otherwise `business` — and `customers`. Order by customers descending.',
+    'Return `domain_type`: `personal` for gmail/outlook/yahoo/icloud/proton, otherwise `business`, and `customers`. Order by customers descending.',
     ['customers'], ['case-when', 'string-functions', 'in'],
     `SELECT CASE WHEN email_domain IN ('gmail.com','outlook.com','yahoo.com','icloud.com','proton.me')
             THEN 'personal' ELSE 'business' END AS domain_type,
@@ -325,12 +325,12 @@ ORDER BY customers DESC`,
 FROM google_ads_campaigns
 ORDER BY campaign_id`,
     ['CONCAT joins the fixed prefix to the lowercased name.',
-      'LOWER() normalises the campaign name — UTM values are case-sensitive downstream.'],
+      'LOWER() normalises the campaign name. UTM values are case-sensitive downstream.'],
     { orderMatters: true }),
 
   ex('6.23', 8, 'hard',
     'Substring and position',
-    'Return `page_path` and `section` — the text between the first and second slash — for landing pages. Order by page_path.',
+    'Return `page_path` and `section`, the text between the first and second slash, for landing pages. Order by page_path.',
     ['landing_pages'], ['string-functions', 'regexp'],
     `SELECT page_path,
        COALESCE(REGEXP_EXTRACT(page_path, r'^/([^/]+)'), '(root)') AS section
@@ -342,7 +342,7 @@ ORDER BY page_path`,
 
   ex('6.24', 8, 'medium',
     'Pad and align',
-    'Return `campaign_id` and `padded_id` — the id left-padded with zeros to 8 characters. Order by campaign_id.',
+    'Return `campaign_id` and `padded_id`, the id left-padded with zeros to 8 characters. Order by campaign_id.',
     ['google_ads_campaigns'], ['string-functions'],
     `SELECT campaign_id, LPAD(CAST(campaign_id AS STRING), 8, '0') AS padded_id
 FROM google_ads_campaigns
@@ -353,7 +353,7 @@ ORDER BY campaign_id`,
 
   ex('6.25', 8, 'hard',
     'Concatenate a journey',
-    'Return `customer_id` and `journey` — the channels of each converted journey joined with ` > ` in touch order. Order by customer_id, limit 20.',
+    'Return `customer_id` and `journey`, the channels of each converted journey joined with ` > ` in touch order. Order by customer_id, limit 20.',
     ['attribution_touchpoints'], ['string-functions', 'group-by', 'attribution'],
     `SELECT customer_id, STRING_AGG(channel, ' > ' ORDER BY touch_position) AS journey
 FROM attribution_touchpoints
@@ -399,7 +399,7 @@ ORDER BY list_price, product_id`,
 
   ex('6.28', 8, 'medium',
     'Absolute values for refunds',
-    'Return `refund_count` and `refund_value` — the absolute total of negative revenue — from refunded orders.',
+    'Return `refund_count` and `refund_value`, the absolute total of negative revenue, from refunded orders.',
     ['orders'], ['math-functions'],
     `SELECT COUNT(*) AS refund_count, ABS(SUM(gross_revenue)) AS refund_value
 FROM orders
@@ -409,7 +409,7 @@ WHERE status = 'refunded'`,
 
   ex('6.29', 8, 'medium',
     'Greatest and least',
-    'Return `product_name`, `list_price`, and `floor_price` — the greater of unit_cost × 1.5 and 20. Order by floor_price descending.',
+    'Return `product_name`, `list_price`, and `floor_price`, the greater of unit_cost × 1.5 and 20. Order by floor_price descending.',
     ['products'], ['math-functions'],
     `SELECT product_name, list_price, GREATEST(unit_cost * 1.5, 20) AS floor_price
 FROM products
@@ -440,7 +440,7 @@ ORDER BY pct_change DESC`,
   // ── NULL handling ──
   ex('6.31', 8, 'easy',
     'COALESCE a default',
-    'Return `keyword_text` and `score` — the quality score, or 0 where it is missing. Order by keyword_id, limit 25.',
+    'Return `keyword_text` and `score`: the quality score, or 0 where it is missing. Order by keyword_id, limit 25.',
     ['google_ads_keywords'], ['coalesce', 'null-handling'],
     `SELECT keyword_text, COALESCE(quality_score, 0) AS score
 FROM google_ads_keywords
@@ -458,7 +458,7 @@ LIMIT 25`,
     `SELECT AVG(quality_score) AS avg_ignoring_nulls,
        AVG(COALESCE(quality_score, 0)) AS avg_treating_null_as_zero
 FROM google_ads_keywords`,
-    ['AVG skips NULLs entirely — the denominator shrinks.',
+    ['AVG skips NULLs entirely, the denominator shrinks.',
       'COALESCE to 0 keeps the row but drags the mean down.'],
     {
       explanation:
@@ -476,12 +476,12 @@ ORDER BY date, ad_group_id
 LIMIT 20`,
     ['`NULLIF(a, b)` returns NULL when a equals b.',
       'Turning the 0 denominator into NULL makes the whole division NULL instead of an error.',
-      'SAFE_DIVIDE does the same thing more directly — this is the portable version.'],
+      'SAFE_DIVIDE does the same thing more directly. This is the portable version.'],
     { orderMatters: true }),
 
   ex('6.34', 8, 'medium',
     'IFNULL vs COALESCE',
-    'Return `order_id`, `coupon_code` and `coupon_label` — the coupon, or `none` — for the first 20 orders by order_id.',
+    'Return `order_id`, `coupon_code` and `coupon_label`: the coupon, or `none`, for the first 20 orders by order_id.',
     ['orders'], ['coalesce', 'null-handling'],
     `SELECT order_id, coupon_code, IFNULL(coupon_code, 'none') AS coupon_label
 FROM orders
@@ -493,7 +493,7 @@ LIMIT 20`,
 
   ex('6.35', 8, 'hard',
     'Chained fallbacks',
-    'Return `contact_id` and `attributed_campaign` — the original_campaign if present, otherwise the original_source, otherwise the text `unknown`. Order by contact_id, limit 25.',
+    'Return `contact_id` and `attributed_campaign`: the original_campaign if present, otherwise the original_source, otherwise the text `unknown`. Order by contact_id, limit 25.',
     ['hubspot_contacts'], ['coalesce', 'null-handling'],
     `SELECT contact_id,
        COALESCE(original_campaign, original_source, 'unknown') AS attributed_campaign
@@ -506,7 +506,7 @@ LIMIT 25`,
 
   ex('6.36', 8, 'hard',
     'Count the NULLs per column',
-    'Audit `google_ads_keyword_daily`: return `rows`, `null_impression_share` and `pct_null` — the share of rows with a NULL search_impression_share.',
+    'Audit `google_ads_keyword_daily`: return `rows`, `null_impression_share` and `pct_null`. The share of rows with a NULL search_impression_share.',
     ['google_ads_keyword_daily'], ['null-handling', 'countif', 'rate-metrics'],
     `SELECT COUNT(*) AS rows_total,
        COUNTIF(search_impression_share IS NULL) AS null_impression_share,
@@ -529,7 +529,7 @@ FROM google_ads_keyword_daily`,
 FROM google_ads_campaigns
 ORDER BY campaign_name`,
     ['Five SPLIT calls, one per segment.',
-      'Not every name has five segments — `SAFE_OFFSET` returns NULL instead of erroring on the short ones.'],
+      'Not every name has five segments, `SAFE_OFFSET` returns NULL instead of erroring on the short ones.'],
     { orderMatters: true,
       explanation: 'SAFE_OFFSET is the difference between a parser that works and one that dies the day somebody names a campaign slightly differently. Assume the convention will be broken, because it will.' }),
 
@@ -562,7 +562,7 @@ ORDER BY spend DESC, channel`,
 FROM customer_ltv
 GROUP BY recency_band
 ORDER BY customers DESC, recency_band`,
-    ['Handle the NULL case first — a customer who never ordered has no last order date.',
+    ['Handle the NULL case first. A customer who never ordered has no last order date.',
       'Each subsequent WHEN only needs an upper bound.',
       'Use the customer_ltv view rather than recomputing the last order date.'],
     { orderMatters: true,
@@ -589,5 +589,5 @@ ORDER BY spend DESC, market, brandness`,
       'Every rate is a ratio of sums.',
       'HAVING filters on the aggregate.'],
     { orderMatters: true,
-      explanation: 'Brand vs non-brand CPA, split by market, is the single most useful slice of a search account — and none of those dimensions exist as columns. You created them out of a naming convention.' }),
+      explanation: 'Brand vs non-brand CPA, split by market, is the single most useful slice of a search account, and none of those dimensions exist as columns. You created them out of a naming convention.' }),
 ];

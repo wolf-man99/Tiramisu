@@ -1,7 +1,7 @@
 import type { MetaLesson } from '../types';
 import { p, list, key } from '../types';
 
-/** Module 7 — Scaling: grow spend without breaking the economics or the learning phase. */
+/** Module 7, Scaling: grow spend without breaking the economics or the learning phase. */
 export const M7_LESSONS: MetaLesson[] = [
   // ─────────────────────────────────────────────────────────── Lesson 7.1 ──
   {
@@ -18,8 +18,8 @@ export const M7_LESSONS: MetaLesson[] = [
         blocks: [
           p('Scaling means spending more *without* wrecking your ROAS. There are exactly two directions:'),
           list([
-            '**Vertical** — raise the budget on a proven ad set. Fast and simple, but big jumps reset the learning phase and can push you into worse-converting audiences.',
-            '**Horizontal** — keep budgets stable and *add* new ad sets: new audiences, new lookalikes, new creatives. Slower and more to manage, but far more stable.',
+            '**Vertical**, raise the budget on a proven ad set. Fast and simple, but big jumps reset the learning phase and can push you into worse-converting audiences.',
+            '**Horizontal**. Keep budgets stable and *add* new ad sets: new audiences, new lookalikes, new creatives. Slower and more to manage, but far more stable.',
           ]),
           key('Vertical scales *depth* (more money, same target). Horizontal scales *breadth* (new targets, same money each). Mature accounts lean horizontal and use gentle vertical on the very best sets.'),
         ],
@@ -28,8 +28,8 @@ export const M7_LESSONS: MetaLesson[] = [
         kind: 'mcq', id: 'q1',
         prompt: 'You want to grow spend while keeping delivery stable and ROAS intact. Which approach is generally safer?',
         options: [
-          'Vertical — double the budget on your winner tonight',
-          'Horizontal — add new audiences/creatives at stable budgets',
+          'Vertical, double the budget on your winner tonight',
+          'Horizontal. Add new audiences/creatives at stable budgets',
           'Pause and rebuild everything',
           'Narrow the audience',
         ],
@@ -47,13 +47,13 @@ export const M7_LESSONS: MetaLesson[] = [
         situation: 'A single ad set is crushing it at $50/day. The client wants to hit $500/day this week. What’s the least risky path?',
         options: [
           { label: 'Set that ad set to $500/day now', correct: false, feedback: 'A 10× overnight jump obliterates learning and usually tanks ROAS as delivery chases expensive impressions.' },
-          { label: 'Raise it gradually and duplicate the winner into new audiences (horizontal)', correct: true, feedback: 'Right. Combine gentle vertical steps (~20% every few days) with horizontal expansion — the same winning creative into fresh lookalikes and interests — to add spend without a shock.' },
+          { label: 'Raise it gradually and duplicate the winner into new audiences (horizontal)', correct: true, feedback: 'Right. Combine gentle vertical steps (~20% every few days) with horizontal expansion, the same winning creative into fresh lookalikes and interests, to add spend without a shock.' },
           { label: 'Clone it 10 times at $50 each targeting the identical audience', correct: false, feedback: 'Ten clones on the *same* audience just overlap and bid against each other, inflating your own CPMs. Expand to *new* audiences instead.' },
         ],
       },
       {
         kind: 'tip', id: 't1', title: 'Pro tip',
-        text: 'When you scale horizontally, exclude overlapping audiences from each other. Ten new ad sets fighting over the same people isn’t scale — it’s you outbidding yourself and driving your own costs up.',
+        text: 'When you scale horizontally, exclude overlapping audiences from each other. Ten new ad sets fighting over the same people isn’t scale, it’s you outbidding yourself and driving your own costs up.',
       },
     ],
   },
@@ -74,7 +74,7 @@ export const M7_LESSONS: MetaLesson[] = [
           p('When a winner is ready to scale, you reach for one of two moves:'),
           list([
             '**Raise the existing budget (gently).** Best when the ad set is stable and not yet saturated. Nudge ~20% every few days so you don’t reset learning.',
-            '**Duplicate into a *new* audience.** Best when the current audience is getting saturated (frequency rising) — a fresh audience gives the winning creative new people to reach.',
+            '**Duplicate into a *new* audience.** Best when the current audience is getting saturated (frequency rising). A fresh audience gives the winning creative new people to reach.',
           ]),
           key('Raise the budget to get *more* out of the *same* audience. Duplicate to reach a *new* audience. Duplicating onto the *same* audience just creates overlap.'),
         ],
@@ -95,8 +95,8 @@ export const M7_LESSONS: MetaLesson[] = [
         kind: 'scenario', id: 'q2',
         situation: 'A media buyer duplicates the winning ad set 4 times onto the *same* lookalike to "multiply" spend. CPMs climb across all of them. What happened?',
         options: [
-          { label: 'Meta penalised the duplicates', correct: false, feedback: 'No penalty — this is auction mechanics. The copies target the same people and compete in the same auctions.' },
-          { label: 'The copies overlap and bid against each other, raising CPMs', correct: true, feedback: 'Right. Duplicating onto the identical audience makes your own ad sets compete for the same impressions — you inflate your own prices. Duplicate onto *new* audiences instead.' },
+          { label: 'Meta penalised the duplicates', correct: false, feedback: 'No penalty. This is auction mechanics. The copies target the same people and compete in the same auctions.' },
+          { label: 'The copies overlap and bid against each other, raising CPMs', correct: true, feedback: 'Right. Duplicating onto the identical audience makes your own ad sets compete for the same impressions, you inflate your own prices. Duplicate onto *new* audiences instead.' },
           { label: 'The creative fatigued instantly', correct: false, feedback: 'Fatigue builds over time; this cost jump is immediate and comes from self-overlap, not fatigue.' },
         ],
       },
@@ -124,20 +124,20 @@ export const M7_LESSONS: MetaLesson[] = [
     objective: 'Hold profitability while scaling by watching break-even ROAS and feeding the creative pipeline.',
     cards: [
       {
-        kind: 'teach', id: 'c1', title: 'ROAS usually dips as you scale — plan for it',
+        kind: 'teach', id: 'c1', title: 'ROAS usually dips as you scale - plan for it',
         blocks: [
-          p('As you spend more, you reach beyond your best, cheapest audiences into broader, pricier ones. So a *small* ROAS dip while scaling is normal and often fine — as long as you stay above **break-even ROAS**. The mistake is scaling until you’re unknowingly losing money on every extra dollar.'),
+          p('As you spend more, you reach beyond your best, cheapest audiences into broader, pricier ones. So a *small* ROAS dip while scaling is normal and often fine, as long as you stay above **break-even ROAS**. The mistake is scaling until you’re unknowingly losing money on every extra dollar.'),
           key('The real target isn’t "keep ROAS at 4×." It’s "spend as much as possible while staying profitably above break-even ROAS." Volume at a healthy margin beats a beautiful ROAS on tiny spend.'),
         ],
       },
       {
-        kind: 'calc', id: 'calc1', variant: 'breakeven-roas', title: 'Know your floor before you scale', blurb: 'Enter your margin. As long as your scaled ROAS stays above this line, more spend means more profit — even if the ROAS number drops.' },
+        kind: 'calc', id: 'calc1', variant: 'breakeven-roas', title: 'Know your floor before you scale', blurb: 'Enter your margin. As long as your scaled ROAS stays above this line, more spend means more profit. Even if the ROAS number drops.' },
       {
         kind: 'mcq', id: 'q1',
         prompt: 'Scaling drops your ROAS from 4.0× to 2.8×. Your product margin is 50% (break-even ROAS = 2.0×). Are you still making money on the extra spend?',
         options: [
-          'No — ROAS fell, so stop scaling',
-          'Yes — 2.8× is still above the 2.0× break-even, so each extra dollar profits',
+          'No - ROAS fell, so stop scaling',
+          'Yes: 2.8× is still above the 2.0× break-even, so each extra dollar profits',
           'Only if ROAS stays above 4.0×',
           'Impossible to tell',
         ],
@@ -152,7 +152,7 @@ export const M7_LESSONS: MetaLesson[] = [
             '**A creative pipeline.** New winners constantly replace fatiguing ones. Without fresh creative, frequency climbs and ROAS falls no matter how you structure budgets.',
             '**Audience expansion.** Broader interests, new lookalikes and new geos keep giving the algorithm fresh people so you’re not just re-hitting a saturated pool.',
           ]),
-          p('Structure (CBO, gentle increases, exclusions) keeps you stable — but creative and fresh audiences are what let you actually get *bigger*.'),
+          p('Structure (CBO, gentle increases, exclusions) keeps you stable, but creative and fresh audiences are what let you actually get *bigger*.'),
         ],
       },
       {
@@ -165,15 +165,15 @@ export const M7_LESSONS: MetaLesson[] = [
           'Doubling every ad set’s budget every night',
         ],
         answers: [0, 1, 2],
-        explain: 'Fresh creative, new audiences, and scaling against break-even ROAS are the durable levers. Doubling budgets nightly just resets learning and destabilises delivery — the opposite of sustainable.',
+        explain: 'Fresh creative, new audiences, and scaling against break-even ROAS are the durable levers. Doubling budgets nightly just resets learning and destabilises delivery, the opposite of sustainable.',
       },
       {
         kind: 'scenario', id: 'q3',
         situation: 'You’ve scaled to $2k/day at a healthy, above-break-even ROAS, but growth has stalled and frequency is creeping up across the account. What’s the highest-leverage next move?',
         options: [
-          { label: 'Keep raising budgets on the same ad sets', correct: false, feedback: 'Rising frequency says the current audiences are saturating — more budget on them just re-shows the same ads and pushes ROAS down.' },
+          { label: 'Keep raising budgets on the same ad sets', correct: false, feedback: 'Rising frequency says the current audiences are saturating, more budget on them just re-shows the same ads and pushes ROAS down.' },
           { label: 'Ship new creative and open new audiences to refresh the pool', correct: true, feedback: 'Right. Stalled growth + creeping frequency means you’ve tapped the current pool. Fresh creative and new audiences give the algorithm new people to convert, reopening headroom to scale.' },
-          { label: 'Cut spend to protect ROAS', correct: false, feedback: 'That protects a vanity number while shrinking the business. The goal is profitable *volume*, which needs new creative and audiences — not retreat.' },
+          { label: 'Cut spend to protect ROAS', correct: false, feedback: 'That protects a vanity number while shrinking the business. The goal is profitable *volume*, which needs new creative and audiences, not retreat.' },
         ],
       },
       {

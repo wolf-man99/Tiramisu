@@ -14,7 +14,7 @@ export interface SolverTask {
   hints?: string[];
 }
 
-/** A task picker plus a single embedded workspace — used by project/interview/capstone pages. */
+/** A task picker plus a single embedded workspace, used by project/interview/capstone pages. */
 export function TaskSolver({
   collection,
   slug,

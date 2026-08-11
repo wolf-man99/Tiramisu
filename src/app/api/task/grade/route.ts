@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 
 type Collection = 'project' | 'interview' | 'capstone' | 'lab';
 
-/** Resolve a task's reference solution server-side — never expose it to the client. */
+/** Resolve a task's reference solution server-side, never expose it to the client. */
 function resolve(collection: Collection, slug: string, taskId?: string): { solution: string; orderMatters?: boolean; itemId: string } | null {
   if (collection === 'project') {
     const p = PROJECTS.find((x) => x.slug === slug);

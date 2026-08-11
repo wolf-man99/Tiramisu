@@ -10,14 +10,14 @@ import { SiteHeader, SiteFooter } from '@/components/marketing/SiteChrome';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Courses — Tiramisu' };
+export const metadata = { title: 'Courses - Tiramisu' };
 
 export default async function CoursesPage() {
   const profile = await getCurrentProfile();
   const authed = Boolean(profile);
   const live = COURSES.filter((c) => c.status === 'live');
 
-  // Only Meta Ads has real pricing today — a signed-in click on its card opens a
+  // Only Meta Ads has real pricing today, a signed-in click on its card opens a
   // pricing dialog instead of navigating straight in. A missing Enrollment row
   // (never visited the course yet) just means nothing's been purchased.
   const metaAdsEnrollment = profile

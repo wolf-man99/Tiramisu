@@ -7,8 +7,8 @@ import { newlyEarnedBadges, type BadgeContext } from './badges';
 import { isLearnComplete } from './gating';
 
 /**
- * The single place learner state changes after a graded submission. Everything —
- * XP, coins, level, streak, per-concept mastery, daily activity, and badge awards —
+ * The single place learner state changes after a graded submission. Everything,
+ * XP, coins, level, streak, per-concept mastery, daily activity, and badge awards,
  * is updated atomically so a crash can never leave the profile half-written.
  */
 
@@ -114,7 +114,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
     });
 
     // Learn -> Run unlock. Only worth checking on a fresh lesson pass, not every
-    // attempt of every item type — isLearnComplete() re-reads every lesson's attempt
+    // attempt of every item type, isLearnComplete() re-reads every lesson's attempt
     // state, so it's not free.
     if (input.passed && input.itemType === 'lesson') {
       const learnDone = await isLearnComplete(tx, profile.id, courseId);
@@ -146,7 +146,7 @@ export async function recordAttempt(input: RecordAttemptInput): Promise<RecordAt
       });
     }
 
-    // Streak — only advances on a day with activity.
+    // Streak, only advances on a day with activity.
     const streak = applyActivity({
       currentStreak: profile.currentStreak,
       longestStreak: profile.longestStreak,
@@ -310,7 +310,7 @@ async function buildBadgeContext(
   const capstoneItems = passedByType.get('capstone') ?? new Set();
   const challengeItems = passedByType.get('challenge') ?? new Set();
 
-  // Projects/interviews are keyed as slug/task — count distinct slugs.
+  // Projects/interviews are keyed as slug/task. Count distinct slugs.
   const distinctSlugs = (set: Set<string>) => new Set([...set].map((id) => id.split('/')[0])).size;
 
   const firstQueryRun = attemptsCount > 0;

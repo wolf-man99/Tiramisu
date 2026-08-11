@@ -3,7 +3,7 @@ import { SESSION_COOKIE } from '@/lib/auth/constants';
 
 /**
  * Fast UX gate: bounce unauthenticated visitors from the app to /login. This is a
- * presence check only — the real security gate is `requireProfileId()` in each server
+ * presence check only. The real security gate is `requireProfileId()` in each server
  * component and the per-route auth checks, which verify the cookie's signature.
  */
 

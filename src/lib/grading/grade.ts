@@ -6,7 +6,7 @@ import { exerciseById } from '../content/exercises';
  * Grade a submission by result-set equivalence: run the learner's SQL and the
  * reference solution against the same warehouse, then compare. The reference is
  * executed at grade time rather than stored, so a solution can never drift from the
- * data — if the warehouse changes, both sides move together.
+ * data: if the warehouse changes, both sides move together.
  */
 
 export interface GradeRequest {
@@ -44,7 +44,7 @@ export function grade(req: GradeRequest): GradeResponse {
 
   // The reference is trusted (skips the read-only guard's stricter parsing paths only
   // where safe) but is still a read query. If it fails, that is a content bug, not the
-  // learner's fault — surface it plainly.
+  // learner's fault, surface it plainly.
   let expected;
   try {
     expected = runQuery(req.solution, { trusted: true });

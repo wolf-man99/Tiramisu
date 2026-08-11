@@ -2,7 +2,7 @@
  * The homepage simulator demo: a fictional D2C brand, a fictional ad account.
  *
  * EVERY NUMBER HERE IS INVENTED for teaching. Nothing is sampled from a real Meta
- * account and nothing should be presented as a real-world benchmark — the UI labels
+ * account and nothing should be presented as a real-world benchmark, the UI labels
  * it as a simulation in-place, and that labelling is load-bearing, not decoration.
  *
  * The campaign rows are built to sum exactly to the account totals below, so a
@@ -43,40 +43,40 @@ export const DEMO_BRAND = {
 /**
  * Impressions/clicks/reach below are chosen, not random: each campaign's implied CTR
  * (clicks÷impressions) and conversion rate (purchases÷clicks) sit in realistic bands
- * for Indian D2C paid social — prospecting around 1.0–1.5% CTR and 3% conversion,
+ * for Indian D2C paid social, prospecting around 1.0–1.5% CTR and 3% conversion,
  * warm retargeting much higher on both, catalog/DPA in between. Frequency (derived
  * as impressions÷reach) is deliberately low for broad prospecting and high for the
  * small warm retargeting pools, matching how those audiences actually behave.
  */
 export const DEMO_CAMPAIGNS: DemoCampaign[] = [
   {
-    name: 'Prospecting — Advantage+ Broad', type: 'Prospecting', spend: 118_000, revenue: 401_200, purchases: 452,
+    name: 'Prospecting - Advantage+ Broad', type: 'Prospecting', spend: 118_000, revenue: 401_200, purchases: 452,
     impressions: 1_086_000, linkClicks: 14_120, reach: 603_000,
     bidStrategy: 'Highest volume', dailyBudget: 4_000, delivery: 'Active',
   },
   {
-    name: 'Prospecting — Interest Stack', type: 'Prospecting', spend: 74_000, revenue: 233_000, purchases: 268,
+    name: 'Prospecting - Interest Stack', type: 'Prospecting', spend: 74_000, revenue: 233_000, purchases: 268,
     impressions: 638_000, linkClicks: 8_930, reach: 304_000,
     bidStrategy: 'Highest volume', dailyBudget: 2_500, delivery: 'Active',
   },
   {
-    name: 'Retargeting — Add-to-Cart 7D', type: 'Retargeting', spend: 52_000, revenue: 302_000, purchases: 331,
+    name: 'Retargeting - Add-to-Cart 7D', type: 'Retargeting', spend: 52_000, revenue: 302_000, purchases: 331,
     impressions: 108_800, linkClicks: 3_480, reach: 22_700,
     bidStrategy: 'Cost per result goal', costPerResultGoal: 850, dailyBudget: 1_800, delivery: 'Active',
   },
   {
-    name: 'Retargeting — IG Engagers 30D', type: 'Retargeting', spend: 38_000, revenue: 158_400, purchases: 178,
+    name: 'Retargeting - IG Engagers 30D', type: 'Retargeting', spend: 38_000, revenue: 158_400, purchases: 178,
     impressions: 94_100, linkClicks: 2_540, reach: 24_100,
     bidStrategy: 'Cost per result goal', costPerResultGoal: 900, dailyBudget: 1_300, delivery: 'Active',
   },
   {
-    name: 'Catalog Sales — DPA', type: 'Catalog', spend: 60_000, revenue: 189_400, purchases: 197,
+    name: 'Catalog Sales - DPA', type: 'Catalog', spend: 60_000, revenue: 189_400, purchases: 197,
     impressions: 162_700, linkClicks: 3_580, reach: 50_800,
     bidStrategy: 'Highest volume', dailyBudget: 2_000, delivery: 'Active',
   },
 ];
 
-/** The raw counts every derived metric below is computed from — shared by a full
+/** The raw counts every derived metric below is computed from, shared by a full
  *  DemoCampaign and by any date-range-aggregated total, so CPM/CPC/CTR/etc. work
  *  identically whether they're describing the whole campaign or a filtered slice. */
 export interface MetricTotals {
@@ -93,7 +93,7 @@ export const cpm = (c: MetricTotals): number => (c.spend / c.impressions) * 1000
 export const cpc = (c: MetricTotals): number => c.spend / c.linkClicks;
 /** CTR: link clicks ÷ impressions, as a percentage. */
 export const ctr = (c: MetricTotals): number => (c.linkClicks / c.impressions) * 100;
-/** Cost per result — Meta's term for cost per purchase on a sales campaign. */
+/** Cost per result. Meta's term for cost per purchase on a sales campaign. */
 export const costPerResult = (c: MetricTotals): number => c.spend / c.purchases;
 /** Purchase ROAS. */
 export const campaignRoas = (c: MetricTotals): number => c.revenue / c.spend;
@@ -110,7 +110,7 @@ export function estimateReach(c: DemoCampaign, rangeImpressions: number, rangeDa
   return rangeImpressions / freqRange;
 }
 
-/** Funnel conversion rates below Link Click, per campaign type — cold prospecting
+/** Funnel conversion rates below Link Click, per campaign type, cold prospecting
  *  traffic bounces more and adds-to-cart less than an audience that's already
  *  shown intent, which is exactly the gap Retargeting vs Prospecting is meant to
  *  teach. Applied to range-aggregated purchases (not per-day) to avoid the noise
@@ -163,12 +163,12 @@ export function isoDaysBefore(latest: string, daysAgo: number): string {
   d.setUTCDate(d.getUTCDate() - daysAgo);
   return d.toISOString().slice(0, 10);
 }
-/** Sunday=0 .. Saturday=6. D2C streetwear skews weekend — people browse and buy
+/** Sunday=0 .. Saturday=6. D2C streetwear skews weekend. People browse and buy
  *  off the clock, not during a workday. */
 const WEEKDAY_WEIGHT = [1.15, 0.82, 0.85, 0.88, 0.92, 1.05, 1.28];
 
 /** Splits `total` across `weights` so the parts sum to EXACTLY `total` (largest-
- *  remainder method for integers) — the recent-30-days window has to reconcile to
+ *  remainder method for integers). The recent-30-days window has to reconcile to
  *  DEMO_CAMPAIGNS' published figures to the rupee, not "approximately". */
 function distributeExact(total: number, weights: number[], integer: boolean): number[] {
   const weightSum = weights.reduce((a, b) => a + b, 0);
@@ -247,7 +247,7 @@ function generateCampaignSeries(c: DemoCampaign): DailyPoint[] {
   return points;
 }
 
-/** Precomputed once at module load — pure function of fixed inputs, so there's no
+/** Precomputed once at module load: pure function of fixed inputs, so there's no
  *  reason to regenerate it per render. */
 export const DEMO_DAILY: Record<string, DailyPoint[]> = Object.fromEntries(
   DEMO_CAMPAIGNS.map((c) => [c.name, generateCampaignSeries(c)]),
@@ -277,7 +277,7 @@ export function rangeDayCount(from: string, to: string): number {
 }
 
 /** Derives the funnel backward from purchases (the one number that must stay exact),
- *  then sanity-clamps landing page views under link clicks — physically it can never
+ *  then sanity-clamps landing page views under link clicks. Physically it can never
  *  exceed them, and the backward derivation is an approximation, not a hard identity. */
 export function funnelFor(type: DemoCampaign['type'], purchases: number, linkClicks: number): FunnelCounts {
   const r = FUNNEL_RATES[type];
@@ -291,7 +291,7 @@ export function funnelFor(type: DemoCampaign['type'], purchases: number, linkCli
 //
 // Meta's real structure is Campaign > Ad set > Ad. Each level below Campaign is
 // defined as a fixed share of its parent's totals rather than its own daily series
-// — shares always sum to 1 within a parent, so every level reconciles to the
+//: shares always sum to 1 within a parent, so every level reconciles to the
 // campaign figures above it at any date range, with no extra reconciliation work.
 
 export interface DemoAdSet {
@@ -303,15 +303,15 @@ export interface DemoAdSet {
 }
 
 export const DEMO_ADSETS: DemoAdSet[] = [
-  { id: 'as-1', campaignName: 'Prospecting — Advantage+ Broad', name: 'Advantage+ audience — 18–34', share: 0.58, delivery: 'Active' },
-  { id: 'as-2', campaignName: 'Prospecting — Advantage+ Broad', name: 'Advantage+ audience — 35–54', share: 0.42, delivery: 'Active' },
-  { id: 'as-3', campaignName: 'Prospecting — Interest Stack', name: 'Streetwear & sneakerhead interests', share: 0.64, delivery: 'Active' },
-  { id: 'as-4', campaignName: 'Prospecting — Interest Stack', name: 'Fashion lookalike 3%', share: 0.36, delivery: 'Active' },
-  { id: 'as-5', campaignName: 'Retargeting — Add-to-Cart 7D', name: 'Cart abandoners — 7 day', share: 1, delivery: 'Active' },
-  { id: 'as-6', campaignName: 'Retargeting — IG Engagers 30D', name: 'IG engagers — 30 day', share: 0.7, delivery: 'Active' },
-  { id: 'as-7', campaignName: 'Retargeting — IG Engagers 30D', name: 'Video viewers 75%+ — 30 day', share: 0.3, delivery: 'Learning' },
-  { id: 'as-8', campaignName: 'Catalog Sales — DPA', name: 'Dynamic — viewed or added to cart', share: 0.55, delivery: 'Active' },
-  { id: 'as-9', campaignName: 'Catalog Sales — DPA', name: 'Dynamic — broad catalog audience', share: 0.45, delivery: 'Active' },
+  { id: 'as-1', campaignName: 'Prospecting - Advantage+ Broad', name: 'Advantage+ audience - 18–34', share: 0.58, delivery: 'Active' },
+  { id: 'as-2', campaignName: 'Prospecting - Advantage+ Broad', name: 'Advantage+ audience - 35–54', share: 0.42, delivery: 'Active' },
+  { id: 'as-3', campaignName: 'Prospecting - Interest Stack', name: 'Streetwear & sneakerhead interests', share: 0.64, delivery: 'Active' },
+  { id: 'as-4', campaignName: 'Prospecting - Interest Stack', name: 'Fashion lookalike 3%', share: 0.36, delivery: 'Active' },
+  { id: 'as-5', campaignName: 'Retargeting - Add-to-Cart 7D', name: 'Cart abandoners - 7 day', share: 1, delivery: 'Active' },
+  { id: 'as-6', campaignName: 'Retargeting - IG Engagers 30D', name: 'IG engagers - 30 day', share: 0.7, delivery: 'Active' },
+  { id: 'as-7', campaignName: 'Retargeting - IG Engagers 30D', name: 'Video viewers 75%+ - 30 day', share: 0.3, delivery: 'Learning' },
+  { id: 'as-8', campaignName: 'Catalog Sales - DPA', name: 'Dynamic - viewed or added to cart', share: 0.55, delivery: 'Active' },
+  { id: 'as-9', campaignName: 'Catalog Sales - DPA', name: 'Dynamic - broad catalog audience', share: 0.45, delivery: 'Active' },
 ];
 
 export interface DemoAd {
@@ -324,22 +324,22 @@ export interface DemoAd {
 }
 
 export const DEMO_ADS: DemoAd[] = [
-  { id: 'ad-1', adSetId: 'as-1', name: 'UGC — "Why I switched"', format: 'Video', share: 0.55, delivery: 'Active' },
-  { id: 'ad-2', adSetId: 'as-1', name: 'Carousel — Bestsellers', format: 'Carousel', share: 0.45, delivery: 'Active' },
-  { id: 'ad-3', adSetId: 'as-2', name: 'Static — Founder story', format: 'Image', share: 1, delivery: 'Active' },
-  { id: 'ad-4', adSetId: 'as-3', name: 'UGC — Street styling', format: 'Video', share: 0.6, delivery: 'Active' },
-  { id: 'ad-5', adSetId: 'as-3', name: 'Carousel — New drop', format: 'Carousel', share: 0.4, delivery: 'Active' },
-  { id: 'ad-6', adSetId: 'as-4', name: 'Static — Lookbook grid', format: 'Image', share: 1, delivery: 'Active' },
-  { id: 'ad-7', adSetId: 'as-5', name: 'Dynamic — "Still thinking it over?"', format: 'Image', share: 0.5, delivery: 'Active' },
-  { id: 'ad-8', adSetId: 'as-5', name: 'Video — 10% off reminder', format: 'Video', share: 0.5, delivery: 'Active' },
-  { id: 'ad-9', adSetId: 'as-6', name: 'Collection — Shop the collection', format: 'Collection', share: 1, delivery: 'Active' },
-  { id: 'ad-10', adSetId: 'as-7', name: 'Video — Behind the drop', format: 'Video', share: 1, delivery: 'Learning' },
-  { id: 'ad-11', adSetId: 'as-8', name: 'Dynamic catalog — carousel', format: 'Carousel', share: 0.65, delivery: 'Active' },
-  { id: 'ad-12', adSetId: 'as-8', name: 'Dynamic catalog — single image', format: 'Image', share: 0.35, delivery: 'Active' },
-  { id: 'ad-13', adSetId: 'as-9', name: 'Dynamic catalog — collection', format: 'Collection', share: 1, delivery: 'Active' },
+  { id: 'ad-1', adSetId: 'as-1', name: 'UGC: "Why I switched"', format: 'Video', share: 0.55, delivery: 'Active' },
+  { id: 'ad-2', adSetId: 'as-1', name: 'Carousel - Bestsellers', format: 'Carousel', share: 0.45, delivery: 'Active' },
+  { id: 'ad-3', adSetId: 'as-2', name: 'Static - Founder story', format: 'Image', share: 1, delivery: 'Active' },
+  { id: 'ad-4', adSetId: 'as-3', name: 'UGC - Street styling', format: 'Video', share: 0.6, delivery: 'Active' },
+  { id: 'ad-5', adSetId: 'as-3', name: 'Carousel - New drop', format: 'Carousel', share: 0.4, delivery: 'Active' },
+  { id: 'ad-6', adSetId: 'as-4', name: 'Static - Lookbook grid', format: 'Image', share: 1, delivery: 'Active' },
+  { id: 'ad-7', adSetId: 'as-5', name: 'Dynamic: "Still thinking it over?"', format: 'Image', share: 0.5, delivery: 'Active' },
+  { id: 'ad-8', adSetId: 'as-5', name: 'Video - 10% off reminder', format: 'Video', share: 0.5, delivery: 'Active' },
+  { id: 'ad-9', adSetId: 'as-6', name: 'Collection - Shop the collection', format: 'Collection', share: 1, delivery: 'Active' },
+  { id: 'ad-10', adSetId: 'as-7', name: 'Video - Behind the drop', format: 'Video', share: 1, delivery: 'Learning' },
+  { id: 'ad-11', adSetId: 'as-8', name: 'Dynamic catalog - carousel', format: 'Carousel', share: 0.65, delivery: 'Active' },
+  { id: 'ad-12', adSetId: 'as-8', name: 'Dynamic catalog - single image', format: 'Image', share: 0.35, delivery: 'Active' },
+  { id: 'ad-13', adSetId: 'as-9', name: 'Dynamic catalog - collection', format: 'Collection', share: 1, delivery: 'Active' },
 ];
 
-/** Scales a totals object by a fixed share — derives ad-set/ad-level totals from a
+/** Scales a totals object by a fixed share, derives ad-set/ad-level totals from a
  *  parent's already range-aggregated totals, so date ranges flow down for free. */
 export function scaleTotals(t: MetricTotals, share: number): MetricTotals {
   return {
@@ -363,13 +363,13 @@ export interface DemoAudience {
 }
 
 export const DEMO_AUDIENCES: DemoAudience[] = [
-  { id: 'aud-1', name: 'Advantage+ audience — 18–34', type: 'Saved Audience', size: 4_200_000, adSetId: 'as-1' },
-  { id: 'aud-2', name: 'Advantage+ audience — 35–54', type: 'Saved Audience', size: 3_100_000, adSetId: 'as-2' },
+  { id: 'aud-1', name: 'Advantage+ audience - 18–34', type: 'Saved Audience', size: 4_200_000, adSetId: 'as-1' },
+  { id: 'aud-2', name: 'Advantage+ audience - 35–54', type: 'Saved Audience', size: 3_100_000, adSetId: 'as-2' },
   { id: 'aud-3', name: 'Streetwear & sneakerhead interests', type: 'Saved Audience', size: 1_850_000, adSetId: 'as-3' },
   { id: 'aud-4', name: 'Fashion lookalike 3%', type: 'Lookalike Audience', size: 640_000, adSetId: 'as-4' },
-  { id: 'aud-5', name: 'Cart abandoners — 7 day', type: 'Custom Audience', size: 18_400, adSetId: 'as-5' },
-  { id: 'aud-6', name: 'IG engagers — 30 day', type: 'Custom Audience', size: 92_000, adSetId: 'as-6' },
-  { id: 'aud-7', name: 'Video viewers 75%+ — 30 day', type: 'Custom Audience', size: 34_500, adSetId: 'as-7' },
+  { id: 'aud-5', name: 'Cart abandoners - 7 day', type: 'Custom Audience', size: 18_400, adSetId: 'as-5' },
+  { id: 'aud-6', name: 'IG engagers - 30 day', type: 'Custom Audience', size: 92_000, adSetId: 'as-6' },
+  { id: 'aud-7', name: 'Video viewers 75%+ - 30 day', type: 'Custom Audience', size: 34_500, adSetId: 'as-7' },
   { id: 'aud-8', name: 'Viewed or added to cart', type: 'Dynamic (Catalog)', size: 61_200, adSetId: 'as-8' },
   { id: 'aud-9', name: 'Broad catalog audience', type: 'Dynamic (Catalog)', size: 410_000, adSetId: 'as-9' },
 ];
@@ -379,7 +379,7 @@ export const DEMO_AUDIENCES: DemoAudience[] = [
  *
  * CAC is cost per *new customer*, not per purchase: only 419 of the 1,426 purchases
  * were first-time buyers, so ₹3,42,000 ÷ 419 ≈ ₹817 while spend ÷ purchases is a much
- * flattering ₹240. Learners are meant to notice that gap — a brand that reports the
+ * flattering ₹240. Learners are meant to notice that gap, a brand that reports the
  * lower number is measuring repeat buyers it already owned.
  */
 export const DEMO_TOTALS = {
@@ -395,7 +395,7 @@ export const DEMO_ROAS = DEMO_TOTALS.revenue / DEMO_TOTALS.spend;
  *  per-result gap the footnote teaches still holds at any date range, not just 30d. */
 export const NEW_CUSTOMER_RATE = DEMO_TOTALS.newCustomers / DEMO_TOTALS.purchases;
 
-/** Indian digit grouping (₹3,42,000) — matches the account's currency. */
+/** Indian digit grouping (₹3,42,000), matches the account's currency. */
 export function inr(n: number): string {
   return `₹${n.toLocaleString('en-IN')}`;
 }
@@ -423,7 +423,7 @@ export const SIM_EVENTS: SimEvent[] = [
     prompt: 'Your best ad set is decaying. What do you do?',
     options: [
       {
-        label: 'Raise the budget — it was the winner',
+        label: 'Raise the budget - it was the winner',
         verdict: 'costly',
         outcome:
           'Frequency climbs faster and CAC keeps rising. More budget on a tiring creative buys more impressions of an ad people have already ignored.',
@@ -432,7 +432,7 @@ export const SIM_EVENTS: SimEvent[] = [
         label: 'Rotate in fresh creative on the same audience',
         verdict: 'best',
         outcome:
-          'CTR recovers and frequency resets. The audience was never the problem — they were just done with that specific ad.',
+          'CTR recovers and frequency resets. The audience was never the problem. They were just done with that specific ad.',
       },
       {
         label: 'Kill the campaign and start over',
@@ -452,7 +452,7 @@ export const SIM_EVENTS: SimEvent[] = [
         label: 'Narrow the targeting to the best segment',
         verdict: 'costly',
         outcome:
-          'A smaller pool saturates faster. CPMs rise again within days — you tightened the constraint that was already binding.',
+          'A smaller pool saturates faster. CPMs rise again within days. You tightened the constraint that was already binding.',
       },
       {
         label: 'Expand to broad and consolidate overlapping ad sets',
@@ -478,13 +478,13 @@ export const SIM_EVENTS: SimEvent[] = [
         label: 'Rewrite the ad copy and refresh creative',
         verdict: 'costly',
         outcome:
-          'CTR was flat — the ads are still earning the click. You spent a cycle fixing the one part of the funnel the data said was working.',
+          'CTR was flat. The ads are still earning the click. You spent a cycle fixing the one part of the funnel the data said was working.',
       },
       {
         label: 'Audit the landing page and checkout flow',
         verdict: 'best',
         outcome:
-          'A checkout script was failing on mobile. Same traffic, broken destination — the drop was downstream of everything you buy.',
+          'A checkout script was failing on mobile. Same traffic, broken destination. The drop was downstream of everything you buy.',
       },
       {
         label: 'Raise bids to win higher-intent auctions',
@@ -501,7 +501,7 @@ export const SIM_EVENTS: SimEvent[] = [
     prompt: 'Two platforms report different conversion counts. Which is right?',
     options: [
       {
-        label: 'Trust Meta — it owns the ad delivery',
+        label: 'Trust Meta - it owns the ad delivery',
         verdict: 'costly',
         outcome:
           'Meta credits view-through and cross-device conversions on its own attribution window. Taking it at face value overstates paid performance.',
@@ -510,10 +510,10 @@ export const SIM_EVENTS: SimEvent[] = [
         label: 'Reconcile both against order data and document the model',
         verdict: 'best',
         outcome:
-          'Neither is lying — they answer different questions on different windows. Backend orders become the source of truth; platform numbers become directional.',
+          'Neither is lying, they answer different questions on different windows. Backend orders become the source of truth; platform numbers become directional.',
       },
       {
-        label: 'Trust GA4 — it is the neutral third party',
+        label: 'Trust GA4 - it is the neutral third party',
         verdict: 'partial',
         outcome:
           'GA4 undercounts too, via consent mode and cookie loss. Closer to conservative, still not truth.',

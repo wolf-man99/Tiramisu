@@ -16,7 +16,7 @@ export interface AuthResult {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// Lenient on purpose — accepts international formats (+, spaces, dashes, parens)
+// Lenient on purpose: accepts international formats (+, spaces, dashes, parens)
 // without enforcing a specific country's numbering plan.
 const PHONE_RE = /^[+\d][\d\s\-()]{6,19}$/;
 

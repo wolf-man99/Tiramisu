@@ -28,8 +28,8 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 /**
- * Bounded memo. Date functions dominate the hot path — a GA4 query calls PARSE_DATE
- * once per row over tens of thousands of rows, across only 366 distinct inputs — and
+ * Bounded memo. Date functions dominate the hot path, a GA4 query calls PARSE_DATE
+ * once per row over tens of thousands of rows, across only 366 distinct inputs, and
  * every call otherwise crosses the JS/SQLite boundary and allocates a Date.
  */
 function memo<T>(fn: (key: string) => T, limit = 50_000): (key: string) => T {

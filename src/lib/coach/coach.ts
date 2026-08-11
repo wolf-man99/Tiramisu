@@ -2,12 +2,12 @@ import { analyze, type Analysis, type AnalyzeInput, type CoachNote } from './ana
 import { exerciseById } from '../content/exercises';
 
 /**
- * The coach. Its spine is the deterministic {@link analyze} static analyser — always
+ * The coach. Its spine is the deterministic {@link analyze} static analyser, always
  * available, free, and offline. When an `ANTHROPIC_API_KEY` is configured it can layer
  * a natural-language mentor message on top, built strictly from the deterministic
  * diagnosis and bound by a system prompt that forbids ever revealing the answer.
  *
- * The LLM is never the source of truth for correctness — grading is done by result-set
+ * The LLM is never the source of truth for correctness. Grading is done by result-set
  * comparison elsewhere. The coach only explains, hints and encourages.
  */
 
@@ -38,7 +38,7 @@ Absolute rules, in priority order:
    final SELECT, not the exact WHERE clause, not the specific function call they are
    missing. If you catch yourself about to write runnable SQL that solves the task, stop.
 2. Coach with questions and concepts. Point at the SHAPE of the mistake ("your LEFT JOIN
-   filters in WHERE — what happens to the unmatched rows?") and let them make the fix.
+   filters in WHERE, what happens to the unmatched rows?") and let them make the fix.
 3. Be a mentor, not a cheerleader. Two or three sentences. Warm, direct, specific to
    their query. No preamble, no "Great question!", no restating the prompt.
 4. Ground every claim in the diagnosis you are given. Do not invent facts about their
@@ -52,7 +52,7 @@ function buildUserMessage(req: CoachRequest, analysis: Analysis): string {
   return [
     req.taskPrompt ? `TASK:\n${req.taskPrompt}` : null,
     `LEARNER SQL:\n${req.sql}`,
-    `DIAGNOSIS: ${analysis.diagnosis} — ${analysis.headline}`,
+    `DIAGNOSIS: ${analysis.diagnosis}, ${analysis.headline}`,
     `ANALYSER NOTES:\n${notes}`,
     req.passed
       ? 'They passed. Affirm what they did well in one sentence, then offer one concrete way to make the query cleaner or cheaper.'
@@ -85,7 +85,7 @@ async function callAnthropic(system: string, user: string, signal?: AbortSignal)
     stop_reason?: string;
     content?: { type: string; text?: string }[];
   };
-  // Safety classifiers can decline (HTTP 200, stop_reason "refusal") — fall back.
+  // Safety classifiers can decline (HTTP 200, stop_reason "refusal"), fall back.
   if (data.stop_reason === 'refusal') return null;
   const text = (data.content ?? [])
     .filter((b) => b.type === 'text' && b.text)
@@ -128,7 +128,7 @@ export async function coach(req: CoachRequest, opts: { timeoutMs?: number } = {}
       const text = await callAnthropic(SYSTEM_PROMPT, buildUserMessage(req, analysis), controller.signal);
       if (text) return { analysis, mentor: text, mentorSource: 'llm' };
     } catch {
-      // network/timeout — fall through to deterministic
+      // network/timeout, fall through to deterministic
     } finally {
       clearTimeout(timer);
     }

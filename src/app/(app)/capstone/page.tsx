@@ -4,14 +4,14 @@ import { CAPSTONE, capstoneSections, capstoneBySection } from '@/lib/content/cap
 import { PageHeader } from '@/components/app/PageHeader';
 import { Card, DifficultyPill } from '@/components/ui/primitives';
 
-export const metadata = { title: 'Capstone — Tiramisu' };
+export const metadata = { title: 'Capstone - Tiramisu' };
 
 export default function CapstonePage() {
   return (
     <div className="mx-auto max-w-4xl px-5 py-8 md:px-8">
       <PageHeader
         title="The Capstone"
-        subtitle="You're the new Growth Analyst at Northbeam. 100 real business questions across eight sections — every one with a 'so what'."
+        subtitle="You're the new Growth Analyst at Northbeam. 100 real business questions across eight sections, every one with a 'so what'."
         icon={<Building2 size={20} />}
       >
         <span className="chip">{CAPSTONE.length} questions</span>

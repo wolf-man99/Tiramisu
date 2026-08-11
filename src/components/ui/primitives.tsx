@@ -8,7 +8,7 @@ type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 /*
   Buttons are ink-bordered blocks that sit on a coloured hard shadow and press
-  into the page on click — the signature interaction of this design system.
+  into the page on click, the signature interaction of this design system.
 */
 const BUTTON_VARIANT: Record<ButtonVariant, string> = {
   primary: 'bg-[var(--ink)] text-white shadow-[3px_3px_0_var(--blue)]',

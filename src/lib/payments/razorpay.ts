@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 /**
- * Thin wrapper over Razorpay's REST API — no SDK dependency, since order creation is
+ * Thin wrapper over Razorpay's REST API: no SDK dependency, since order creation is
  * a single POST and everything else here is just HMAC verification (Node's built-in
  * crypto already does that for session tokens, see src/lib/auth/session.ts).
  */
@@ -24,7 +24,7 @@ export interface RazorpayOrder {
   currency: string;
 }
 
-/** Creates a Razorpay Order — the object Checkout.js needs to open its payment modal.
+/** Creates a Razorpay Order, the object Checkout.js needs to open its payment modal.
  *  `amountPaise` must come from a server-side price lookup, never from the client. */
 export async function createRazorpayOrder(amountPaise: number, receipt: string, notes: Record<string, string>): Promise<RazorpayOrder> {
   const res = await fetch(`${RAZORPAY_API}/orders`, {
@@ -50,7 +50,7 @@ export function verifyPaymentSignature(orderId: string, paymentId: string, signa
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-/** Verifies a webhook delivery's signature — a separate secret from the key secret,
+/** Verifies a webhook delivery's signature, a separate secret from the key secret,
  *  configured against the webhook URL in the Razorpay dashboard. Must run over the
  *  raw request body, not a re-serialized parse of it. */
 export function verifyWebhookSignature(rawBody: string, signature: string): boolean {

@@ -1,6 +1,6 @@
 /**
  * The local query engine. Server-only by convention: nothing under `components/`
- * imports this module — the client reaches the warehouse through `app/api/*`.
+ * imports this module, the client reaches the warehouse through `app/api/*`.
  *
  * One in-memory SQLite database per Node process, cached on `globalThis` so it
  * survives Next's dev-server hot reloads. Learner SQL is guarded, transpiled from
@@ -24,7 +24,7 @@ export interface QueryResult {
   rowCount: number;
   truncated: boolean;
   ms: number;
-  /** SQL actually executed, after dialect rewriting — shown in the "explain" panel. */
+  /** SQL actually executed, after dialect rewriting, shown in the "explain" panel. */
   compiledSql: string;
   notes: string[];
 }
@@ -98,7 +98,7 @@ export function guard(sql: string): void {
   const upper = statements[0].toUpperCase();
   if (!/^(SELECT|WITH)\b/.test(upper)) {
     throw new QueryError(
-      'This engine is read-only — a query has to start with SELECT or WITH.',
+      'This engine is read-only. A query has to start with SELECT or WITH.',
       'guard',
       'The warehouse is shared by every exercise, so nothing can modify it.',
     );
@@ -106,7 +106,7 @@ export function guard(sql: string): void {
   for (const kw of DENY) {
     if (new RegExp(`\\b${kw}\\b`).test(upper)) {
       throw new QueryError(
-        `\`${kw}\` is not allowed — the warehouse is read-only.`,
+        `\`${kw}\` is not allowed. The warehouse is read-only.`,
         'guard',
         'Everything the curriculum asks for can be done with SELECT.',
       );
@@ -137,7 +137,7 @@ export const WAREHOUSE_PATH = path.join(process.cwd(), '.data', 'warehouse.db');
 
 /**
  * Rows go in batched multi-row INSERTs. Each `stmt.run()` crosses the JS↔SQLite
- * boundary, and with ~240k rows that crossing — not SQLite itself — is the bottleneck.
+ * boundary, and with ~240k rows that crossing, not SQLite itself, is the bottleneck.
  * SQLite caps a statement at 32 766 bound variables, so the batch size adapts to the
  * table's column count.
  */
@@ -271,21 +271,21 @@ function explainSqliteError(msg: string): { message: string; hint?: string } {
   const noFunc = /no such function:\s*(\S+)/i.exec(m);
   if (noColumn) {
     hint = `\`${noColumn[1]}\` isn't a column on any table in your FROM clause. ` +
-      'Check the schema panel — and remember an alias defined in SELECT cannot be used in WHERE.';
+      'Check the schema panel, and remember an alias defined in SELECT cannot be used in WHERE.';
   } else if (noTable) {
     hint = `There is no table called \`${noTable[1]}\`. Open the schema panel to see what exists.`;
   } else if (noFunc) {
     hint = `\`${noFunc[1]}\` is not available in the local BigQuery emulation. ` +
       'The function reference in the schema panel lists everything that is.';
   } else if (/ambiguous column name/i.test(m)) {
-    hint = 'Two joined tables both have this column — prefix it with a table alias.';
+    hint = 'Two joined tables both have this column, prefix it with a table alias.';
   } else if (/misuse of aggregate|misuse of window function/i.test(m)) {
     hint = 'Aggregates and window functions cannot go in WHERE. Use HAVING for aggregates, ' +
       'or wrap the window function in a subquery/CTE and filter outside it.';
   } else if (/GROUP BY term/i.test(m) || /not in the GROUP BY/i.test(m)) {
     hint = 'Every column in SELECT must either be aggregated or listed in GROUP BY.';
   } else if (/syntax error/i.test(m)) {
-    hint = 'Look just before the token named in the error — a missing comma, ' +
+    hint = 'Look just before the token named in the error: a missing comma, ' +
       'an unclosed bracket, or a stray keyword is the usual cause.';
   }
   return { message: m, hint };

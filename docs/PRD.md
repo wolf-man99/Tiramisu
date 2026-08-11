@@ -1,4 +1,4 @@
-# GrowthSQL Academy — Product Requirements Document
+# GrowthSQL Academy, Product Requirements Document
 
 **Version:** 1.0
 **Status:** Implemented (v1)
@@ -13,7 +13,7 @@ question is *"which keyword actually produced profitable revenue, net of the 34%
 conversions that were view-through?"*, the dashboard has no answer and the data team
 has a two-week queue.
 
-The blocker is not intelligence — it is that every SQL course teaches `employees`,
+The blocker is not intelligence. It is that every SQL course teaches `employees`,
 `departments` and `salaries`. A marketer finishes the course able to write a `JOIN`
 and still unable to compute blended CAC, because nobody ever showed them that CAC is
 a `JOIN` between a spend table at campaign-day grain and a conversions table at
@@ -27,9 +27,9 @@ user-event grain, and that the whole problem is the grain mismatch.
 Three design commitments follow:
 
 1. **No toy datasets.** The learner queries a 30-table marketing warehouse from day 1
-   — Google Ads, Meta, LinkedIn, GA4 event export, HubSpot, Salesforce, Stripe.
+: Google Ads, Meta, LinkedIn, GA4 event export, HubSpot, Salesforce, Stripe.
 2. **Execution, not multiple choice.** Every answer is real SQL, run against a real
-   database, graded by comparing result sets — not by string-matching the query.
+   database, graded by comparing result sets, not by string-matching the query.
 3. **Hints, never answers.** The coach diagnoses the specific defect in the learner's
    query and escalates hints. It will not write the query for them.
 
@@ -49,12 +49,12 @@ grain and attribution choices they made.
 ## 4. Goals & non-goals
 
 ### Goals
-- G1 — Zero to independent BigQuery analysis in 14 days of ~90-minute sessions.
-- G2 — Every concept lands attached to a marketing metric, never in the abstract.
-- G3 — The learner *thinks* like an analyst: grain, nulls, attribution windows,
+- G1, Zero to independent BigQuery analysis in 14 days of ~90-minute sessions.
+- G2. Every concept lands attached to a marketing metric, never in the abstract.
+- G3: The learner *thinks* like an analyst: grain, nulls, attribution windows,
   denominator discipline, sanity-checking a number before shipping it.
-- G4 — Interview-ready: 10 company-styled SQL interview sets.
-- G5 — Runs entirely locally. No cloud account, no billing, no API key required.
+- G4, Interview-ready: 10 company-styled SQL interview sets.
+- G5, Runs entirely locally. No cloud account, no billing, no API key required.
 
 ### Non-goals
 - Not a BI tool. Charts exist to teach, not to replace Looker.
@@ -151,7 +151,7 @@ taxonomy, weak-area detection feeding the dashboard's recommendations.
 - Accessible: WCAG AA contrast in both themes, full keyboard operation, focus-visible
   rings, `prefers-reduced-motion` respected by all animation.
 
-## 9. Release scope (v1 — this build)
+## 9. Release scope (v1, this build)
 
 Shipped: FR-1 … FR-12, all 10 modules, 14 days, 300 exercises, 10 projects, 10
 interview sets, 9 labs, 6 cheatsheets, 3 glossaries, 100-question capstone.
