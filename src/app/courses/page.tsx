@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { COURSES } from '@/lib/courses/registry';
 import { STACK } from '@/lib/courses/stack';
 import { getCurrentProfile } from '@/lib/auth/server';
+import { prisma } from '@/lib/db';
 import { CourseCard } from '@/components/app/CourseCard';
 import { StackCard } from '@/components/marketing/StackCard';
 import { SiteHeader, SiteFooter } from '@/components/marketing/SiteChrome';
@@ -15,6 +16,19 @@ export default async function CoursesPage() {
   const profile = await getCurrentProfile();
   const authed = Boolean(profile);
   const live = COURSES.filter((c) => c.status === 'live');
+
+  // Only Meta Ads has real pricing today — a signed-in click on its card opens a
+  // pricing dialog instead of navigating straight in. A missing Enrollment row
+  // (never visited the course yet) just means nothing's been purchased.
+  const metaAdsEnrollment = profile
+    ? await prisma.enrollment.findUnique({
+        where: { profileId_courseId: { profileId: profile.id, courseId: 'meta-ads' } },
+        select: { learnPurchasedAt: true, runPurchasedAt: true },
+      })
+    : null;
+  const metaAdsPricing = profile
+    ? { hasLearn: Boolean(metaAdsEnrollment?.learnPurchasedAt), hasRun: Boolean(metaAdsEnrollment?.runPurchasedAt) }
+    : undefined;
 
   return (
     <div className="min-h-screen">
@@ -44,7 +58,14 @@ export default async function CoursesPage() {
               {live.length === 1 ? 'One course is' : `${live.length} courses are`} live and fully playable right now.
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {live.map((c) => <CourseCard key={c.id} course={c} recommended={c.id === profile?.courseInterest} />)}
+              {live.map((c) => (
+                <CourseCard
+                  key={c.id}
+                  course={c}
+                  recommended={c.id === profile?.courseInterest}
+                  pricing={c.id === 'meta-ads' ? metaAdsPricing : undefined}
+                />
+              ))}
             </div>
           </section>
         )}

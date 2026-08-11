@@ -1,8 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Lock, Check, Sparkle } from 'lucide-react';
 import { type Course, STATUS_LABEL } from '@/lib/courses/registry';
 import { Card } from '@/components/ui/primitives';
 import { CourseLogo } from '@/components/app/CourseLogo';
+import { CoursePricingModal } from '@/components/payments/CoursePricingModal';
 import { cn } from '@/lib/utils';
 
 const STATUS_STYLE: Record<Course['status'], string> = {
@@ -11,7 +15,16 @@ const STATUS_STYLE: Record<Course['status'], string> = {
   'coming-soon': 'text-[var(--text-muted)] bg-[var(--surface-3)]',
 };
 
-export function CourseCard({ course, recommended = false }: { course: Course; recommended?: boolean }) {
+export function CourseCard({
+  course, recommended = false, pricing,
+}: {
+  course: Course;
+  recommended?: boolean;
+  /** Set only for a course that has real pricing (Meta Ads today) and an authed
+   *  viewer — clicking opens a pricing dialog instead of navigating straight in. */
+  pricing?: { hasLearn: boolean; hasRun: boolean };
+}) {
+  const [modalOpen, setModalOpen] = useState(false);
   const live = course.status === 'live';
   const nudge = recommended && live;
   const inner = (
@@ -61,5 +74,18 @@ export function CourseCard({ course, recommended = false }: { course: Course; re
   );
 
   if (course.status === 'coming-soon') return <div>{inner}</div>;
+
+  const fullyPurchased = pricing && pricing.hasLearn && pricing.hasRun;
+  if (pricing && !fullyPurchased) {
+    return (
+      <>
+        <button type="button" onClick={() => setModalOpen(true)} className="block h-full w-full text-left">{inner}</button>
+        {modalOpen && (
+          <CoursePricingModal course={course} hasLearn={pricing.hasLearn} hasRun={pricing.hasRun} onClose={() => setModalOpen(false)} />
+        )}
+      </>
+    );
+  }
+
   return <Link href={course.href}>{inner}</Link>;
 }
