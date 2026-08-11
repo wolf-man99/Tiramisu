@@ -18,7 +18,7 @@ const ERRORS: Record<string, string> = {
 export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') || '/dashboard';
+  const next = params.get('next') || '/courses';
 
   const [step, setStep] = useState<1 | 2>(1);
   const [displayName, setDisplayName] = useState('');
