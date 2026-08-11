@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Lock, Check } from 'lucide-react';
+import { ArrowRight, Lock, Check, Sparkle } from 'lucide-react';
 import { type Course, STATUS_LABEL } from '@/lib/courses/registry';
 import { Card } from '@/components/ui/primitives';
 import { CourseLogo } from '@/components/app/CourseLogo';
@@ -11,13 +11,18 @@ const STATUS_STYLE: Record<Course['status'], string> = {
   'coming-soon': 'text-[var(--text-muted)] bg-[var(--surface-3)]',
 };
 
-export function CourseCard({ course }: { course: Course }) {
+export function CourseCard({ course, recommended = false }: { course: Course; recommended?: boolean }) {
   const live = course.status === 'live';
+  const nudge = recommended && live;
   const inner = (
     <Card
       hover={live || course.status === 'in-progress'}
-      className={cn('relative flex h-full flex-col overflow-hidden p-5', !live && course.status === 'coming-soon' && 'opacity-80')}
-      style={live ? { boxShadow: `4px 4px 0 ${course.accent}` } : undefined}
+      className={cn(
+        'relative flex h-full flex-col overflow-hidden p-5',
+        !live && course.status === 'coming-soon' && 'opacity-80',
+        nudge && 'animate-nudge',
+      )}
+      style={live ? { boxShadow: `4px 4px 0 ${course.accent}`, ...(nudge ? { '--nudge-accent': course.accent } as React.CSSProperties : {}) } : undefined}
     >
       {/* A flat colour band along the top — no blur, just a block of colour. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5" style={{ background: course.accent }} />
@@ -31,6 +36,11 @@ export function CourseCard({ course }: { course: Course }) {
           {STATUS_LABEL[course.status]}
         </span>
       </div>
+      {nudge && (
+        <span className="relative mt-2 inline-flex w-fit items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide" style={{ color: course.accent }}>
+          <Sparkle size={11} /> Picked for you
+        </span>
+      )}
       <h3 className="relative mt-3 text-lg font-extrabold">{course.title}</h3>
       <p className="relative mt-0.5 text-sm font-bold" style={{ color: course.accent }}>{course.tagline}</p>
       <p className="relative mt-2 flex-1 text-sm text-[var(--text-muted)]">{course.description}</p>
