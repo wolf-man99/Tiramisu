@@ -1,11 +1,9 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { COURSES } from '@/lib/courses/registry';
-import { STACK } from '@/lib/courses/stack';
 import { getCurrentProfile } from '@/lib/auth/server';
 import { prisma } from '@/lib/db';
 import { CourseCard } from '@/components/app/CourseCard';
-import { StackCard } from '@/components/marketing/StackCard';
 import { SiteHeader, SiteFooter } from '@/components/marketing/SiteChrome';
 
 export const runtime = 'nodejs';
@@ -16,6 +14,7 @@ export default async function CoursesPage() {
   const profile = await getCurrentProfile();
   const authed = Boolean(profile);
   const live = COURSES.filter((c) => c.status === 'live');
+  const upcoming = COURSES.filter((c) => c.status !== 'live');
 
   // Only Meta Ads has real pricing today, a signed-in click on its card opens a
   // pricing dialog instead of navigating straight in. A missing Enrollment row
@@ -70,18 +69,18 @@ export default async function CoursesPage() {
           </section>
         )}
 
-        {/* The four layers */}
-        <section className="mt-14">
-          <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide">The full stack</h2>
-          <p className="mb-5 text-sm text-[var(--text-muted)]">
-            Four layers. Everything shipping, and everything on the way.
-          </p>
-          {/* items-start so a shorter layer hugs its content instead of stretching
-              into a tall empty box beside a longer one. */}
-          <div className="grid items-start gap-4 md:grid-cols-2">
-            {STACK.map((layer) => <StackCard key={layer.slug} layer={layer} detailed />)}
-          </div>
-        </section>
+        {/* On the way */}
+        {upcoming.length > 0 && (
+          <section className="mt-14">
+            <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide">Coming soon</h2>
+            <p className="mb-4 text-sm text-[var(--text-muted)]">
+              More platforms are on the way. Get notified when they launch.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {upcoming.map((c) => <CourseCard key={c.id} course={c} />)}
+            </div>
+          </section>
+        )}
       </div>
 
       <SiteFooter />
